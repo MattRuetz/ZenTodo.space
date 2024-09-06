@@ -7,7 +7,7 @@ import TaskCard from './TaskCard';
 import SignUpForm from './SignUpForm';
 import { RootState, AppDispatch } from '../store/store';
 import { addLocalTask, updateLocalTask, fetchTasks } from '../store/tasksSlice';
-import { TaskStatus, Task } from '@/types';
+import { TaskProgress, Task } from '@/types';
 
 const Space: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
@@ -40,7 +40,7 @@ const Space: React.FC = () => {
                 taskDescription: '',
                 x: e.clientX,
                 y: e.clientY,
-                status: 'Not Started' as TaskStatus,
+                progress: 'Not Started' as TaskProgress,
                 isVirgin: true, // Mark as local
             };
             dispatch(addLocalTask(newTask));
