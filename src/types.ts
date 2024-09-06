@@ -14,12 +14,13 @@ export interface Task {
     y: number;
     progress: TaskProgress;
     isVirgin: boolean;
+    spaceId: String;
 }
 
-export interface TaskCardToolBarProps {
-    onDelete: () => void;
-    progress: TaskProgress;
-    onProgressChange: (progress: TaskProgress) => void;
+export interface SpaceData {
+    _id?: string;
+    name: string;
+    color: string;
 }
 
 // NextAuth type extensions

@@ -1,6 +1,6 @@
 // src/models/Task.ts
 import { TaskProgress } from '@/types';
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Document } from 'mongoose';
 
 interface ITask extends Document {
     _id: string;
@@ -9,6 +9,7 @@ interface ITask extends Document {
     taskName: string;
     taskDescription: string;
     progress: TaskProgress;
+    spaceId: { type: String; required: true };
 }
 
 const TaskSchema = new mongoose.Schema({
@@ -17,6 +18,11 @@ const TaskSchema = new mongoose.Schema({
     x: { type: Number, required: true },
     y: { type: Number, required: true },
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    space: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Space',
+        required: true,
+    },
     progress: {
         type: String,
         enum: ['Not Started', 'In Progress', 'Blocked', 'Complete'],

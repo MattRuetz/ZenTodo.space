@@ -17,11 +17,16 @@ const initialState: TasksState = {
     error: null,
 };
 
-export const fetchTasks = createAsyncThunk('tasks/fetchTasks', async () => {
-    const response = await fetch('/api/tasks');
-    if (!response.ok) throw new Error('Failed to fetch tasks');
-    return response.json();
-});
+export const fetchTasks = createAsyncThunk(
+    'tasks/fetchTasks',
+    async (spaceId: string) => {
+        const response = await fetch(`/api/tasks?spaceId=${spaceId}`);
+        if (!response.ok) {
+            throw new Error('Failed to fetch tasks');
+        }
+        return response.json();
+    }
+);
 
 export const addTask = createAsyncThunk(
     'tasks/addTask',
@@ -44,6 +49,7 @@ export const addTask = createAsyncThunk(
         }
     }
 );
+
 export const updateTask = createAsyncThunk(
     'tasks/updateTask',
     async (task: Task, { rejectWithValue }) => {

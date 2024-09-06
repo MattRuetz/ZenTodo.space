@@ -1,11 +1,12 @@
 import { configureStore } from '@reduxjs/toolkit';
 import tasksReducer from './tasksSlice';
+import spaceReducer from './spaceSlice';
 
-// Create and export the store
 export const store = configureStore({
-  reducer: {
-    tasks: tasksReducer,
-  },
+    reducer: {
+        tasks: tasksReducer,
+        spaces: spaceReducer,
+    },
 });
 
 export type RootState = ReturnType<typeof store.getState>;

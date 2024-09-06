@@ -17,6 +17,7 @@ import { defaultSerializeQueryArgs } from '@reduxjs/toolkit/query';
 import DragHandle from './DragHandle';
 import TaskCardToolBar from './TaskCardToolBar';
 import { Task, TaskProgress } from '@/types';
+import DraggableArea from './DraggableArea';
 
 interface TaskCardProps {
     task: Task;
@@ -89,6 +90,11 @@ const TaskCard: React.FC<TaskCardProps> = ({
     const handleDelete = async (taskId: string) => {
         if (deletingTasks.has(taskId)) return; // Prevent duplicate calls
 
+        if (isVirgin) {
+            dispatch(removeLocalTask(localTask._id ?? ''));
+            return;
+        }
+
         setDeletingTasks((prev) => new Set(prev).add(taskId));
         try {
             await dispatch(deleteTask(taskId)).unwrap();
@@ -116,9 +122,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
                     setOpacity((prevOpacity) => {
                         if (prevOpacity <= 0) {
                             clearInterval(fadeInterval);
-                            isVirgin
-                                ? dispatch(removeLocalTask(localTask._id ?? ''))
-                                : handleDelete(localTask._id ?? '');
+                            handleDelete(localTask._id ?? '');
                             return 0;
                         }
                         return prevOpacity - 0.1;
@@ -153,42 +157,42 @@ const TaskCard: React.FC<TaskCardProps> = ({
         <Draggable
             defaultPosition={{ x: task.x, y: task.y }}
             bounds="parent"
-            handle=".drag-handle"
+            handle=".draggable-area"
             onStart={onDragStart}
             onStop={handleDragStop}
         >
             <div
-                className="absolute w-60 p-4 bg-base-300 shadow cursor-move flex flex-col space-y-2 rounded-xl"
+                className="absolute w-60 bg-base-300 shadow cursor-move flex flex-col space-y-2 rounded-xl"
                 style={{ opacity }}
                 onMouseEnter={() => setIsHovering(true)}
                 onMouseLeave={() => setIsHovering(false)}
             >
-                <DragHandle />
-
-                <input
-                    type="text"
-                    name="taskName"
-                    placeholder="Task Name"
-                    value={localTask.taskName}
-                    onChange={handleInputChange}
-                    onFocus={() => setIsFocused(true)}
-                    onBlur={() => setIsFocused(false)}
-                    className="input input-bordered w-full"
-                />
-                <textarea
-                    name="taskDescription"
-                    placeholder="Task Description"
-                    value={localTask.taskDescription}
-                    onChange={handleInputChange}
-                    onFocus={() => setIsFocused(true)}
-                    onBlur={() => setIsFocused(false)}
-                    className="textarea textarea-bordered w-full"
-                />
-                <TaskCardToolBar
-                    onDelete={() => handleDelete(task._id ?? '')}
-                    progress={localTask.progress}
-                    onProgressChange={handleProgressChange}
-                />
+                <DraggableArea className="p-4">
+                    <input
+                        type="text"
+                        name="taskName"
+                        placeholder="Task Name"
+                        value={localTask.taskName}
+                        onChange={handleInputChange}
+                        onFocus={() => setIsFocused(true)}
+                        onBlur={() => setIsFocused(false)}
+                        className="input input-bordered w-full p-4 pt-2 pb-2 h-8 mb-2"
+                    />
+                    <textarea
+                        name="taskDescription"
+                        placeholder="Task Description"
+                        value={localTask.taskDescription}
+                        onChange={handleInputChange}
+                        onFocus={() => setIsFocused(true)}
+                        onBlur={() => setIsFocused(false)}
+                        className="textarea textarea-bordered w-full p-4 pt-2 pb-2"
+                    />
+                    <TaskCardToolBar
+                        onDelete={() => handleDelete(task._id ?? '')}
+                        progress={localTask.progress}
+                        onProgressChange={handleProgressChange}
+                    />
+                </DraggableArea>
             </div>
         </Draggable>
     );

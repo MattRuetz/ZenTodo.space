@@ -6,12 +6,18 @@ import { useSession } from 'next-auth/react';
 import TaskCard from './TaskCard';
 import SignUpForm from './SignUpForm';
 import { RootState, AppDispatch } from '../store/store';
-import { addLocalTask, updateLocalTask, fetchTasks } from '../store/tasksSlice';
+import { addLocalTask, fetchTasks } from '../store/tasksSlice';
 import { TaskProgress, Task } from '@/types';
 
-const Space: React.FC = () => {
+interface SpaceProps {
+    spaceId: string;
+}
+
+const Space: React.FC<SpaceProps> = ({ spaceId }) => {
     const dispatch = useDispatch<AppDispatch>();
-    const tasks = useSelector((state: RootState) => state.tasks.tasks);
+    const tasks = useSelector((state: RootState) =>
+        state.tasks.tasks.filter((task) => task.spaceId === spaceId)
+    );
     const localTasks = useSelector(
         (state: RootState) => state.tasks.localTasks
     );
@@ -24,9 +30,9 @@ const Space: React.FC = () => {
 
     useEffect(() => {
         if (sessionStatus === 'authenticated' && taskStatus === 'idle') {
-            dispatch(fetchTasks());
+            dispatch(fetchTasks(spaceId));
         }
-    }, [sessionStatus, taskStatus, dispatch]);
+    }, [sessionStatus, taskStatus, dispatch, spaceId]);
 
     const handleSpaceClick = (e: React.MouseEvent<HTMLDivElement>) => {
         if (e.target !== e.currentTarget) return;
@@ -42,6 +48,7 @@ const Space: React.FC = () => {
                 y: e.clientY,
                 progress: 'Not Started' as TaskProgress,
                 isVirgin: true, // Mark as local
+                spaceId: spaceId,
             };
             dispatch(addLocalTask(newTask));
         }
@@ -63,7 +70,7 @@ const Space: React.FC = () => {
 
     return (
         <div
-            className="relative w-full h-screen bg-base-100"
+            className={`relative w-full h-screen bg-base-100 space-${spaceId}`}
             onMouseDown={handleSpaceClick}
         >
             {sessionStatus === 'loading' || taskStatus === 'loading' ? (

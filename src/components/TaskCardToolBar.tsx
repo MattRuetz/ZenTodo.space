@@ -1,7 +1,13 @@
 // src/components/TaskCardToolBar.tsx
 import React, { useState, useRef, useEffect } from 'react';
 import { FaTrash, FaCheck, FaChevronDown } from 'react-icons/fa';
-import { TaskCardToolBarProps, TaskProgress } from '@/types';
+import { TaskProgress } from '@/types';
+
+export interface TaskCardToolBarProps {
+    onDelete: () => void;
+    progress: TaskProgress;
+    onProgressChange: (progress: TaskProgress) => void;
+}
 
 const TaskCardToolBar: React.FC<TaskCardToolBarProps> = ({
     onDelete,
@@ -62,7 +68,7 @@ const TaskCardToolBar: React.FC<TaskCardToolBarProps> = ({
             <div className="flex justify-between gap-2 items-center pt-2">
                 <div
                     ref={progressCardRef}
-                    className="progressCard cursor-pointer p-2 bg-base-100 rounded-md flex text-xs text-slate-500 items-center gap-2"
+                    className="progress-card no-drag cursor-pointer p-2 bg-base-100 rounded-md flex text-xs text-slate-500 items-center gap-2"
                     onClick={handleProgressClick}
                 >
                     <div
@@ -83,7 +89,7 @@ const TaskCardToolBar: React.FC<TaskCardToolBarProps> = ({
                 </div>
                 <button
                     onClick={onDelete}
-                    className="delete-button text-red-500 hover:text-red-700 transition-colors duration-200"
+                    className="delete-button no-drag text-red-500 hover:text-red-700 transition-colors duration-200"
                     aria-label="Delete task"
                 >
                     <FaTrash size={14} />
