@@ -60,29 +60,79 @@ const TaskCard: React.FC<TaskCardProps> = ({
 
     const [isDraggingOver, setIsDraggingOver] = useState(false);
     const [isDropped, setIsDropped] = useState(false);
+    const [isBeingDragged, setIsBeingDragged] = useState(false);
 
-    const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
-        e.preventDefault();
-        setIsDraggingOver(true);
-    };
+    const updateTaskInStore = useCallback(
+        (updatedTask: Task) => {
+            if (isVirgin) {
+                if (updatedTask.taskName || updatedTask.taskDescription) {
+                    dispatch(addTask(updatedTask));
+                } else {
+                    dispatch(updateLocalTask(updatedTask));
+                }
+            } else {
+                dispatch(updateTask(updatedTask));
+            }
+        },
+        [dispatch, isVirgin]
+    );
 
-    const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
-        e.preventDefault();
+    const debouncedUpdate = useCallback(
+        debounce((updatedTask: Task) => {
+            updateTaskInStore(updatedTask);
+        }, 500),
+        [updateTaskInStore]
+    );
+
+    const handleDragStart = useCallback(
+        (e: DraggableEvent, data: DraggableData) => {
+            const newZIndex = getNewZIndex();
+            setLocalTask((prevTask) => ({ ...prevTask, zIndex: newZIndex }));
+            setIsBeingDragged(true);
+            onDragStart();
+        },
+        [getNewZIndex, onDragStart]
+    );
+
+    const handleDragStop = useCallback(
+        (e: DraggableEvent, data: DraggableData) => {
+            setLocalTask((prevTask) => {
+                const newTask = { ...prevTask, x: data.x, y: data.y };
+                debouncedUpdate(newTask);
+                return newTask;
+            });
+            setIsBeingDragged(false);
+            onDragStop();
+        },
+        [debouncedUpdate, onDragStop]
+    );
+
+    const handleMouseEnter = useCallback(() => {
+        if (!isBeingDragged) {
+            setIsDraggingOver(true);
+        }
+    }, [isBeingDragged]);
+
+    const handleMouseLeave = useCallback(() => {
         setIsDraggingOver(false);
-    };
+    }, []);
 
-    const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-        e.preventDefault();
-    };
-
-    const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-        e.preventDefault();
+    const handleMouseUp = useCallback(() => {
+        if (isDraggingOver) {
+            setIsDropped(true);
+            console.log('Dropped');
+            // Here you can add logic to handle the drop, e.g., updating task relationships
+            setTimeout(() => setIsDropped(false), 500);
+        }
         setIsDraggingOver(false);
-        setIsDropped(true);
-        console.log('Dropped');
-        // Here you can add logic to handle the drop, e.g., updating task relationships
-        setTimeout(() => setIsDropped(false), 500); // Reset dropped state after 500ms
-    };
+    }, [isDraggingOver]);
+
+    useEffect(() => {
+        document.addEventListener('mouseup', handleMouseUp);
+        return () => {
+            document.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, [handleMouseUp]);
 
     const updateCardSize = useCallback(() => {
         if (
@@ -115,28 +165,6 @@ const TaskCard: React.FC<TaskCardProps> = ({
         updateCardSize();
     }, [localTask.taskName, localTask.taskDescription, updateCardSize]);
 
-    const updateTaskInStore = useCallback(
-        (updatedTask: Task) => {
-            if (isVirgin) {
-                if (updatedTask.taskName || updatedTask.taskDescription) {
-                    dispatch(addTask(updatedTask));
-                } else {
-                    dispatch(updateLocalTask(updatedTask));
-                }
-            } else {
-                dispatch(updateTask(updatedTask));
-            }
-        },
-        [dispatch, isVirgin]
-    );
-
-    const debouncedUpdate = useCallback(
-        debounce((updatedTask: Task) => {
-            updateTaskInStore(updatedTask);
-        }, 500),
-        [updateTaskInStore]
-    );
-
     const handleInputChange = useCallback(
         (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
             const updatedFields = { [e.target.name]: e.target.value };
@@ -159,27 +187,6 @@ const TaskCard: React.FC<TaskCardProps> = ({
             });
         },
         [debouncedUpdate]
-    );
-
-    const handleDragStart = useCallback(
-        (e: DraggableEvent, data: DraggableData) => {
-            const newZIndex = getNewZIndex();
-            setLocalTask((prevTask) => ({ ...prevTask, zIndex: newZIndex }));
-            onDragStart();
-        },
-        [getNewZIndex, onDragStart]
-    );
-
-    const handleDragStop = useCallback(
-        (e: DraggableEvent, data: DraggableData) => {
-            setLocalTask((prevTask) => {
-                const newTask = { ...prevTask, x: data.x, y: data.y };
-                debouncedUpdate(newTask);
-                return newTask;
-            });
-            onDragStop();
-        },
-        [debouncedUpdate, onDragStop]
     );
 
     const handleDelete = useCallback(
@@ -337,23 +344,6 @@ const TaskCard: React.FC<TaskCardProps> = ({
         };
     }, [handleMouseMove]);
 
-    // HMMMMMMMMMMMMMMMMMMMMM
-    const handleNativeDragStart = useCallback(
-        (e: React.DragEvent<HTMLDivElement>) => {
-            // Handle native drag start
-            console.log('Native drag start');
-        },
-        []
-    );
-
-    const handleNativeDragEnd = useCallback(
-        (e: React.DragEvent<HTMLDivElement>) => {
-            // Handle native drag end
-            console.log('Native drag end');
-        },
-        []
-    );
-
     return (
         <Draggable
             defaultPosition={{ x: task.x, y: task.y }}
@@ -361,7 +351,6 @@ const TaskCard: React.FC<TaskCardProps> = ({
             handle=".draggable-area"
             onStart={handleDragStart}
             onStop={handleDragStop}
-            onDrag={() => console.log('Dragging')}
         >
             <div
                 ref={cardRef}
@@ -382,17 +371,10 @@ const TaskCard: React.FC<TaskCardProps> = ({
                     minHeight: '230px',
                     maxHeight: '500px',
                 }}
-                onMouseEnter={() => setIsHoveringCallback(true)}
-                onMouseLeave={() => setIsHoveringCallback(false)}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
                 onClick={handleCardClick}
                 onMouseDown={handleMouseDown}
-                draggable={true}
-                onDragStart={handleNativeDragStart}
-                onDragEnd={handleNativeDragEnd}
-                onDragEnter={handleDragEnter}
-                onDragLeave={handleDragLeave}
-                onDragOver={handleDragOver}
-                onDrop={handleDrop}
             >
                 <div className="flex flex-col h-full">
                     <DraggableArea className="flex flex-col h-full p-4">
