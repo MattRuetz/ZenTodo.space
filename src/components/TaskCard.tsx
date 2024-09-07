@@ -8,7 +8,7 @@ import React, {
     useEffect,
     useLayoutEffect,
 } from 'react';
-import Draggable from 'react-draggable';
+import Draggable, { DraggableData, DraggableEvent } from 'react-draggable';
 import debounce from 'lodash.debounce';
 import { useDispatch } from 'react-redux';
 import {
@@ -57,6 +57,32 @@ const TaskCard: React.FC<TaskCardProps> = ({
 
     const taskNameRef = useRef<HTMLInputElement>(null);
     const taskDescriptionRef = useRef<HTMLTextAreaElement>(null);
+
+    const [isDraggingOver, setIsDraggingOver] = useState(false);
+    const [isDropped, setIsDropped] = useState(false);
+
+    const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        setIsDraggingOver(true);
+    };
+
+    const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        setIsDraggingOver(false);
+    };
+
+    const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+    };
+
+    const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        setIsDraggingOver(false);
+        setIsDropped(true);
+        console.log('Dropped');
+        // Here you can add logic to handle the drop, e.g., updating task relationships
+        setTimeout(() => setIsDropped(false), 500); // Reset dropped state after 500ms
+    };
 
     const updateCardSize = useCallback(() => {
         if (
@@ -136,9 +162,8 @@ const TaskCard: React.FC<TaskCardProps> = ({
     );
 
     const handleDragStart = useCallback(
-        (e: any, data: any) => {
+        (e: DraggableEvent, data: DraggableData) => {
             const newZIndex = getNewZIndex();
-            // Dont push the localTask to the store, it will be pushed when the drag stops
             setLocalTask((prevTask) => ({ ...prevTask, zIndex: newZIndex }));
             onDragStart();
         },
@@ -146,7 +171,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
     );
 
     const handleDragStop = useCallback(
-        (e: any, data: any) => {
+        (e: DraggableEvent, data: DraggableData) => {
             setLocalTask((prevTask) => {
                 const newTask = { ...prevTask, x: data.x, y: data.y };
                 debouncedUpdate(newTask);
@@ -312,6 +337,23 @@ const TaskCard: React.FC<TaskCardProps> = ({
         };
     }, [handleMouseMove]);
 
+    // HMMMMMMMMMMMMMMMMMMMMM
+    const handleNativeDragStart = useCallback(
+        (e: React.DragEvent<HTMLDivElement>) => {
+            // Handle native drag start
+            console.log('Native drag start');
+        },
+        []
+    );
+
+    const handleNativeDragEnd = useCallback(
+        (e: React.DragEvent<HTMLDivElement>) => {
+            // Handle native drag end
+            console.log('Native drag end');
+        },
+        []
+    );
+
     return (
         <Draggable
             defaultPosition={{ x: task.x, y: task.y }}
@@ -323,13 +365,16 @@ const TaskCard: React.FC<TaskCardProps> = ({
         >
             <div
                 ref={cardRef}
-                className="absolute bg-base-300 shadow cursor-move flex flex-col space-y-2 rounded-xl"
+                className={`absolute bg-base-300 shadow cursor-move flex flex-col space-y-2 rounded-xl ${
+                    isDraggingOver ? 'border-4 border-blue-500' : ''
+                } ${isDropped ? 'border-4 border-green-500' : ''}`}
                 style={{
                     opacity,
                     zIndex: localTask.zIndex,
                     width: `${cardSize.width}px`,
                     height: `${cardSize.height}px`,
-                    transition: 'width 0.1s ease-out, height 0.2s ease-out',
+                    transition:
+                        'width 0.1s ease-out, height 0.2s ease-out, border-color 0.3s ease',
                     resize: 'both',
                     overflow: 'auto',
                     minWidth: '250px',
@@ -341,6 +386,13 @@ const TaskCard: React.FC<TaskCardProps> = ({
                 onMouseLeave={() => setIsHoveringCallback(false)}
                 onClick={handleCardClick}
                 onMouseDown={handleMouseDown}
+                draggable={true}
+                onDragStart={handleNativeDragStart}
+                onDragEnd={handleNativeDragEnd}
+                onDragEnter={handleDragEnter}
+                onDragLeave={handleDragLeave}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
             >
                 <div className="flex flex-col h-full">
                     <DraggableArea className="flex flex-col h-full p-4">
