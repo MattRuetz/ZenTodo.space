@@ -106,14 +106,6 @@ export const tasksSlice = createSlice({
             const localId = uuidv4(); // Generate a temporary local ID
             state.localTasks.push({ ...action.payload, _id: localId });
         },
-        updateTask: (state, action: PayloadAction<Task>) => {
-            const index = state.tasks.findIndex(
-                (task) => task._id === action.payload._id
-            );
-            if (index !== -1) {
-                state.tasks[index] = action.payload;
-            }
-        },
         updateLocalTask: (state, action: PayloadAction<Task>) => {
             const index = state.localTasks.findIndex(
                 (task) => task._id === action.payload._id

@@ -75,11 +75,12 @@ export async function PUT(req: NextRequest) {
         await dbConnect();
         const userId = await getUserId(req);
         const body = await req.json();
-        const { _id, taskName, taskDescription, x, y, progress, zIndex } = body;
+        // updateData can allow for partial updates
+        const { _id, ...updateData } = body;
 
         const updatedTask = await Task.findOneAndUpdate(
             { _id: _id, user: userId },
-            { taskName, taskDescription, x, y, progress, zIndex },
+            { $set: updateData },
             { new: true, runValidators: true }
         );
 

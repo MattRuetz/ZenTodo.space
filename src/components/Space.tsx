@@ -191,6 +191,7 @@ const Space: React.FC<SpaceProps> = ({ spaceId, onLoaded }) => {
             )}
             {session ? (
                 <>
+                    {/* resetTasks exist after reload - their z-ind has been set to viable minimum */}
                     {(resetTasks.length > 0 ? resetTasks : tasks).map(
                         (task) => (
                             <TaskCard
