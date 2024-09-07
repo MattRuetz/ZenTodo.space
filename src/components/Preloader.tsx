@@ -49,7 +49,7 @@ const Preloader: React.FC<PreloaderProps> = ({ fadeOut }) => {
                 fadeOut ? 'opacity-0' : 'opacity-100'
             }`}
         >
-            <span className="loading loading-infinity text-slate-600 loading-lg"></span>
+            <span className="loading loading-ring text-slate-600 loading-lg"></span>
             <p className="mt-4 text-slate-600">Loading space...</p>
             <p className="mt-2 text-md text-neutral-content italic max-w-md text-center">
                 "{quote}"

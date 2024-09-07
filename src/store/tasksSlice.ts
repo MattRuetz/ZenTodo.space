@@ -54,7 +54,6 @@ export const updateTask = createAsyncThunk(
     'tasks/updateTask',
     async (task: Task, { rejectWithValue }) => {
         try {
-            console.log(task);
             const response = await fetch('/api/tasks', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
@@ -107,6 +106,14 @@ export const tasksSlice = createSlice({
             const localId = uuidv4(); // Generate a temporary local ID
             state.localTasks.push({ ...action.payload, _id: localId });
         },
+        updateTask: (state, action: PayloadAction<Task>) => {
+            const index = state.tasks.findIndex(
+                (task) => task._id === action.payload._id
+            );
+            if (index !== -1) {
+                state.tasks[index] = action.payload;
+            }
+        },
         updateLocalTask: (state, action: PayloadAction<Task>) => {
             const index = state.localTasks.findIndex(
                 (task) => task._id === action.payload._id
@@ -148,7 +155,6 @@ export const tasksSlice = createSlice({
                 if (index !== -1) {
                     state.tasks[index] = action.payload;
                 }
-                console.log('State after update:', state.tasks); // Add this log
             })
             .addCase(deleteTask.fulfilled, (state, action) => {
                 state.tasks = state.tasks.filter(

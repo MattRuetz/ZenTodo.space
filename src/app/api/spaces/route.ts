@@ -1,5 +1,5 @@
 // src/app/api/spaces/route.ts
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
 import Space from '@/models/Space';
 import { getServerSession } from 'next-auth/next';
@@ -17,7 +17,7 @@ export async function GET() {
     return NextResponse.json(spaces);
 }
 
-export async function POST(request: Request) {
+export async function POST(req: NextRequest) {
     await connectToDatabase();
     const session = await getServerSession(authOptions);
 
@@ -25,11 +25,12 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { name, color } = await request.json();
+    const { name, color } = await req.json();
     const newSpace = await Space.create({
         name,
         color,
         userId: session.user.id,
+        maxZIndex: 1, // Initialize maxZIndex to 1
     });
 
     return NextResponse.json(newSpace);

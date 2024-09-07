@@ -36,6 +36,7 @@ const SuperSpace = () => {
         const newSpace = {
             name: `Space ${spaces.length + 1}`,
             color: '#' + Math.floor(Math.random() * 16777215).toString(16),
+            maxZIndex: 1,
         };
         dispatch(createSpace(newSpace));
     };

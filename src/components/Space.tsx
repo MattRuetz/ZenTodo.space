@@ -1,14 +1,15 @@
 // src/components/Space.tsx
 'use client';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useSession } from 'next-auth/react';
 import { createSelector } from '@reduxjs/toolkit';
 import TaskCard from './TaskCard';
 import SignUpForm from './SignUpForm';
 import { RootState, AppDispatch } from '../store/store';
-import { addLocalTask, fetchTasks } from '../store/tasksSlice';
+import { addLocalTask, fetchTasks, updateTask } from '../store/tasksSlice';
 import { TaskProgress, Task } from '@/types';
+import { updateSpaceMaxZIndex, fetchSpaceMaxZIndex } from '../store/spaceSlice';
 
 // Memoized selectors
 const selectTasksForSpace = createSelector(
@@ -16,11 +17,18 @@ const selectTasksForSpace = createSelector(
         (state: RootState) => state.tasks.tasks,
         (state: RootState, spaceId: string) => spaceId,
     ],
-    (tasks, spaceId) => tasks.filter((task) => task.spaceId === spaceId)
+    (tasks, spaceId) => tasks.filter((task) => task.space === spaceId)
 );
 
 const selectLocalTasks = (state: RootState) => state.tasks.localTasks;
 const selectTaskStatus = (state: RootState) => state.tasks.status;
+const selectCurrentSpace = createSelector(
+    [
+        (state: RootState) => state.spaces.spaces,
+        (_, spaceId: string) => spaceId,
+    ],
+    (spaces, spaceId) => spaces.find((space) => space._id === spaceId)
+);
 
 interface SpaceProps {
     spaceId: string;
@@ -29,6 +37,9 @@ interface SpaceProps {
 
 const Space: React.FC<SpaceProps> = ({ spaceId, onLoaded }) => {
     const dispatch = useDispatch<AppDispatch>();
+    const currentSpace = useSelector((state: RootState) =>
+        selectCurrentSpace(state, spaceId)
+    );
     const tasks = useSelector((state: RootState) =>
         selectTasksForSpace(state, spaceId)
     );
@@ -40,16 +51,32 @@ const Space: React.FC<SpaceProps> = ({ spaceId, onLoaded }) => {
     const [formPosition, setFormPosition] = useState({ x: 0, y: 0 });
     const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
     const cursorEffectRef = useRef<HTMLDivElement>(null);
+    const [maxZIndex, setMaxZIndex] = useState(currentSpace?.maxZIndex || 1);
+    const [resetTasks, setResetTasks] = useState<Task[]>([]);
+    const initialLoadComplete = useRef(false);
+
+    const getNewZIndex = useCallback(() => {
+        const newZIndex = maxZIndex + 1 || 1;
+
+        setMaxZIndex(newZIndex);
+        dispatch(updateSpaceMaxZIndex({ spaceId, maxZIndex: newZIndex }));
+        return newZIndex;
+    }, [maxZIndex, spaceId, dispatch]);
 
     useEffect(() => {
         const loadTasks = async () => {
-            if (sessionStatus === 'authenticated' && taskStatus === 'idle') {
+            if (
+                sessionStatus === 'authenticated' &&
+                taskStatus === 'idle' &&
+                !initialLoadComplete.current
+            ) {
                 try {
                     await dispatch(fetchTasks(spaceId));
-                    onLoaded(); // Signal that loading is complete
+                    initialLoadComplete.current = true;
                 } catch (error) {
                     console.error('Error fetching tasks:', error);
-                    onLoaded(); // Signal loading complete even on error
+                } finally {
+                    onLoaded(); // Signal that loading is complete
                 }
             } else if (
                 sessionStatus !== 'loading' &&
@@ -61,6 +88,42 @@ const Space: React.FC<SpaceProps> = ({ spaceId, onLoaded }) => {
 
         loadTasks();
     }, [sessionStatus, taskStatus, dispatch, spaceId, onLoaded]);
+
+    useEffect(() => {
+        if (tasks.length > 0 && initialLoadComplete.current) {
+            const sortedTasks = [...tasks].sort((a, b) => a.zIndex - b.zIndex);
+
+            const updatedTasks = sortedTasks.map((task, index) => ({
+                ...task,
+                zIndex: index + 1,
+            }));
+
+            setResetTasks(updatedTasks);
+
+            // Fetch maxZIndex from the server
+            dispatch(fetchSpaceMaxZIndex(spaceId))
+                .then((action) => {
+                    if (fetchSpaceMaxZIndex.fulfilled.match(action)) {
+                        setMaxZIndex(action.payload);
+                    }
+                })
+                .catch((error) => {
+                    console.error('Error fetching maxZIndex:', error);
+                });
+
+            // Reset the flag so this doesn't run again
+            initialLoadComplete.current = false;
+        }
+    }, [tasks, spaceId, dispatch]);
+
+    useEffect(() => {
+        if (resetTasks.length > 0) {
+            resetTasks.forEach((task) => {
+                dispatch(updateTask(task));
+            });
+            setResetTasks([]);
+        }
+    }, [resetTasks, dispatch]);
 
     useEffect(() => {
         const handleMouseMove = (e: MouseEvent) => {
@@ -97,7 +160,8 @@ const Space: React.FC<SpaceProps> = ({ spaceId, onLoaded }) => {
                 y: e.clientY,
                 progress: 'Not Started' as TaskProgress,
                 isVirgin: true, // Mark as local
-                spaceId: spaceId,
+                space: spaceId,
+                zIndex: getNewZIndex(), //new tasks on top
             };
             dispatch(addLocalTask(newTask));
         }
@@ -127,14 +191,17 @@ const Space: React.FC<SpaceProps> = ({ spaceId, onLoaded }) => {
             )}
             {session ? (
                 <>
-                    {tasks.map((task) => (
-                        <TaskCard
-                            key={task._id}
-                            task={task}
-                            onDragStart={handleDragStart}
-                            onDragStop={handleDragStop}
-                        />
-                    ))}
+                    {(resetTasks.length > 0 ? resetTasks : tasks).map(
+                        (task) => (
+                            <TaskCard
+                                key={task._id}
+                                task={task}
+                                onDragStart={handleDragStart}
+                                onDragStop={handleDragStop}
+                                getNewZIndex={getNewZIndex}
+                            />
+                        )
+                    )}
                     {localTasks.map((task) => (
                         <TaskCard
                             key={task._id}
@@ -142,6 +209,7 @@ const Space: React.FC<SpaceProps> = ({ spaceId, onLoaded }) => {
                             onDragStart={handleDragStart}
                             onDragStop={handleDragStop}
                             isVirgin={true}
+                            getNewZIndex={getNewZIndex}
                         />
                     ))}
                 </>

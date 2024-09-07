@@ -26,18 +26,55 @@ export const fetchSpaces = createAsyncThunk('spaces/fetchSpaces', async () => {
 
 export const createSpace = createAsyncThunk(
     'spaces/createSpace',
-    async (spaceData: SpaceData) => {
-        const response = await fetch('/api/spaces', {
-            method: 'POST',
+    async (spaceData: Omit<SpaceData, '_id'>, { rejectWithValue }) => {
+        try {
+            const response = await fetch('/api/spaces', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(spaceData),
+            });
+            if (!response.ok) {
+                throw new Error('Failed to create space');
+            }
+            return await response.json();
+        } catch (error) {
+            return rejectWithValue((error as Error).message);
+        }
+    }
+);
+
+export const updateSpaceMaxZIndex = createAsyncThunk(
+    'spaces/updateMaxZIndex',
+    async ({ spaceId, maxZIndex }: { spaceId: string; maxZIndex: number }) => {
+        const response = await fetch(`/api/spaces/${spaceId}`, {
+            method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(spaceData),
+            body: JSON.stringify({ maxZIndex }),
         });
         if (!response.ok) {
-            throw new Error('Failed to create space');
+            throw new Error('Failed to update space maxZIndex');
         }
-        return response.json();
+        return await response.json();
+    }
+);
+
+export const fetchSpaceMaxZIndex = createAsyncThunk(
+    'spaces/fetchSpaceMaxZIndex',
+    async (spaceId: string, { rejectWithValue }) => {
+        try {
+            const response = await fetch(`/api/spaces/${spaceId}/maxZIndex`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch space maxZIndex');
+            }
+            const data = await response.json();
+            return data.maxZIndex;
+        } catch (error) {
+            return rejectWithValue((error as Error).message);
+        }
     }
 );
 
@@ -73,6 +110,28 @@ const spaceSlice = createSlice({
             })
             .addCase(createSpace.fulfilled, (state, action) => {
                 state.spaces.push(action.payload);
+            })
+            .addCase(updateSpaceMaxZIndex.fulfilled, (state, action) => {
+                const space = state.spaces.find(
+                    (s) => s._id === action.payload.spaceId
+                );
+                if (space) {
+                    space.maxZIndex = action.payload.maxZIndex;
+                }
+            })
+            .addCase(fetchSpaceMaxZIndex.fulfilled, (state, action) => {
+                const space = state.spaces.find(
+                    (s) => s._id === action.meta.arg
+                );
+                if (space) {
+                    space.maxZIndex = action.payload;
+                }
+                if (
+                    state.currentSpace &&
+                    state.currentSpace._id === action.meta.arg
+                ) {
+                    state.currentSpace.maxZIndex = action.payload;
+                }
             });
     },
 });

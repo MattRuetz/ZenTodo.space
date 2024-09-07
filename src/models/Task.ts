@@ -9,7 +9,7 @@ interface ITask extends Document {
     taskName: string;
     taskDescription: string;
     progress: TaskProgress;
-    spaceId: { type: String; required: true };
+    space: { type: String; required: true };
 }
 
 const TaskSchema = new mongoose.Schema({
@@ -17,6 +17,7 @@ const TaskSchema = new mongoose.Schema({
     taskDescription: { type: String, required: false },
     x: { type: Number, required: true },
     y: { type: Number, required: true },
+    zIndex: { type: Number, required: true, default: 1 },
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     space: {
         type: mongoose.Schema.Types.ObjectId,
@@ -32,6 +33,19 @@ const TaskSchema = new mongoose.Schema({
 
 // Add this line to create the compound index
 TaskSchema.index({ userId: 1, spaceId: 1 });
+
+TaskSchema.pre('save', async function (next) {
+    if (this.isNew && !this.zIndex) {
+        const space = await mongoose.model('Space').findById(this.space);
+        if (space) {
+            this.zIndex = (space.maxZIndex || 0) + 1;
+            await space.updateOne({ maxZIndex: this.zIndex });
+        } else {
+            this.zIndex = 1;
+        }
+    }
+    next();
+});
 
 export default mongoose.models.Task ||
     mongoose.model<ITask>('Task', TaskSchema);

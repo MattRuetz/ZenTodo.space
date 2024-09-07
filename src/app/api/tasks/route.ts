@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../auth/[...nextauth]/route';
 import dbConnect from '@/lib/mongodb';
 import Task from '@/models/Task';
+import Space from '@/models/Space'; // Assuming Space model is imported
 
 async function getUserId(req: NextRequest) {
     const session = await getServerSession(authOptions);
@@ -37,17 +38,31 @@ export async function POST(req: NextRequest) {
         await dbConnect();
         const userId = await getUserId(req);
         const body = await req.json();
-        const task = new Task({ ...body, user: userId });
-        await task.save();
-        return NextResponse.json({ task }, { status: 201 });
+        const { taskName, taskDescription, x, y, progress, space } = body;
+
+        // Get the current maxZIndex for the space and increment it
+        const currentSpace = await Space.findById(space);
+        const newZIndex = (currentSpace.maxZIndex || 0) + 1;
+
+        const newTask = new Task({
+            taskName,
+            taskDescription,
+            x,
+            y,
+            progress,
+            space,
+            user: userId,
+            zIndex: newZIndex, // Set the zIndex here
+        });
+
+        const savedTask = await newTask.save();
+
+        // Update the space's maxZIndex
+        await Space.findByIdAndUpdate(space, { maxZIndex: newZIndex });
+
+        return NextResponse.json({ task: savedTask }, { status: 201 });
     } catch (error) {
-        console.error(error);
-        if (error instanceof Error && error.message === 'Unauthorized') {
-            return NextResponse.json(
-                { error: 'Unauthorized' },
-                { status: 401 }
-            );
-        }
+        console.error('Error creating task:', error);
         return NextResponse.json(
             { error: 'Failed to create task' },
             { status: 500 }
@@ -60,14 +75,11 @@ export async function PUT(req: NextRequest) {
         await dbConnect();
         const userId = await getUserId(req);
         const body = await req.json();
-        const { _id } = body;
-
-        // Filtering out user and isVirgin from req
-        const { user, ...updateData } = body;
+        const { _id, taskName, taskDescription, x, y, progress, zIndex } = body;
 
         const updatedTask = await Task.findOneAndUpdate(
-            { _id, user: userId },
-            updateData,
+            { _id: _id, user: userId },
+            { taskName, taskDescription, x, y, progress, zIndex },
             { new: true, runValidators: true }
         );
 
@@ -81,12 +93,6 @@ export async function PUT(req: NextRequest) {
         return NextResponse.json({ task: updatedTask }, { status: 200 });
     } catch (error) {
         console.error('Error updating task:', error);
-        if (error instanceof Error && error.message === 'Unauthorized') {
-            return NextResponse.json(
-                { error: 'Unauthorized' },
-                { status: 401 }
-            );
-        }
         return NextResponse.json(
             { error: 'Failed to update task' },
             { status: 500 }

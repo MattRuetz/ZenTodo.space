@@ -13,8 +13,6 @@ import {
     removeLocalTask,
 } from '../store/tasksSlice';
 import { AppDispatch } from '../store/store';
-import { defaultSerializeQueryArgs } from '@reduxjs/toolkit/query';
-import DragHandle from './DragHandle';
 import TaskCardToolBar from './TaskCardToolBar';
 import { Task, TaskProgress } from '@/types';
 import DraggableArea from './DraggableArea';
@@ -24,6 +22,7 @@ interface TaskCardProps {
     onDragStart: () => void;
     onDragStop: () => void;
     isVirgin?: boolean;
+    getNewZIndex: () => number;
 }
 
 const TaskCard: React.FC<TaskCardProps> = ({
@@ -31,6 +30,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
     onDragStart,
     onDragStop,
     isVirgin = false,
+    getNewZIndex,
 }) => {
     const dispatch = useDispatch<AppDispatch>();
     const [localTask, setLocalTask] = useState(task);
@@ -40,6 +40,8 @@ const TaskCard: React.FC<TaskCardProps> = ({
     const [opacity, setOpacity] = useState(1);
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
     const [deletingTasks, setDeletingTasks] = useState<Set<string>>(new Set());
+    const [isDragging, setIsDragging] = useState(false);
+    const [zIndex, setZIndex] = useState(1);
 
     // Debounced update function
     const debouncedUpdate = useCallback(
@@ -75,15 +77,27 @@ const TaskCard: React.FC<TaskCardProps> = ({
         }
     };
 
+    const handleDragStart = (e: any, data: any) => {
+        const newZIndex = getNewZIndex();
+        setIsDragging(true);
+        setLocalTask((prevTask) => ({ ...prevTask, zIndex: newZIndex }));
+        onDragStart();
+    };
+
     const handleDragStop = (e: any, data: any) => {
         const updatedTask = { ...localTask, x: data.x, y: data.y };
         setLocalTask(updatedTask);
+        updateTaskInStore(updatedTask);
+        setIsDragging(false);
+        onDragStop();
+    };
+
+    const updateTaskInStore = (updatedTask: Task) => {
         if (isVirgin) {
             dispatch(updateLocalTask(updatedTask));
         } else {
             dispatch(updateTask(updatedTask));
         }
-        onDragStop();
     };
 
     // Delete Non-local tasks
@@ -158,14 +172,25 @@ const TaskCard: React.FC<TaskCardProps> = ({
             defaultPosition={{ x: task.x, y: task.y }}
             bounds="parent"
             handle=".draggable-area"
-            onStart={onDragStart}
+            onStart={handleDragStart}
             onStop={handleDragStop}
         >
             <div
                 className="absolute w-60 bg-base-300 shadow cursor-move flex flex-col space-y-2 rounded-xl"
-                style={{ opacity }}
+                style={{
+                    opacity,
+                    zIndex: localTask.zIndex,
+                }}
                 onMouseEnter={() => setIsHovering(true)}
                 onMouseLeave={() => setIsHovering(false)}
+                onClick={() => {
+                    const newZIndex = getNewZIndex();
+                    setLocalTask((prevTask) => ({
+                        ...prevTask,
+                        zIndex: newZIndex,
+                    }));
+                    updateTaskInStore({ ...localTask, zIndex: newZIndex });
+                }}
             >
                 <DraggableArea className="p-4">
                     <input

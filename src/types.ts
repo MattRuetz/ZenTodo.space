@@ -14,24 +14,34 @@ export interface Task {
     y: number;
     progress: TaskProgress;
     isVirgin: boolean;
-    spaceId: String;
+    space: String;
+    zIndex: number; // Add this line
+    // subtasks: string[]; // Array of subtask IDs
+    // parentTask?: string; // ID of the parent task, if this is a subtask
 }
 
 export interface SpaceData {
     _id?: string;
     name: string;
     color: string;
+    maxZIndex: number;
 }
 
 // NextAuth type extensions
 declare module 'next-auth' {
     interface User {
         id: string;
+        name?: string | null;
+        email?: string | null;
+        image?: string | null;
     }
 
     interface Session {
         user: User & {
             id: string;
+            name?: string | null;
+            email?: string | null;
+            image?: string | null;
         };
     }
 }

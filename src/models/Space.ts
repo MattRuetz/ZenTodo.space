@@ -9,7 +9,6 @@ interface ISpace extends Document {
 }
 
 const SpaceSchema = new mongoose.Schema({
-    _id: { type: String, required: true },
     name: { type: String, required: true },
     color: { type: String, required: true },
     userId: {
@@ -17,6 +16,7 @@ const SpaceSchema = new mongoose.Schema({
         ref: 'User',
         required: true,
     },
+    maxZIndex: { type: Number, default: 1 },
 });
 
 export default mongoose.models.Space || mongoose.model('Space', SpaceSchema);
