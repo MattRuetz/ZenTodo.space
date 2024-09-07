@@ -30,5 +30,8 @@ const TaskSchema = new mongoose.Schema({
     },
 });
 
+// Add this line to create the compound index
+TaskSchema.index({ userId: 1, spaceId: 1 });
+
 export default mongoose.models.Task ||
     mongoose.model<ITask>('Task', TaskSchema);

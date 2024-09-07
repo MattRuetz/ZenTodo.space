@@ -1,25 +1,36 @@
 'use client';
 // src/components/SuperSpace.tsx
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchSpaces, createSpace, setCurrentSpace } from '@/store/spaceSlice';
 import Space from './Space';
 import { AppDispatch, RootState } from '@/store/store';
 import { SpaceData } from '@/types';
 import ControlPanel from './ControlPanel';
+import Preloader from './Preloader';
+import { useSession } from 'next-auth/react';
 
 const SuperSpace = () => {
     const dispatch = useDispatch<AppDispatch>();
-    const { spaces, currentSpace, status, error } = useSelector(
+    const { spaces, currentSpace, status } = useSelector(
         (state: RootState) => state.spaces
     );
-    const [isZoomedOut, setIsZoomedOut] = React.useState(false);
+    const [isZoomedOut, setIsZoomedOut] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [fadeOut, setFadeOut] = useState(false);
+    const { data: session, status: sessionStatus } = useSession();
 
     useEffect(() => {
-        if (status === 'idle') {
-            dispatch(fetchSpaces());
+        if (sessionStatus === 'authenticated' && status === 'idle') {
+            dispatch(fetchSpaces()).then(() => {
+                setFadeOut(true);
+                setTimeout(() => setIsLoading(false), 500); // Delay to allow fade-out animation
+            });
+        } else if (sessionStatus === 'unauthenticated') {
+            setFadeOut(true);
+            setTimeout(() => setIsLoading(false), 500);
         }
-    }, [status, dispatch]);
+    }, [sessionStatus, status, dispatch]);
 
     const addSpace = () => {
         const newSpace = {
@@ -32,6 +43,10 @@ const SuperSpace = () => {
     const toggleZoom = () => {
         setIsZoomedOut(!isZoomedOut);
     };
+
+    if (isLoading) {
+        return <Preloader fadeOut={fadeOut} />;
+    }
 
     return (
         <div className="relative w-full h-full">
@@ -60,19 +75,24 @@ const SuperSpace = () => {
                     </div>
                 </div>
             ) : (
-                currentSpace && (
+                (currentSpace || !session) && (
                     <>
-                        <Space spaceId={currentSpace._id ?? ''} />
-                        <ControlPanel />
+                        <Space
+                            spaceId={currentSpace?._id ?? ''}
+                            onLoaded={() => setIsLoading(false)}
+                        />
+                        {session && <ControlPanel />}
                     </>
                 )
             )}
-            <button
-                onClick={toggleZoom}
-                className="absolute bottom-4 right-4 bg-blue-500 text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl"
-            >
-                {isZoomedOut ? '↩' : '↪'}
-            </button>
+            {session && (
+                <button
+                    onClick={toggleZoom}
+                    className="absolute bottom-4 right-4 bg-blue-500 text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl"
+                >
+                    {isZoomedOut ? '↩' : '↪'}
+                </button>
+            )}
         </div>
     );
 };

@@ -1,3 +1,4 @@
+import Task from '@/models/Task';
 import mongoose from 'mongoose';
 
 const MONGODB_URI = process.env.MONGODB_URI;
@@ -45,6 +46,9 @@ async function dbConnect() {
         cached.promise = null;
         throw e;
     }
+
+    // Ensure indexes are created
+    await Task.syncIndexes();
 
     return cached.conn;
 }
