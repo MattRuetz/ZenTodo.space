@@ -98,6 +98,37 @@ export const deleteTask = createAsyncThunk(
     }
 );
 
+export const mergeTasks = createAsyncThunk(
+    'tasks/mergeTasks',
+    async (
+        {
+            targetTaskId,
+            sourceTaskId,
+        }: { targetTaskId: string; sourceTaskId: string },
+        { rejectWithValue }
+    ) => {
+        try {
+            const response = await fetch('/api/tasks/merge', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ targetTaskId, sourceTaskId }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to merge tasks');
+            }
+
+            const data = await response.json();
+            return data.mergedTask;
+        } catch (error) {
+            if (error instanceof Error) {
+                return rejectWithValue(error.message);
+            }
+            return rejectWithValue('An unknown error occurred');
+        }
+    }
+);
+
 export const tasksSlice = createSlice({
     name: 'tasks',
     initialState,
@@ -151,6 +182,17 @@ export const tasksSlice = createSlice({
             .addCase(deleteTask.fulfilled, (state, action) => {
                 state.tasks = state.tasks.filter(
                     (task) => task._id !== action.payload
+                );
+            })
+            .addCase(mergeTasks.fulfilled, (state, action) => {
+                const mergedTaskIndex = state.tasks.findIndex(
+                    (task) => task._id === action.payload._id
+                );
+                if (mergedTaskIndex !== -1) {
+                    state.tasks[mergedTaskIndex] = action.payload;
+                }
+                state.tasks = state.tasks.filter(
+                    (task) => task._id !== action.meta.arg.sourceTaskId
                 );
             });
     },

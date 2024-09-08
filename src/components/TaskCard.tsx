@@ -11,6 +11,7 @@ import {
     addTask,
     updateLocalTask,
     removeLocalTask,
+    mergeTasks,
 } from '../store/tasksSlice';
 import { AppDispatch, RootState } from '../store/store';
 import TaskCardToolBar from './TaskCardToolBar';
@@ -62,6 +63,15 @@ const TaskCard: React.FC<TaskCardProps> = ({
     const [isDraggingOver, setIsDraggingOver] = useState(false);
     const [isDropped, setIsDropped] = useState(false);
 
+    const draggingCardIdRef = useRef<string | null>(null);
+
+    useEffect(() => {
+        console.log('setting draggingCardIdRef.current to', draggingCardId);
+        if (draggingCardId) {
+            draggingCardIdRef.current = draggingCardId;
+        }
+    }, [draggingCardId]);
+
     const updateTaskInStore = useCallback(
         (updatedTask: Task) => {
             if (isVirgin) {
@@ -103,6 +113,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
                 return newTask;
             });
             dispatch(setGlobalDragging(false));
+            console.log('setting draggingCardId to null');
             dispatch(setDraggingCardId(null));
             onDragStop();
         },
@@ -111,7 +122,19 @@ const TaskCard: React.FC<TaskCardProps> = ({
 
     useEffect(() => {
         const handleGlobalMouseMove = (e: MouseEvent) => {
-            if (
+            if (resizingRef.current && cardRef.current) {
+                const dx = e.clientX - startPosRef.current.x;
+                const dy = e.clientY - startPosRef.current.y;
+                const newWidth = Math.min(
+                    Math.max(startSizeRef.current.width + dx, 150),
+                    350
+                );
+                const newHeight = Math.min(
+                    Math.max(startSizeRef.current.height + dy, 200),
+                    500
+                );
+                setCardSize({ width: newWidth, height: newHeight });
+            } else if (
                 isGlobalDragging &&
                 draggingCardId !== task._id &&
                 cardRef.current
@@ -136,15 +159,21 @@ const TaskCard: React.FC<TaskCardProps> = ({
         };
 
         const handleGlobalMouseUp = () => {
-            if (isDraggingOver) {
+            resizingRef.current = false;
+
+            console.log('isDraggingOver', isDraggingOver);
+            console.log('draggingCardIdRef.current', draggingCardIdRef.current);
+
+            if (isDraggingOver && draggingCardIdRef.current) {
                 setIsDropped(true);
-                // AI TASK MERGE
-                // dispatch(
-                //     mergeTasks({
-                //         targetTaskId: task._id,
-                //         sourceTaskId: draggingCardId,
-                //     })
-                // );
+
+                dispatch(
+                    mergeTasks({
+                        targetTaskId: task._id ?? '',
+                        sourceTaskId: draggingCardIdRef.current,
+                    })
+                );
+                draggingCardIdRef.current = null;
 
                 // Here you can add logic to handle the drop, e.g., updating task relationships
                 setTimeout(() => {
@@ -342,35 +371,6 @@ const TaskCard: React.FC<TaskCardProps> = ({
         }
     }, []);
 
-    const handleMouseMove = useCallback((e: MouseEvent) => {
-        if (resizingRef.current && cardRef.current) {
-            const dx = e.clientX - startPosRef.current.x;
-            const dy = e.clientY - startPosRef.current.y;
-            const newWidth = Math.min(
-                Math.max(startSizeRef.current.width + dx, 150),
-                350
-            );
-            const newHeight = Math.min(
-                Math.max(startSizeRef.current.height + dy, 200),
-                500
-            );
-            setCardSize({ width: newWidth, height: newHeight });
-        }
-    }, []);
-
-    useEffect(() => {
-        const handleMouseUp = () => {
-            resizingRef.current = false;
-        };
-
-        document.addEventListener('mousemove', handleMouseMove);
-        document.addEventListener('mouseup', handleMouseUp);
-        return () => {
-            document.removeEventListener('mousemove', handleMouseMove);
-            document.removeEventListener('mouseup', handleMouseUp);
-        };
-    }, [handleMouseMove]);
-
     return (
         <Draggable
             defaultPosition={{ x: task.x, y: task.y }}
@@ -386,7 +386,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
                         ? ' border-blue-500'
                         : isDropped
                         ? ' border-green-500'
-                        : 'border-base-300'
+                        : ''
                 }`}
                 style={{
                     opacity,

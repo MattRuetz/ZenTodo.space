@@ -10,6 +10,7 @@
     "format": "prettier --write ."
   },
   "dependencies": {
+    "@huggingface/inference": "^2.8.0",
     "@reduxjs/toolkit": "^2.2.7",
     "bcrypt": "^5.1.1",
     "lodash.debounce": "^4.0.8",
