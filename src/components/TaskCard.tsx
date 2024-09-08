@@ -16,7 +16,7 @@ import { AppDispatch, RootState } from '../store/store';
 import TaskCardToolBar from './TaskCardToolBar';
 import { Task, TaskProgress } from '@/types';
 import DraggableArea from './DraggableArea';
-import { setGlobalDragging } from '../store/uiSlice';
+import { setGlobalDragging, setDraggingCardId } from '../store/uiSlice';
 
 interface TaskCardProps {
     task: Task;
@@ -36,6 +36,9 @@ const TaskCard: React.FC<TaskCardProps> = ({
     const dispatch = useDispatch<AppDispatch>();
     const isGlobalDragging = useSelector(
         (state: RootState) => state.ui.isGlobalDragging
+    );
+    const draggingCardId = useSelector(
+        (state: RootState) => state.ui.draggingCardId
     );
     const [localTask, setLocalTask] = useState(task);
     const [isHovering, setIsHovering] = useState(false);
@@ -58,7 +61,6 @@ const TaskCard: React.FC<TaskCardProps> = ({
 
     const [isDraggingOver, setIsDraggingOver] = useState(false);
     const [isDropped, setIsDropped] = useState(false);
-    const [isBeingDragged, setIsBeingDragged] = useState(false);
 
     const updateTaskInStore = useCallback(
         (updatedTask: Task) => {
@@ -86,11 +88,11 @@ const TaskCard: React.FC<TaskCardProps> = ({
         (e: DraggableEvent, data: DraggableData) => {
             const newZIndex = getNewZIndex();
             setLocalTask((prevTask) => ({ ...prevTask, zIndex: newZIndex }));
-            setIsBeingDragged(true);
             dispatch(setGlobalDragging(true));
+            dispatch(setDraggingCardId(task._id ?? ''));
             onDragStart();
         },
-        [getNewZIndex, onDragStart, dispatch]
+        [getNewZIndex, onDragStart, dispatch, task._id]
     );
 
     const handleDragStop = useCallback(
@@ -100,32 +102,54 @@ const TaskCard: React.FC<TaskCardProps> = ({
                 debouncedUpdate(newTask);
                 return newTask;
             });
-            setIsBeingDragged(false);
             dispatch(setGlobalDragging(false));
+            dispatch(setDraggingCardId(null));
             onDragStop();
         },
-        [debouncedUpdate, onDragStop, dispatch]
+        [debouncedUpdate, onDragStop, dispatch, task._id]
     );
 
     useEffect(() => {
         const handleGlobalMouseMove = (e: MouseEvent) => {
-            if (isGlobalDragging && !isBeingDragged && cardRef.current) {
-                const rect = cardRef.current.getBoundingClientRect();
-                const isOver =
-                    e.clientX >= rect.left &&
-                    e.clientX <= rect.right &&
-                    e.clientY >= rect.top &&
-                    e.clientY <= rect.bottom;
-                setIsDraggingOver(isOver);
+            if (
+                isGlobalDragging &&
+                draggingCardId !== task._id &&
+                cardRef.current
+            ) {
+                const elementsUnderCursor = document.elementsFromPoint(
+                    e.clientX,
+                    e.clientY
+                );
+                const cardsUnderCursor = elementsUnderCursor.filter((el) =>
+                    el.classList.contains('task-card')
+                );
+
+                if (
+                    cardsUnderCursor.length > 0 &&
+                    cardsUnderCursor[1] === cardRef.current
+                ) {
+                    setIsDraggingOver(true);
+                } else {
+                    setIsDraggingOver(false);
+                }
             }
         };
 
         const handleGlobalMouseUp = () => {
             if (isDraggingOver) {
                 setIsDropped(true);
-                console.log('Dropped');
+                // AI TASK MERGE
+                // dispatch(
+                //     mergeTasks({
+                //         targetTaskId: task._id,
+                //         sourceTaskId: draggingCardId,
+                //     })
+                // );
+
                 // Here you can add logic to handle the drop, e.g., updating task relationships
-                setTimeout(() => setIsDropped(false), 500);
+                setTimeout(() => {
+                    setIsDropped(false);
+                }, 500);
             }
             setIsDraggingOver(false);
         };
@@ -137,7 +161,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
             document.removeEventListener('mousemove', handleGlobalMouseMove);
             document.removeEventListener('mouseup', handleGlobalMouseUp);
         };
-    }, [isGlobalDragging, isBeingDragged, isDraggingOver]);
+    }, [isGlobalDragging, draggingCardId, task._id, isDraggingOver, dispatch]);
 
     const updateCardSize = useCallback(() => {
         if (
@@ -301,7 +325,6 @@ const TaskCard: React.FC<TaskCardProps> = ({
     );
 
     const handleMouseDown = useCallback((e: React.MouseEvent) => {
-        console.log('Mouse down event fired', e);
         if (cardRef.current) {
             const rect = cardRef.current.getBoundingClientRect();
             const isRightEdge = e.clientX > rect.right - 10;
@@ -315,7 +338,6 @@ const TaskCard: React.FC<TaskCardProps> = ({
                 };
                 e.preventDefault();
                 e.stopPropagation();
-                console.log('Resize started', resizingRef.current);
             }
         }
     }, []);
@@ -359,9 +381,13 @@ const TaskCard: React.FC<TaskCardProps> = ({
         >
             <div
                 ref={cardRef}
-                className={`absolute bg-base-300 shadow cursor-move flex flex-col space-y-2 rounded-xl border-2 ${
-                    isDraggingOver ? ' border-blue-500' : 'border-base-300'
-                } ${isDropped ? ' border-green-500' : ''}`}
+                className={`task-card absolute bg-base-300 shadow cursor-move flex flex-col space-y-2 rounded-xl border-4 ${
+                    isDraggingOver
+                        ? ' border-blue-500'
+                        : isDropped
+                        ? ' border-green-500'
+                        : 'border-base-300'
+                }`}
                 style={{
                     opacity,
                     zIndex: localTask.zIndex,
@@ -378,6 +404,8 @@ const TaskCard: React.FC<TaskCardProps> = ({
                 }}
                 onClick={handleCardClick}
                 onMouseDown={handleMouseDown}
+                onMouseEnter={() => setIsHoveringCallback(true)}
+                onMouseLeave={() => setIsHoveringCallback(false)}
             >
                 <div className="flex flex-col h-full">
                     <DraggableArea className="flex flex-col h-full p-4">
