@@ -1,19 +1,16 @@
 // src/store/tasksSlice.ts
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { v4 as uuidv4 } from 'uuid'; // You might need to install this package
 import { Task } from '../types';
 import { RootState } from './store';
 
 interface TasksState {
     tasks: Task[];
-    localTasks: Task[];
     status: 'idle' | 'loading' | 'succeeded' | 'failed';
     error: string | null;
 }
 
 const initialState: TasksState = {
     tasks: [],
-    localTasks: [],
     status: 'idle',
     error: null,
 };
@@ -31,13 +28,12 @@ export const fetchTasks = createAsyncThunk(
 
 export const addTask = createAsyncThunk(
     'tasks/addTask',
-    async (task: Task, { rejectWithValue }) => {
+    async (task: Omit<Task, '_id'>, { rejectWithValue }) => {
         try {
-            const { _id, isVirgin, ...taskData } = task; // Remove _id and isVirgin before sending to server
             const response = await fetch('/api/tasks', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(taskData),
+                body: JSON.stringify(task),
             });
             if (!response.ok) throw new Error('Failed to add task');
             const data = await response.json();
@@ -161,24 +157,6 @@ export const tasksSlice = createSlice({
     name: 'tasks',
     initialState,
     reducers: {
-        addLocalTask: (state, action: PayloadAction<Task>) => {
-            const localId = uuidv4(); // Generate a temporary local ID
-            state.localTasks.push({ ...action.payload, _id: localId });
-        },
-        updateLocalTask: (state, action: PayloadAction<Task>) => {
-            const index = state.localTasks.findIndex(
-                (task) => task._id === action.payload._id
-            );
-            if (index !== -1) {
-                state.localTasks[index] = action.payload;
-                state.localTasks[index].isVirgin = false;
-            }
-        },
-        removeLocalTask: (state, action: PayloadAction<string>) => {
-            state.localTasks = state.localTasks.filter(
-                (task) => task._id !== action.payload
-            );
-        },
         hideNewChildTask: (state, action: PayloadAction<string>) => {
             state.tasks = state.tasks.filter(
                 (task) => task._id !== action.payload
@@ -200,10 +178,6 @@ export const tasksSlice = createSlice({
             })
             .addCase(addTask.fulfilled, (state, action) => {
                 state.tasks.push(action.payload);
-                // Remove the corresponding local task if it exists
-                state.localTasks = state.localTasks.filter(
-                    (task) => task._id !== action.meta.arg._id
-                );
             })
             .addCase(updateTask.fulfilled, (state, action) => {
                 const index = state.tasks.findIndex(
@@ -220,11 +194,6 @@ export const tasksSlice = createSlice({
             });
     },
 });
-export const {
-    addLocalTask,
-    updateLocalTask,
-    removeLocalTask,
-    hideNewChildTask,
-} = tasksSlice.actions;
+export const { hideNewChildTask } = tasksSlice.actions;
 
 export default tasksSlice.reducer;

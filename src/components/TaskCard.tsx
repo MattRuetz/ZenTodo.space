@@ -15,8 +15,6 @@ import {
     updateTask,
     deleteTask,
     addTask,
-    updateLocalTask,
-    removeLocalTask,
     hideNewChildTask,
     addChildTask,
 } from '../store/tasksSlice';
@@ -26,12 +24,12 @@ import { Task, TaskProgress } from '@/types';
 import DraggableArea from './DraggableArea';
 import { setGlobalDragging, setDraggingCardId } from '../store/uiSlice';
 import { useThrottle } from '@/hooks/useThrottle';
+import { useFadeOutEffect } from '@/hooks/useFadeOutEffect';
 
 interface TaskCardProps {
     task: Task;
     onDragStart: () => void;
     onDragStop: () => void;
-    isVirgin?: boolean;
     getNewZIndex: () => number;
     subtasks: Task[];
 }
@@ -40,7 +38,6 @@ const TaskCard: React.FC<TaskCardProps> = ({
     task,
     onDragStart,
     onDragStop,
-    isVirgin = false,
     getNewZIndex,
     subtasks,
 }) => {
@@ -65,18 +62,11 @@ const TaskCard: React.FC<TaskCardProps> = ({
 
     const updateTaskInStore = useCallback(
         (updatedFields: Partial<Task>) => {
-            if (isVirgin) {
-                if (updatedFields.taskName || updatedFields.taskDescription) {
-                    dispatch(addTask({ ...task, ...updatedFields }));
-                } else {
-                    dispatch(updateLocalTask({ ...task, ...updatedFields }));
-                }
-            } else {
-                task._id &&
-                    dispatch(updateTask({ _id: task._id, ...updatedFields }));
+            if (task._id) {
+                dispatch(updateTask({ _id: task._id, ...updatedFields }));
             }
         },
-        [dispatch, isVirgin, task]
+        [dispatch, task._id]
     );
 
     const debouncedUpdate = useCallback(debounce(updateTaskInStore, 500), [
@@ -84,8 +74,9 @@ const TaskCard: React.FC<TaskCardProps> = ({
     ]);
 
     const pushChildTask = useCallback(
-        (childTask: Task, parentTaskId: string) => {
-            dispatch(addChildTask({ childTask, parentTaskId }));
+        async (childTask: Task, parentTaskId: string) => {
+            // Assume task is already in the database
+            await dispatch(addChildTask({ childTask, parentTaskId }));
             dispatch(hideNewChildTask(childTask._id ?? ''));
         },
         [dispatch]
@@ -213,20 +204,18 @@ const TaskCard: React.FC<TaskCardProps> = ({
 
     const handleInputBlur = useCallback(
         (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+            setIsFocused(false);
             const fieldName = e.target.name;
             const fieldValue = e.target.value;
+            console.log('BLUR: fieldValue', fieldValue);
 
-            setTimeout(() => {
-                if (!isFocused) {
-                    const updatedFields = { [fieldName]: fieldValue };
-                    setLocalTask((prevTask) => {
-                        const newTask = { ...prevTask, ...updatedFields };
-                        debouncedUpdate(newTask);
-                        return newTask;
-                    });
-                    updateCardSize();
-                }
-            }, 100);
+            const updatedFields = { [fieldName]: fieldValue };
+            setLocalTask((prevTask) => {
+                const newTask = { ...prevTask, ...updatedFields };
+                debouncedUpdate(newTask);
+                return newTask;
+            });
+            updateCardSize();
         },
         [debouncedUpdate, updateCardSize, isFocused]
     );
@@ -246,11 +235,6 @@ const TaskCard: React.FC<TaskCardProps> = ({
         async (taskId: string) => {
             if (deletingTasks.has(taskId)) return;
 
-            if (isVirgin) {
-                dispatch(removeLocalTask(localTask._id ?? ''));
-                return;
-            }
-
             setDeletingTasks((prev) => new Set(prev).add(taskId));
             try {
                 await dispatch(deleteTask(taskId)).unwrap();
@@ -262,7 +246,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
                 });
             }
         },
-        [deletingTasks, dispatch, isVirgin, localTask._id]
+        [deletingTasks, dispatch, localTask._id]
     );
 
     const handleCardClick = useCallback(() => {
@@ -278,62 +262,12 @@ const TaskCard: React.FC<TaskCardProps> = ({
         });
     }, [getNewZIndex, dispatch]);
 
-    const useFadeOutEffect = useCallback(
-        (localTask: Task, isHovering: boolean, isFocused: boolean) => {
-            const [opacity, setOpacity] = useState(1);
-            const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-            useEffect(() => {
-                let fadeInterval: NodeJS.Timeout;
-                const shouldFadeOut =
-                    !isHovering &&
-                    !isFocused &&
-                    !localTask.taskName &&
-                    !localTask.taskDescription;
-
-                if (shouldFadeOut) {
-                    timeoutRef.current = setTimeout(() => {
-                        fadeInterval = setInterval(() => {
-                            setOpacity((prevOpacity) => {
-                                if (prevOpacity <= 0) {
-                                    clearInterval(fadeInterval);
-                                    handleDelete(localTask._id ?? '');
-                                    return 0;
-                                }
-                                return prevOpacity - 0.1;
-                            });
-                        }, 100);
-                    }, 3000);
-                } else {
-                    if (timeoutRef.current) {
-                        clearTimeout(timeoutRef.current);
-                    }
-                    setOpacity(1);
-                }
-
-                return () => {
-                    if (timeoutRef.current) {
-                        clearTimeout(timeoutRef.current);
-                    }
-                    if (fadeInterval) {
-                        clearInterval(fadeInterval);
-                    }
-                };
-            }, [
-                isHovering,
-                isFocused,
-                localTask.taskName,
-                localTask.taskDescription,
-                handleDelete,
-                localTask._id,
-            ]);
-
-            return opacity;
-        },
-        [handleDelete]
+    const opacity = useFadeOutEffect(
+        localTask,
+        isHovering,
+        isFocused,
+        handleDelete
     );
-
-    const opacity = useFadeOutEffect(localTask, isHovering, isFocused);
 
     const handleMouseDown = useCallback((e: React.MouseEvent) => {
         if (cardRef.current) {
@@ -413,6 +347,34 @@ const TaskCard: React.FC<TaskCardProps> = ({
         [updateCardSize]
     );
 
+    const getSubtaskProgresses = (subtasks: Task[]) => {
+        return subtasks.reduce(
+            (acc, subtask) => {
+                switch (subtask.progress) {
+                    case 'Not Started':
+                        acc.notStarted++;
+                        break;
+                    case 'In Progress':
+                        acc.inProgress++;
+                        break;
+                    case 'Blocked':
+                        acc.blocked++;
+                        break;
+                    case 'Complete':
+                        acc.complete++;
+                        break;
+                }
+                return acc;
+            },
+            {
+                notStarted: 0,
+                inProgress: 0,
+                blocked: 0,
+                complete: 0,
+            }
+        );
+    };
+
     return (
         <Draggable
             defaultPosition={{ x: task.x, y: task.y }}
@@ -475,31 +437,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
                         <TaskCardToolBar
                             progress={localTask.progress}
                             onProgressChange={handleProgressChange}
-                            subtaskProgresses={subtasks.reduce(
-                                (acc, subtask) => {
-                                    switch (subtask.progress) {
-                                        case 'Not Started':
-                                            acc.notStarted++;
-                                            break;
-                                        case 'In Progress':
-                                            acc.inProgress++;
-                                            break;
-                                        case 'Blocked':
-                                            acc.blocked++;
-                                            break;
-                                        case 'Complete':
-                                            acc.complete++;
-                                            break;
-                                    }
-                                    return acc;
-                                },
-                                {
-                                    notStarted: 0,
-                                    inProgress: 0,
-                                    blocked: 0,
-                                    complete: 0,
-                                }
-                            )}
+                            subtaskProgresses={getSubtaskProgresses(subtasks)}
                         />
                     </DraggableArea>
                 </div>

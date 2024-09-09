@@ -17,6 +17,8 @@ export async function PUT(req: NextRequest) {
             );
         }
         const { subtaskIdString, parentTaskIdString } = await req.json();
+        console.log('subtaskIdString', subtaskIdString);
+        console.log('parentTaskIdString', parentTaskIdString);
         const subtaskId = new ObjectId(subtaskIdString);
         const parentTaskId = new ObjectId(parentTaskIdString);
 
