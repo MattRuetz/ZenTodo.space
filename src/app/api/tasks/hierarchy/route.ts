@@ -3,11 +3,7 @@ import dbConnect from '@/lib/mongodb';
 import Task from '@/models/Task';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../../auth/[...nextauth]/route';
-import OpenAI from 'openai';
-
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-});
+import { ObjectId } from 'mongodb';
 
 export async function PUT(req: NextRequest) {
     try {
@@ -20,8 +16,11 @@ export async function PUT(req: NextRequest) {
                 { status: 401 }
             );
         }
+        const { subtaskIdString, parentTaskIdString } = await req.json();
+        const subtaskId = new ObjectId(subtaskIdString);
+        const parentTaskId = new ObjectId(parentTaskIdString);
 
-        const { subtaskId, parentTaskId } = await req.json();
+        console.log(subtaskId, parentTaskId);
 
         const [subtask, parentTask] = await Promise.all([
             Task.findById(subtaskId),
@@ -36,17 +35,12 @@ export async function PUT(req: NextRequest) {
         }
 
         subtask.parentTask = parentTaskId;
+        if (!Array.isArray(parentTask.subtasks)) {
+            parentTask.subtasks = [];
+        }
         parentTask.subtasks.push(subtaskId);
 
         await Promise.all([subtask.save(), parentTask.save()]);
-
-        // AI-assisted description update
-        const updatedDescription = await updateTaskDescriptionWithAI(
-            parentTask,
-            subtask
-        );
-        parentTask.taskDescription = updatedDescription;
-        await parentTask.save();
 
         return NextResponse.json({
             updatedParentTask: parentTask,
@@ -59,27 +53,4 @@ export async function PUT(req: NextRequest) {
             { status: 500 }
         );
     }
-}
-
-async function updateTaskDescriptionWithAI(parentTask: any, subtask: any) {
-    const prompt = `
-        Given the following parent task:
-        Title: ${parentTask.taskName}
-        Description: ${parentTask.taskDescription}
-
-        And a new subtask:
-        Title: ${subtask.taskName}
-        Description: ${subtask.taskDescription}
-
-        Please rewrite the parent task description to include mention of the subtask, ensuring the new description is concise and well-integrated.
-    `;
-
-    const response = await openai.chat.completions.create({
-        model: 'gpt-3.5-turbo',
-        messages: [{ role: 'user', content: prompt }],
-        max_tokens: 150,
-    });
-
-    const content = response.choices[0]?.message?.content;
-    return content ? content.trim() : '';
 }

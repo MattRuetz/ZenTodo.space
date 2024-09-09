@@ -17,9 +17,18 @@ const selectTasksForSpace = createSelector(
         (state: RootState) => state.tasks.tasks,
         (state: RootState, spaceId: string) => spaceId,
     ],
-    (tasks, spaceId) => tasks.filter((task) => task.space === spaceId)
+    (tasks, spaceId) => {
+        const tasksInSpace = tasks.filter(
+            (task) => task.space === spaceId && !task.parentTask
+        );
+        return tasksInSpace.map((task) => ({
+            ...task,
+            subtasks: tasks.filter(
+                (subtask) => subtask.parentTask === task._id
+            ),
+        }));
+    }
 );
-
 const selectLocalTasks = (state: RootState) => state.tasks.localTasks;
 const selectTaskStatus = (state: RootState) => state.tasks.status;
 const selectCurrentSpace = createSelector(
@@ -119,7 +128,9 @@ const Space: React.FC<SpaceProps> = ({ spaceId, onLoaded }) => {
     useEffect(() => {
         if (resetTasks.length > 0) {
             resetTasks.forEach((task) => {
-                dispatch(updateTask(task));
+                if (task._id) {
+                    dispatch(updateTask({ ...task, _id: task._id }));
+                }
             });
             setResetTasks([]);
         }
@@ -162,6 +173,8 @@ const Space: React.FC<SpaceProps> = ({ spaceId, onLoaded }) => {
                 isVirgin: true, // Mark as local
                 space: spaceId,
                 zIndex: getNewZIndex(), //new tasks on top
+                subtasks: [],
+                parentTask: '',
             };
             dispatch(addLocalTask(newTask));
         }
@@ -196,10 +209,11 @@ const Space: React.FC<SpaceProps> = ({ spaceId, onLoaded }) => {
                         (task) => (
                             <TaskCard
                                 key={task._id}
-                                task={task}
+                                task={task as Task}
                                 onDragStart={handleDragStart}
                                 onDragStop={handleDragStop}
                                 getNewZIndex={getNewZIndex}
+                                subtasks={task.subtasks}
                             />
                         )
                     )}
@@ -211,6 +225,7 @@ const Space: React.FC<SpaceProps> = ({ spaceId, onLoaded }) => {
                             onDragStop={handleDragStop}
                             isVirgin={true}
                             getNewZIndex={getNewZIndex}
+                            subtasks={task.subtasks}
                         />
                     ))}
                 </>

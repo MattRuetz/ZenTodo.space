@@ -4,15 +4,20 @@ import { FaTrash, FaCheck, FaChevronDown } from 'react-icons/fa';
 import { TaskProgress } from '@/types';
 
 export interface TaskCardToolBarProps {
-    onDelete: () => void;
     progress: TaskProgress;
     onProgressChange: (progress: TaskProgress) => void;
+    subtaskProgresses: {
+        notStarted: number;
+        inProgress: number;
+        blocked: number;
+        complete: number;
+    };
 }
 
 const TaskCardToolBar: React.FC<TaskCardToolBarProps> = ({
-    onDelete,
     progress,
     onProgressChange,
+    subtaskProgresses,
 }) => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [shouldOpenDropdown, setShouldOpenDropdown] = useState(false);
@@ -61,7 +66,7 @@ const TaskCardToolBar: React.FC<TaskCardToolBarProps> = ({
 
     useEffect(() => {
         setIsDropdownOpen(shouldOpenDropdown);
-    }, [shouldOpenDropdown]);
+    }, [shouldOpenDropdown, subtaskProgresses]);
 
     return (
         <div className="task-card-toolbar flex flex-col w-full">
@@ -87,18 +92,33 @@ const TaskCardToolBar: React.FC<TaskCardToolBarProps> = ({
                         }`}
                     />
                 </div>
-                <button
-                    onClick={onDelete}
-                    className="delete-button no-drag text-red-500 hover:text-red-700 transition-colors duration-200"
-                    aria-label="Delete task"
-                >
-                    <FaTrash size={14} />
-                </button>
+                <div className="flex items-center gap-2 bg-slate-900 rounded-full p-2">
+                    {subtaskProgresses.notStarted > 0 && (
+                        <div className="subtask-count bg-gray-200 text-gray-700 rounded-full px-2 py-1 text-xs">
+                            {subtaskProgresses.notStarted}
+                        </div>
+                    )}
+                    {subtaskProgresses.inProgress > 0 && (
+                        <div className="subtask-count bg-yellow-400 text-gray-700 rounded-full px-2 py-1 text-xs">
+                            {subtaskProgresses.inProgress}
+                        </div>
+                    )}
+                    {subtaskProgresses.blocked > 0 && (
+                        <div className="subtask-count bg-red-500 text-gray-700 rounded-full px-2 py-1 text-xs">
+                            {subtaskProgresses.blocked}
+                        </div>
+                    )}
+                    {subtaskProgresses.complete > 0 && (
+                        <div className="subtask-count bg-green-500 text-gray-700 rounded-full px-2 py-1 text-xs">
+                            {subtaskProgresses.complete}
+                        </div>
+                    )}
+                </div>
             </div>
             {isDropdownOpen && (
                 <div
                     ref={dropdownRef}
-                    className="progress-dropdown mt-2 bg-base-100 rounded-md shadow-md"
+                    className="progress-dropdown mt-2 bg-slate-600 rounded-md shadow-md absolute"
                 >
                     {['Not Started', 'In Progress', 'Blocked', 'Complete'].map(
                         (progressOption) => (

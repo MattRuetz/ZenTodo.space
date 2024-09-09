@@ -17,6 +17,8 @@ import {
     addTask,
     updateLocalTask,
     removeLocalTask,
+    hideNewChildTask,
+    addChildTask,
 } from '../store/tasksSlice';
 import { AppDispatch, RootState } from '../store/store';
 import TaskCardToolBar from './TaskCardToolBar';
@@ -31,6 +33,7 @@ interface TaskCardProps {
     onDragStop: () => void;
     isVirgin?: boolean;
     getNewZIndex: () => number;
+    subtasks: Task[];
 }
 
 const TaskCard: React.FC<TaskCardProps> = ({
@@ -39,35 +42,26 @@ const TaskCard: React.FC<TaskCardProps> = ({
     onDragStop,
     isVirgin = false,
     getNewZIndex,
+    subtasks,
 }) => {
     const dispatch = useDispatch<AppDispatch>();
-    const isGlobalDragging = useSelector(
-        (state: RootState) => state.ui.isGlobalDragging
-    );
-    const draggingCardId = useSelector(
-        (state: RootState) => state.ui.draggingCardId
+    const { isGlobalDragging, draggingCardId } = useSelector(
+        (state: RootState) => state.ui
     );
     const [localTask, setLocalTask] = useState(task);
     const [isHovering, setIsHovering] = useState(false);
     const [isFocused, setIsFocused] = useState(false);
     const [deletingTasks, setDeletingTasks] = useState<Set<string>>(new Set());
+    const [cardSize, setCardSize] = useState({ width: 240, height: 200 });
+    const [isDraggingOver, setIsDraggingOver] = useState(false);
+    const [isDropped, setIsDropped] = useState(false);
 
-    const [cardSize, setCardSize] = useState<{ width: number; height: number }>(
-        {
-            width: 240,
-            height: 200,
-        }
-    );
     const cardRef = useRef<HTMLDivElement>(null);
     const resizingRef = useRef(false);
     const startPosRef = useRef({ x: 0, y: 0 });
     const startSizeRef = useRef({ width: 0, height: 0 });
-
     const taskNameRef = useRef<HTMLInputElement>(null);
     const taskDescriptionRef = useRef<HTMLTextAreaElement>(null);
-
-    const [isDraggingOver, setIsDraggingOver] = useState(false);
-    const [isDropped, setIsDropped] = useState(false);
 
     const updateTaskInStore = useCallback(
         (updatedFields: Partial<Task>) => {
@@ -85,11 +79,16 @@ const TaskCard: React.FC<TaskCardProps> = ({
         [dispatch, isVirgin, task]
     );
 
-    const debouncedUpdate = useCallback(
-        debounce((updatedTask: Task) => {
-            updateTaskInStore(updatedTask);
-        }, 500),
-        [updateTaskInStore]
+    const debouncedUpdate = useCallback(debounce(updateTaskInStore, 500), [
+        updateTaskInStore,
+    ]);
+
+    const pushChildTask = useCallback(
+        (childTask: Task, parentTaskId: string) => {
+            dispatch(addChildTask({ childTask, parentTaskId }));
+            dispatch(hideNewChildTask(childTask._id ?? ''));
+        },
+        [dispatch]
     );
 
     const handleDragStart = useCallback(
@@ -113,8 +112,30 @@ const TaskCard: React.FC<TaskCardProps> = ({
             dispatch(setGlobalDragging(false));
             dispatch(setDraggingCardId(null));
             onDragStop();
+
+            const clientX = 'clientX' in e ? e.clientX : e.touches[0].clientX;
+            const clientY = 'clientY' in e ? e.clientY : e.touches[0].clientY;
+            const elementsUnderCursor = document.elementsFromPoint(
+                clientX,
+                clientY
+            );
+            const cardsUnderCursor = elementsUnderCursor.filter((el) =>
+                el.classList.contains('task-card')
+            );
+            const droppedOnCard = cardsUnderCursor[1];
+            if (droppedOnCard && droppedOnCard !== e.target) {
+                console.log('Dropped card ID:', task._id);
+                console.log(
+                    'Target card ID:',
+                    droppedOnCard.getAttribute('data-task-id')
+                );
+                pushChildTask(
+                    task,
+                    droppedOnCard.getAttribute('data-task-id') ?? ''
+                );
+            }
         },
-        [debouncedUpdate, onDragStop, dispatch]
+        [debouncedUpdate, onDragStop, dispatch, task._id]
     );
 
     useEffect(() => {
@@ -131,27 +152,18 @@ const TaskCard: React.FC<TaskCardProps> = ({
                 const cardsUnderCursor = elementsUnderCursor.filter((el) =>
                     el.classList.contains('task-card')
                 );
-
-                if (
+                setIsDraggingOver(
                     cardsUnderCursor.length > 0 &&
-                    cardsUnderCursor[1] === cardRef.current
-                ) {
-                    setIsDraggingOver(true);
-                } else {
-                    setIsDraggingOver(false);
-                }
+                        cardsUnderCursor[1] === cardRef.current
+                );
             }
         };
 
         const handleGlobalMouseUp = () => {
             if (isDraggingOver) {
                 setIsDropped(true);
-                // SUBTASK ADDING
-
-                // Here you can add logic to handle the drop, e.g., updating task relationships
-                setTimeout(() => {
-                    setIsDropped(false);
-                }, 500);
+                // Something that happens when you drop a card
+                setTimeout(() => setIsDropped(false), 500);
             }
             setIsDraggingOver(false);
         };
@@ -163,7 +175,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
             document.removeEventListener('mousemove', handleGlobalMouseMove);
             document.removeEventListener('mouseup', handleGlobalMouseUp);
         };
-    }, [isGlobalDragging, draggingCardId, task._id, isDraggingOver, dispatch]);
+    }, [isGlobalDragging, draggingCardId, task._id, isDraggingOver]);
 
     const updateCardSize = useCallback(() => {
         if (
@@ -188,7 +200,6 @@ const TaskCard: React.FC<TaskCardProps> = ({
                 return prev;
             });
 
-            // Adjust textarea height
             taskDescriptionRef.current.style.height = `${Math.min(
                 descriptionScrollHeight,
                 newHeight - 120
@@ -215,7 +226,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
                     });
                     updateCardSize();
                 }
-            }, 100); // 100ms delay, adjust as needed
+            }, 100);
         },
         [debouncedUpdate, updateCardSize, isFocused]
     );
@@ -324,15 +335,6 @@ const TaskCard: React.FC<TaskCardProps> = ({
 
     const opacity = useFadeOutEffect(localTask, isHovering, isFocused);
 
-    const setIsHoveringCallback = useCallback(
-        (value: boolean) => setIsHovering(value),
-        []
-    );
-    const setIsFocusedCallback = useCallback(
-        (value: boolean) => setIsFocused(value),
-        []
-    );
-
     const handleMouseDown = useCallback((e: React.MouseEvent) => {
         if (cardRef.current) {
             const rect = cardRef.current.getBoundingClientRect();
@@ -393,13 +395,22 @@ const TaskCard: React.FC<TaskCardProps> = ({
             height: `${cardSize.height}px`,
             transition: 'border-color 0.3s ease',
             resize: 'both',
-            overflow: 'auto',
+            overflow: 'visible',
             minWidth: '250px',
             maxWidth: '500px',
             minHeight: '230px',
             maxHeight: '500px',
         }),
         [opacity, localTask.zIndex, cardSize.width, cardSize.height]
+    );
+
+    const handleInputChange = useCallback(
+        (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+            const { name, value } = e.target;
+            setLocalTask((prev) => ({ ...prev, [name]: value }));
+            if (name === 'taskDescription') updateCardSize();
+        },
+        [updateCardSize]
     );
 
     return (
@@ -414,32 +425,31 @@ const TaskCard: React.FC<TaskCardProps> = ({
                 ref={cardRef}
                 className={`task-card absolute bg-base-300 shadow cursor-move flex flex-col space-y-2 rounded-xl border-4 ${
                     isDraggingOver
-                        ? ' border-blue-500'
+                        ? 'border-blue-500'
                         : isDropped
-                        ? ' border-green-500'
+                        ? 'border-green-500'
                         : 'border-base-300'
                 }`}
                 style={cardStyle}
                 onClick={handleCardClick}
                 onMouseDown={handleMouseDown}
-                onMouseEnter={() => setIsHoveringCallback(true)}
-                onMouseLeave={() => setIsHoveringCallback(false)}
+                onMouseEnter={() => setIsHovering(true)}
+                onMouseLeave={() => setIsHovering(false)}
+                data-task-id={task._id}
             >
                 <div className="flex flex-col h-full">
-                    <DraggableArea className="flex flex-col h-full p-4">
+                    <DraggableArea
+                        className="flex flex-col h-full p-4"
+                        onDelete={() => handleDelete(task._id ?? '')}
+                    >
                         <input
                             ref={taskNameRef}
                             type="text"
                             name="taskName"
                             placeholder="Task Name"
                             value={localTask.taskName}
-                            onChange={(e) => {
-                                setLocalTask((prev) => ({
-                                    ...prev,
-                                    taskName: e.target.value,
-                                }));
-                            }}
-                            onFocus={() => setIsFocusedCallback(true)}
+                            onChange={handleInputChange}
+                            onFocus={() => setIsFocused(true)}
                             onBlur={handleInputBlur}
                             className="input input-bordered w-full p-4 pt-2 pb-2 h-8 mb-2 resize-none"
                             maxLength={35}
@@ -449,29 +459,47 @@ const TaskCard: React.FC<TaskCardProps> = ({
                             name="taskDescription"
                             placeholder="Task Description"
                             value={localTask.taskDescription}
-                            onChange={(e) => {
-                                setLocalTask((prev) => ({
-                                    ...prev,
-                                    taskDescription: e.target.value,
-                                }));
-                                updateCardSize(); // Call updateCardSize on each change
-                            }}
-                            onFocus={() => setIsFocusedCallback(true)}
+                            onChange={handleInputChange}
+                            onFocus={() => setIsFocused(true)}
                             onBlur={handleInputBlur}
                             className="textarea textarea-bordered w-full p-4 pt-2 pb-2 resize-none flex-grow"
                             style={{
                                 width: '100%',
                                 boxSizing: 'border-box',
                                 minHeight: '100px',
-                                maxHeight: `500px`, // Subtract space for name input and toolbar
-                                overflowY: 'auto', // Allow scrolling if content exceeds maxHeight
+                                maxHeight: '500px',
+                                overflowY: 'auto',
                             }}
                             maxLength={500}
                         />
                         <TaskCardToolBar
-                            onDelete={() => handleDelete(task._id ?? '')}
                             progress={localTask.progress}
                             onProgressChange={handleProgressChange}
+                            subtaskProgresses={subtasks.reduce(
+                                (acc, subtask) => {
+                                    switch (subtask.progress) {
+                                        case 'Not Started':
+                                            acc.notStarted++;
+                                            break;
+                                        case 'In Progress':
+                                            acc.inProgress++;
+                                            break;
+                                        case 'Blocked':
+                                            acc.blocked++;
+                                            break;
+                                        case 'Complete':
+                                            acc.complete++;
+                                            break;
+                                    }
+                                    return acc;
+                                },
+                                {
+                                    notStarted: 0,
+                                    inProgress: 0,
+                                    blocked: 0,
+                                    complete: 0,
+                                }
+                            )}
                         />
                     </DraggableArea>
                 </div>

@@ -90,6 +90,50 @@ export const updateTask = createAsyncThunk(
     }
 );
 
+export const addChildTask = createAsyncThunk(
+    'tasks/addChildTask',
+    async (
+        { childTask, parentTaskId }: { childTask: Task; parentTaskId: string },
+        { getState, rejectWithValue }
+    ) => {
+        try {
+            console.log('made it to add child task');
+            const state = getState() as RootState;
+            const parentTask = state.tasks.tasks.find(
+                (t: Task) => t._id === parentTaskId
+            );
+
+            if (!parentTask) {
+                throw new Error('Parent task not found');
+            }
+            if (!childTask) {
+                throw new Error('No child task provided');
+            }
+
+            const response = await fetch('/api/tasks/hierarchy', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    subtaskIdString: childTask._id,
+                    parentTaskIdString: parentTask._id,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to update task hierarchy');
+            }
+
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            if (error instanceof Error) {
+                return rejectWithValue(error.message);
+            }
+            return rejectWithValue('An unknown error occurred');
+        }
+    }
+);
+
 export const deleteTask = createAsyncThunk(
     'tasks/deleteTask',
     async (taskId: string, { rejectWithValue }) => {
@@ -127,10 +171,16 @@ export const tasksSlice = createSlice({
             );
             if (index !== -1) {
                 state.localTasks[index] = action.payload;
+                state.localTasks[index].isVirgin = false;
             }
         },
         removeLocalTask: (state, action: PayloadAction<string>) => {
             state.localTasks = state.localTasks.filter(
+                (task) => task._id !== action.payload
+            );
+        },
+        hideNewChildTask: (state, action: PayloadAction<string>) => {
+            state.tasks = state.tasks.filter(
                 (task) => task._id !== action.payload
             );
         },
@@ -170,7 +220,11 @@ export const tasksSlice = createSlice({
             });
     },
 });
-export const { addLocalTask, updateLocalTask, removeLocalTask } =
-    tasksSlice.actions;
+export const {
+    addLocalTask,
+    updateLocalTask,
+    removeLocalTask,
+    hideNewChildTask,
+} = tasksSlice.actions;
 
 export default tasksSlice.reducer;

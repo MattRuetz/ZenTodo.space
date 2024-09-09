@@ -16,8 +16,8 @@ export interface Task {
     isVirgin: boolean;
     space: String;
     zIndex: number; // Add this line
-    // subtasks: string[]; // Array of subtask IDs
-    // parentTask?: string; // ID of the parent task, if this is a subtask
+    subtasks: Task[]; // Array of subtask IDs
+    parentTask?: string; // ID of the parent task, if this is a subtask
 }
 
 export interface SpaceData {
