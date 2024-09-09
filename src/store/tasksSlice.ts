@@ -2,6 +2,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { v4 as uuidv4 } from 'uuid'; // You might need to install this package
 import { Task } from '../types';
+import { RootState } from './store';
 
 interface TasksState {
     tasks: Task[];
@@ -52,12 +53,26 @@ export const addTask = createAsyncThunk(
 
 export const updateTask = createAsyncThunk(
     'tasks/updateTask',
-    async (task: Task, { rejectWithValue }) => {
+    async (
+        partialTask: Partial<Task> & { _id: string },
+        { getState, rejectWithValue }
+    ) => {
         try {
+            const state = getState() as RootState;
+            const existingTask = state.tasks.tasks.find(
+                (t: Task) => t._id === partialTask._id
+            );
+
+            if (!existingTask) {
+                throw new Error('Task not found');
+            }
+
+            const updatedTask = { ...existingTask, ...partialTask };
+
             const response = await fetch('/api/tasks', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(task),
+                body: JSON.stringify(updatedTask),
             });
 
             if (!response.ok) {

@@ -1,7 +1,13 @@
 // src/components/TaskCard.tsx
 'use client';
 
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, {
+    useState,
+    useCallback,
+    useRef,
+    useEffect,
+    useMemo,
+} from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import Draggable, { DraggableEvent, DraggableData } from 'react-draggable';
 import debounce from 'lodash.debounce';
@@ -17,6 +23,7 @@ import TaskCardToolBar from './TaskCardToolBar';
 import { Task, TaskProgress } from '@/types';
 import DraggableArea from './DraggableArea';
 import { setGlobalDragging, setDraggingCardId } from '../store/uiSlice';
+import { useThrottle } from '@/hooks/useThrottle';
 
 interface TaskCardProps {
     task: Task;
@@ -63,18 +70,19 @@ const TaskCard: React.FC<TaskCardProps> = ({
     const [isDropped, setIsDropped] = useState(false);
 
     const updateTaskInStore = useCallback(
-        (updatedTask: Task) => {
+        (updatedFields: Partial<Task>) => {
             if (isVirgin) {
-                if (updatedTask.taskName || updatedTask.taskDescription) {
-                    dispatch(addTask(updatedTask));
+                if (updatedFields.taskName || updatedFields.taskDescription) {
+                    dispatch(addTask({ ...task, ...updatedFields }));
                 } else {
-                    dispatch(updateLocalTask(updatedTask));
+                    dispatch(updateLocalTask({ ...task, ...updatedFields }));
                 }
             } else {
-                dispatch(updateTask(updatedTask));
+                task._id &&
+                    dispatch(updateTask({ _id: task._id, ...updatedFields }));
             }
         },
-        [dispatch, isVirgin]
+        [dispatch, isVirgin, task]
     );
 
     const debouncedUpdate = useCallback(
@@ -106,7 +114,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
             dispatch(setDraggingCardId(null));
             onDragStop();
         },
-        [debouncedUpdate, onDragStop, dispatch, task._id]
+        [debouncedUpdate, onDragStop, dispatch]
     );
 
     useEffect(() => {
@@ -138,13 +146,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
         const handleGlobalMouseUp = () => {
             if (isDraggingOver) {
                 setIsDropped(true);
-                // AI TASK MERGE
-                // dispatch(
-                //     mergeTasks({
-                //         targetTaskId: task._id,
-                //         sourceTaskId: draggingCardId,
-                //     })
-                // );
+                // SUBTASK ADDING
 
                 // Here you can add logic to handle the drop, e.g., updating task relationships
                 setTimeout(() => {
@@ -173,38 +175,49 @@ const TaskCard: React.FC<TaskCardProps> = ({
             const descriptionScrollHeight =
                 taskDescriptionRef.current.scrollHeight;
 
-            const newWidth = Math.max(nameWidth, 240);
-            const newHeight = descriptionScrollHeight + 120; // Add extra space for name input and toolbar
+            const newWidth = Math.min(Math.max(nameWidth, 240) + 32, 350);
+            const newHeight = Math.min(
+                Math.max(descriptionScrollHeight + 120, 200),
+                500
+            );
 
-            setCardSize((prev) => ({
-                width: Math.min(Math.max(newWidth + 32, prev.width), 350),
-                height: Math.min(Math.max(newHeight, prev.height, 200), 500), // Min 200px, max 500px
-            }));
+            setCardSize((prev) => {
+                if (prev.width !== newWidth || prev.height !== newHeight) {
+                    return { width: newWidth, height: newHeight };
+                }
+                return prev;
+            });
 
-            // Adjust textarea height to match content or card size
-            const maxTextareaHeight = cardSize.height - 120; // Subtract space for name input and toolbar
+            // Adjust textarea height
             taskDescriptionRef.current.style.height = `${Math.min(
                 descriptionScrollHeight,
-                maxTextareaHeight
+                newHeight - 120
             )}px`;
         }
-    }, [cardSize.height]);
+    }, []);
 
     useEffect(() => {
         updateCardSize();
     }, [localTask.taskName, localTask.taskDescription, updateCardSize]);
 
-    const handleInputChange = useCallback(
-        (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-            const updatedFields = { [e.target.name]: e.target.value };
-            setLocalTask((prevTask) => {
-                const newTask = { ...prevTask, ...updatedFields };
-                debouncedUpdate(newTask);
-                return newTask;
-            });
-            updateCardSize();
+    const handleInputBlur = useCallback(
+        (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+            const fieldName = e.target.name;
+            const fieldValue = e.target.value;
+
+            setTimeout(() => {
+                if (!isFocused) {
+                    const updatedFields = { [fieldName]: fieldValue };
+                    setLocalTask((prevTask) => {
+                        const newTask = { ...prevTask, ...updatedFields };
+                        debouncedUpdate(newTask);
+                        return newTask;
+                    });
+                    updateCardSize();
+                }
+            }, 100); // 100ms delay, adjust as needed
         },
-        [debouncedUpdate, updateCardSize]
+        [debouncedUpdate, updateCardSize, isFocused]
     );
 
     const handleProgressChange = useCallback(
@@ -244,76 +257,72 @@ const TaskCard: React.FC<TaskCardProps> = ({
     const handleCardClick = useCallback(() => {
         const newZIndex = getNewZIndex();
         setLocalTask((prevTask) => {
-            const newTask = { ...prevTask, zIndex: newZIndex };
-            updateTaskInStore(newTask);
-            return newTask;
-        });
-    }, [getNewZIndex, updateTaskInStore]);
-
-    // Use it or lose it
-    const useFadeOutEffect = (
-        localTask: Task,
-        isHovering: boolean,
-        isFocused: boolean,
-        handleDelete: (id: string) => void
-    ) => {
-        const [opacity, setOpacity] = useState(1);
-        const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-        useEffect(() => {
-            let fadeInterval: NodeJS.Timeout;
-            const shouldFadeOut =
-                !isHovering &&
-                !isFocused &&
-                !localTask.taskName &&
-                !localTask.taskDescription;
-
-            if (shouldFadeOut) {
-                timeoutRef.current = setTimeout(() => {
-                    fadeInterval = setInterval(() => {
-                        setOpacity((prevOpacity) => {
-                            if (prevOpacity <= 0) {
-                                clearInterval(fadeInterval);
-                                handleDelete(localTask._id ?? '');
-                                return 0;
-                            }
-                            return prevOpacity - 0.1;
-                        });
-                    }, 100);
-                }, 3000);
-            } else {
-                if (timeoutRef.current) {
-                    clearTimeout(timeoutRef.current);
-                }
-                setOpacity(1);
+            const updatedTask = { ...prevTask, zIndex: newZIndex };
+            if (updatedTask._id) {
+                dispatch(
+                    updateTask({ _id: updatedTask._id, zIndex: newZIndex })
+                );
             }
+            return updatedTask;
+        });
+    }, [getNewZIndex, dispatch]);
 
-            return () => {
-                if (timeoutRef.current) {
-                    clearTimeout(timeoutRef.current);
+    const useFadeOutEffect = useCallback(
+        (localTask: Task, isHovering: boolean, isFocused: boolean) => {
+            const [opacity, setOpacity] = useState(1);
+            const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+            useEffect(() => {
+                let fadeInterval: NodeJS.Timeout;
+                const shouldFadeOut =
+                    !isHovering &&
+                    !isFocused &&
+                    !localTask.taskName &&
+                    !localTask.taskDescription;
+
+                if (shouldFadeOut) {
+                    timeoutRef.current = setTimeout(() => {
+                        fadeInterval = setInterval(() => {
+                            setOpacity((prevOpacity) => {
+                                if (prevOpacity <= 0) {
+                                    clearInterval(fadeInterval);
+                                    handleDelete(localTask._id ?? '');
+                                    return 0;
+                                }
+                                return prevOpacity - 0.1;
+                            });
+                        }, 100);
+                    }, 3000);
+                } else {
+                    if (timeoutRef.current) {
+                        clearTimeout(timeoutRef.current);
+                    }
+                    setOpacity(1);
                 }
-                if (fadeInterval) {
-                    clearInterval(fadeInterval);
-                }
-            };
-        }, [
-            isHovering,
-            isFocused,
-            localTask.taskName,
-            localTask.taskDescription,
-            handleDelete,
-            localTask._id,
-        ]);
 
-        return opacity;
-    };
+                return () => {
+                    if (timeoutRef.current) {
+                        clearTimeout(timeoutRef.current);
+                    }
+                    if (fadeInterval) {
+                        clearInterval(fadeInterval);
+                    }
+                };
+            }, [
+                isHovering,
+                isFocused,
+                localTask.taskName,
+                localTask.taskDescription,
+                handleDelete,
+                localTask._id,
+            ]);
 
-    const opacity = useFadeOutEffect(
-        localTask,
-        isHovering,
-        isFocused,
-        handleDelete
+            return opacity;
+        },
+        [handleDelete]
     );
+
+    const opacity = useFadeOutEffect(localTask, isHovering, isFocused);
 
     const setIsHoveringCallback = useCallback(
         (value: boolean) => setIsHovering(value),
@@ -342,21 +351,26 @@ const TaskCard: React.FC<TaskCardProps> = ({
         }
     }, []);
 
-    const handleMouseMove = useCallback((e: MouseEvent) => {
-        if (resizingRef.current && cardRef.current) {
-            const dx = e.clientX - startPosRef.current.x;
-            const dy = e.clientY - startPosRef.current.y;
-            const newWidth = Math.min(
-                Math.max(startSizeRef.current.width + dx, 150),
-                350
-            );
-            const newHeight = Math.min(
-                Math.max(startSizeRef.current.height + dy, 200),
-                500
-            );
-            setCardSize({ width: newWidth, height: newHeight });
-        }
-    }, []);
+    const throttledSetCardSize = useThrottle(setCardSize, 50);
+
+    const handleMouseMove = useCallback(
+        (e: MouseEvent) => {
+            if (resizingRef.current && cardRef.current) {
+                const dx = e.clientX - startPosRef.current.x;
+                const dy = e.clientY - startPosRef.current.y;
+                const newWidth = Math.min(
+                    Math.max(startSizeRef.current.width + dx, 150),
+                    350
+                );
+                const newHeight = Math.min(
+                    Math.max(startSizeRef.current.height + dy, 200),
+                    500
+                );
+                throttledSetCardSize({ width: newWidth, height: newHeight });
+            }
+        },
+        [throttledSetCardSize]
+    );
 
     useEffect(() => {
         const handleMouseUp = () => {
@@ -370,6 +384,23 @@ const TaskCard: React.FC<TaskCardProps> = ({
             document.removeEventListener('mouseup', handleMouseUp);
         };
     }, [handleMouseMove]);
+
+    const cardStyle: React.CSSProperties = useMemo(
+        () => ({
+            opacity,
+            zIndex: localTask.zIndex,
+            width: `${cardSize.width}px`,
+            height: `${cardSize.height}px`,
+            transition: 'border-color 0.3s ease',
+            resize: 'both',
+            overflow: 'auto',
+            minWidth: '250px',
+            maxWidth: '500px',
+            minHeight: '230px',
+            maxHeight: '500px',
+        }),
+        [opacity, localTask.zIndex, cardSize.width, cardSize.height]
+    );
 
     return (
         <Draggable
@@ -388,20 +419,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
                         ? ' border-green-500'
                         : 'border-base-300'
                 }`}
-                style={{
-                    opacity,
-                    zIndex: localTask.zIndex,
-                    width: `${cardSize.width}px`,
-                    height: `${cardSize.height}px`,
-                    transition:
-                        'width 0.1s ease-out, height 0.2s ease-out, border-color 0.3s ease',
-                    resize: 'both',
-                    overflow: 'auto',
-                    minWidth: '250px',
-                    maxWidth: '350px',
-                    minHeight: '230px',
-                    maxHeight: '500px',
-                }}
+                style={cardStyle}
                 onClick={handleCardClick}
                 onMouseDown={handleMouseDown}
                 onMouseEnter={() => setIsHoveringCallback(true)}
@@ -415,9 +433,14 @@ const TaskCard: React.FC<TaskCardProps> = ({
                             name="taskName"
                             placeholder="Task Name"
                             value={localTask.taskName}
-                            onChange={handleInputChange}
+                            onChange={(e) => {
+                                setLocalTask((prev) => ({
+                                    ...prev,
+                                    taskName: e.target.value,
+                                }));
+                            }}
                             onFocus={() => setIsFocusedCallback(true)}
-                            onBlur={() => setIsFocusedCallback(false)}
+                            onBlur={handleInputBlur}
                             className="input input-bordered w-full p-4 pt-2 pb-2 h-8 mb-2 resize-none"
                             maxLength={35}
                         />
@@ -427,17 +450,20 @@ const TaskCard: React.FC<TaskCardProps> = ({
                             placeholder="Task Description"
                             value={localTask.taskDescription}
                             onChange={(e) => {
-                                handleInputChange(e);
+                                setLocalTask((prev) => ({
+                                    ...prev,
+                                    taskDescription: e.target.value,
+                                }));
                                 updateCardSize(); // Call updateCardSize on each change
                             }}
                             onFocus={() => setIsFocusedCallback(true)}
-                            onBlur={() => setIsFocusedCallback(false)}
+                            onBlur={handleInputBlur}
                             className="textarea textarea-bordered w-full p-4 pt-2 pb-2 resize-none flex-grow"
                             style={{
                                 width: '100%',
                                 boxSizing: 'border-box',
                                 minHeight: '100px',
-                                maxHeight: `${cardSize.height}px`, // Subtract space for name input and toolbar
+                                maxHeight: `500px`, // Subtract space for name input and toolbar
                                 overflowY: 'auto', // Allow scrolling if content exceeds maxHeight
                             }}
                             maxLength={500}
@@ -454,4 +480,4 @@ const TaskCard: React.FC<TaskCardProps> = ({
     );
 };
 
-export default TaskCard;
+export default React.memo(TaskCard);
