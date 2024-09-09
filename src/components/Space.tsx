@@ -49,10 +49,7 @@ const Space: React.FC<SpaceProps> = ({ spaceId, onLoaded }) => {
     const currentSpace = useSelector((state: RootState) =>
         selectCurrentSpace(state, spaceId)
     );
-    const tasks = useSelector((state: RootState) =>
-        selectTasksForSpace(state, spaceId)
-    );
-    const taskStatus = useSelector(selectTaskStatus);
+
     const { data: session, status: sessionStatus } = useSession();
     const isDraggingRef = useRef(false);
     const [showSignUpForm, setShowSignUpForm] = useState(false);
@@ -64,6 +61,10 @@ const Space: React.FC<SpaceProps> = ({ spaceId, onLoaded }) => {
     const [canCreateTask, setCanCreateTask] = useState(true);
     const cooldownTime = 500; // 500ms cooldown
     const initialLoadComplete = useRef(false);
+    const tasks = useSelector((state: RootState) =>
+        selectTasksForSpace(state, spaceId)
+    );
+    const taskStatus = useSelector(selectTaskStatus);
 
     const getNewZIndex = useCallback(() => {
         const newZIndex = maxZIndex + 1 || 1;
@@ -75,12 +76,6 @@ const Space: React.FC<SpaceProps> = ({ spaceId, onLoaded }) => {
 
     useEffect(() => {
         const loadTasks = async () => {
-            console.log('loadTasks called', {
-                sessionStatus,
-                taskStatus,
-                initialLoadComplete: initialLoadComplete.current,
-            });
-
             if (
                 sessionStatus === 'authenticated' &&
                 taskStatus === 'idle' &&
@@ -205,9 +200,6 @@ const Space: React.FC<SpaceProps> = ({ spaceId, onLoaded }) => {
         }, 0);
     };
 
-    useEffect(() => {
-        console.log('Tasks state:', tasks);
-    }, [tasks]);
     return (
         <div
             className={`relative w-full h-screen bg-base-100 space-${spaceId}`}

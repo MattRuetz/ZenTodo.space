@@ -16,42 +16,45 @@ export async function PUT(req: NextRequest) {
                 { status: 401 }
             );
         }
+
         const { subtaskIdString, parentTaskIdString } = await req.json();
-        console.log('subtaskIdString', subtaskIdString);
-        console.log('parentTaskIdString', parentTaskIdString);
         const subtaskId = new ObjectId(subtaskIdString);
         const parentTaskId = new ObjectId(parentTaskIdString);
 
-        console.log(subtaskId, parentTaskId);
-
-        const [subtask, parentTask] = await Promise.all([
-            Task.findById(subtaskId),
+        const [parentTask, subtask] = await Promise.all([
             Task.findById(parentTaskId),
+            Task.findById(subtaskId),
         ]);
 
-        if (!subtask || !parentTask) {
+        if (!parentTask || !subtask) {
             return NextResponse.json(
                 { error: 'Task not found' },
                 { status: 404 }
             );
         }
 
-        subtask.parentTask = parentTaskId;
+        // Update parent task
         if (!Array.isArray(parentTask.subtasks)) {
             parentTask.subtasks = [];
         }
-        parentTask.subtasks.push(subtaskId);
+        if (!parentTask.subtasks.includes(subtaskId)) {
+            parentTask.subtasks.push(subtaskId);
+        }
 
-        await Promise.all([subtask.save(), parentTask.save()]);
+        // Update subtask
+        subtask.parentTask = parentTaskId;
+
+        // Save both tasks
+        await Promise.all([parentTask.save(), subtask.save()]);
 
         return NextResponse.json({
-            updatedParentTask: parentTask,
-            updatedSubtask: subtask,
+            updatedParentTask: parentTask.toObject(),
+            updatedSubtask: subtask.toObject(),
         });
     } catch (error) {
         console.error('Error updating task hierarchy:', error);
         return NextResponse.json(
-            { error: 'Internal server error' },
+            { error: 'Internal Server Error' },
             { status: 500 }
         );
     }

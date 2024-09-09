@@ -60,6 +60,10 @@ const TaskCard: React.FC<TaskCardProps> = ({
     const taskNameRef = useRef<HTMLInputElement>(null);
     const taskDescriptionRef = useRef<HTMLTextAreaElement>(null);
 
+    const currentTask = useSelector((state: RootState) =>
+        state.tasks.tasks.find((t) => t._id === task._id)
+    );
+
     const updateTaskInStore = useCallback(
         (updatedFields: Partial<Task>) => {
             if (task._id) {
@@ -76,10 +80,16 @@ const TaskCard: React.FC<TaskCardProps> = ({
     const pushChildTask = useCallback(
         async (childTask: Task, parentTaskId: string) => {
             // Assume task is already in the database
-            await dispatch(addChildTask({ childTask, parentTaskId }));
+            dispatch(addChildTask({ childTask, parentTaskId })).then(() => {
+                // Need to set the local task to task from redux store
+                // to avoid overwriting changes to subtasks array
+                if (currentTask) {
+                    setLocalTask(currentTask);
+                }
+            });
             dispatch(hideNewChildTask(childTask._id ?? ''));
         },
-        [dispatch]
+        [dispatch, currentTask]
     );
 
     const handleDragStart = useCallback(
@@ -115,11 +125,6 @@ const TaskCard: React.FC<TaskCardProps> = ({
             );
             const droppedOnCard = cardsUnderCursor[1];
             if (droppedOnCard && droppedOnCard !== e.target) {
-                console.log('Dropped card ID:', task._id);
-                console.log(
-                    'Target card ID:',
-                    droppedOnCard.getAttribute('data-task-id')
-                );
                 pushChildTask(
                     task,
                     droppedOnCard.getAttribute('data-task-id') ?? ''
@@ -207,7 +212,6 @@ const TaskCard: React.FC<TaskCardProps> = ({
             setIsFocused(false);
             const fieldName = e.target.name;
             const fieldValue = e.target.value;
-            console.log('BLUR: fieldValue', fieldValue);
 
             const updatedFields = { [fieldName]: fieldValue };
             setLocalTask((prevTask) => {
@@ -254,9 +258,9 @@ const TaskCard: React.FC<TaskCardProps> = ({
         setLocalTask((prevTask) => {
             const updatedTask = { ...prevTask, zIndex: newZIndex };
             if (updatedTask._id) {
-                dispatch(
-                    updateTask({ _id: updatedTask._id, zIndex: newZIndex })
-                );
+                // dispatch(
+                //     updateTask({ _id: updatedTask._id, zIndex: newZIndex })
+                // );
             }
             return updatedTask;
         });
@@ -347,33 +351,36 @@ const TaskCard: React.FC<TaskCardProps> = ({
         [updateCardSize]
     );
 
-    const getSubtaskProgresses = (subtasks: Task[]) => {
-        return subtasks.reduce(
-            (acc, subtask) => {
-                switch (subtask.progress) {
-                    case 'Not Started':
-                        acc.notStarted++;
-                        break;
-                    case 'In Progress':
-                        acc.inProgress++;
-                        break;
-                    case 'Blocked':
-                        acc.blocked++;
-                        break;
-                    case 'Complete':
-                        acc.complete++;
-                        break;
+    const getSubtaskProgresses = useCallback(
+        (subtasks: Task[]) => {
+            return subtasks.reduce(
+                (acc, subtask) => {
+                    switch (subtask.progress) {
+                        case 'Not Started':
+                            acc.notStarted++;
+                            break;
+                        case 'In Progress':
+                            acc.inProgress++;
+                            break;
+                        case 'Blocked':
+                            acc.blocked++;
+                            break;
+                        case 'Complete':
+                            acc.complete++;
+                            break;
+                    }
+                    return acc;
+                },
+                {
+                    notStarted: 0,
+                    inProgress: 0,
+                    blocked: 0,
+                    complete: 0,
                 }
-                return acc;
-            },
-            {
-                notStarted: 0,
-                inProgress: 0,
-                blocked: 0,
-                complete: 0,
-            }
-        );
-    };
+            );
+        },
+        [subtasks]
+    );
 
     return (
         <Draggable
@@ -435,9 +442,9 @@ const TaskCard: React.FC<TaskCardProps> = ({
                             maxLength={500}
                         />
                         <TaskCardToolBar
+                            taskId={task._id ?? ''}
                             progress={localTask.progress}
                             onProgressChange={handleProgressChange}
-                            subtaskProgresses={getSubtaskProgresses(subtasks)}
                         />
                     </DraggableArea>
                 </div>

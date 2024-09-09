@@ -93,25 +93,12 @@ export const addChildTask = createAsyncThunk(
         { getState, rejectWithValue }
     ) => {
         try {
-            console.log('made it to add child task');
-            const state = getState() as RootState;
-            const parentTask = state.tasks.tasks.find(
-                (t: Task) => t._id === parentTaskId
-            );
-
-            if (!parentTask) {
-                throw new Error('Parent task not found');
-            }
-            if (!childTask) {
-                throw new Error('No child task provided');
-            }
-
             const response = await fetch('/api/tasks/hierarchy', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     subtaskIdString: childTask._id,
-                    parentTaskIdString: parentTask._id,
+                    parentTaskIdString: parentTaskId,
                 }),
             });
 
@@ -120,7 +107,10 @@ export const addChildTask = createAsyncThunk(
             }
 
             const data = await response.json();
-            return data;
+            return {
+                updatedParentTask: data.updatedParentTask,
+                updatedSubtask: data.updatedSubtask,
+            };
         } catch (error) {
             if (error instanceof Error) {
                 return rejectWithValue(error.message);
@@ -191,9 +181,34 @@ export const tasksSlice = createSlice({
                 state.tasks = state.tasks.filter(
                     (task) => task._id !== action.payload
                 );
+            })
+            .addCase(addChildTask.fulfilled, (state, action) => {
+                const { updatedParentTask, updatedSubtask } = action.payload;
+
+                // Update the parent task
+                const parentIndex = state.tasks.findIndex(
+                    (task) => task._id === updatedParentTask._id
+                );
+                if (parentIndex !== -1) {
+                    state.tasks[parentIndex] = updatedParentTask;
+                }
+
+                // Update or add the child task
+                const childIndex = state.tasks.findIndex(
+                    (task) => task._id === updatedSubtask._id
+                );
+                if (childIndex !== -1) {
+                    state.tasks[childIndex] = updatedSubtask;
+                } else {
+                    state.tasks.push(updatedSubtask);
+                }
             });
     },
 });
+
+export const selectSubtasksByParentId = (state: RootState, parentId: string) =>
+    state.tasks.tasks.filter((task) => task.parentTask === parentId);
+
 export const { hideNewChildTask } = tasksSlice.actions;
 
 export default tasksSlice.reducer;
