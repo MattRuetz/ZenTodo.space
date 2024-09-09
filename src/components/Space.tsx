@@ -7,9 +7,10 @@ import { createSelector } from '@reduxjs/toolkit';
 import TaskCard from './TaskCard';
 import SignUpForm from './SignUpForm';
 import { RootState, AppDispatch } from '../store/store';
-import { addLocalTask, fetchTasks, updateTask } from '../store/tasksSlice';
+import { addTask, fetchTasks, updateTask } from '../store/tasksSlice';
 import { TaskProgress, Task } from '@/types';
 import { updateSpaceMaxZIndex, fetchSpaceMaxZIndex } from '../store/spaceSlice';
+import debounce from 'lodash.debounce';
 
 // Memoized selectors
 const selectTasksForSpace = createSelector(
@@ -29,7 +30,6 @@ const selectTasksForSpace = createSelector(
         }));
     }
 );
-const selectLocalTasks = (state: RootState) => state.tasks.localTasks;
 const selectTaskStatus = (state: RootState) => state.tasks.status;
 const selectCurrentSpace = createSelector(
     [
@@ -52,7 +52,6 @@ const Space: React.FC<SpaceProps> = ({ spaceId, onLoaded }) => {
     const tasks = useSelector((state: RootState) =>
         selectTasksForSpace(state, spaceId)
     );
-    const localTasks = useSelector(selectLocalTasks);
     const taskStatus = useSelector(selectTaskStatus);
     const { data: session, status: sessionStatus } = useSession();
     const isDraggingRef = useRef(false);
@@ -62,6 +61,8 @@ const Space: React.FC<SpaceProps> = ({ spaceId, onLoaded }) => {
     const cursorEffectRef = useRef<HTMLDivElement>(null);
     const [maxZIndex, setMaxZIndex] = useState(currentSpace?.maxZIndex || 1);
     const [resetTasks, setResetTasks] = useState<Task[]>([]);
+    const [canCreateTask, setCanCreateTask] = useState(true);
+    const cooldownTime = 500; // 500ms cooldown
     const initialLoadComplete = useRef(false);
 
     const getNewZIndex = useCallback(() => {
@@ -74,6 +75,12 @@ const Space: React.FC<SpaceProps> = ({ spaceId, onLoaded }) => {
 
     useEffect(() => {
         const loadTasks = async () => {
+            console.log('loadTasks called', {
+                sessionStatus,
+                taskStatus,
+                initialLoadComplete: initialLoadComplete.current,
+            });
+
             if (
                 sessionStatus === 'authenticated' &&
                 taskStatus === 'idle' &&
@@ -157,28 +164,32 @@ const Space: React.FC<SpaceProps> = ({ spaceId, onLoaded }) => {
         }
     }, [cursorPosition]);
 
-    const handleSpaceClick = (e: React.MouseEvent<HTMLDivElement>) => {
-        if (e.target !== e.currentTarget) return;
-        if (isDraggingRef.current) return;
-        if (!session) {
-            setFormPosition({ x: e.clientX, y: e.clientY });
-            setShowSignUpForm(true);
-        } else {
-            const newTask: Task = {
-                taskName: '',
-                taskDescription: '',
-                x: e.clientX,
-                y: e.clientY,
-                progress: 'Not Started' as TaskProgress,
-                isVirgin: true, // Mark as local
-                space: spaceId,
-                zIndex: getNewZIndex(), //new tasks on top
-                subtasks: [],
-                parentTask: '',
-            };
-            dispatch(addLocalTask(newTask));
-        }
-    };
+    const handleSpaceClick = useCallback(
+        (e: React.MouseEvent<HTMLDivElement>) => {
+            if (e.target !== e.currentTarget) return;
+            if (isDraggingRef.current) return;
+            if (!session) {
+                setFormPosition({ x: e.clientX, y: e.clientY });
+                setShowSignUpForm(true);
+            } else if (canCreateTask) {
+                const newTask: Omit<Task, '_id'> = {
+                    taskName: '',
+                    taskDescription: '',
+                    x: e.clientX,
+                    y: e.clientY,
+                    progress: 'Not Started' as TaskProgress,
+                    space: spaceId,
+                    zIndex: getNewZIndex(),
+                    subtasks: [],
+                    parentTask: '',
+                };
+                dispatch(addTask(newTask));
+                setCanCreateTask(false);
+                setTimeout(() => setCanCreateTask(true), cooldownTime);
+            }
+        },
+        [session, canCreateTask, spaceId, getNewZIndex, dispatch]
+    );
 
     const handleFormDrag = (newPosition: { x: number; y: number }) => {
         setFormPosition(newPosition);
@@ -194,6 +205,9 @@ const Space: React.FC<SpaceProps> = ({ spaceId, onLoaded }) => {
         }, 0);
     };
 
+    useEffect(() => {
+        console.log('Tasks state:', tasks);
+    }, [tasks]);
     return (
         <div
             className={`relative w-full h-screen bg-base-100 space-${spaceId}`}
@@ -217,17 +231,6 @@ const Space: React.FC<SpaceProps> = ({ spaceId, onLoaded }) => {
                             />
                         )
                     )}
-                    {localTasks.map((task) => (
-                        <TaskCard
-                            key={task._id}
-                            task={task}
-                            onDragStart={handleDragStart}
-                            onDragStop={handleDragStop}
-                            isVirgin={true}
-                            getNewZIndex={getNewZIndex}
-                            subtasks={task.subtasks}
-                        />
-                    ))}
                 </>
             ) : (
                 showSignUpForm && (
