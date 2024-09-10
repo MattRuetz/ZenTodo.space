@@ -60,13 +60,10 @@ const TaskCard: React.FC<TaskCardProps> = ({
     const taskNameRef = useRef<HTMLInputElement>(null);
     const taskDescriptionRef = useRef<HTMLTextAreaElement>(null);
 
-    const currentTask = useSelector((state: RootState) =>
-        state.tasks.tasks.find((t) => t._id === task._id)
-    );
-
     const updateTaskInStore = useCallback(
         (updatedFields: Partial<Task>) => {
             if (task._id) {
+                console.log('updatedFields', updatedFields);
                 dispatch(updateTask({ _id: task._id, ...updatedFields }));
             }
         },
@@ -80,16 +77,10 @@ const TaskCard: React.FC<TaskCardProps> = ({
     const pushChildTask = useCallback(
         async (childTask: Task, parentTaskId: string) => {
             // Assume task is already in the database
-            dispatch(addChildTask({ childTask, parentTaskId })).then(() => {
-                // Need to set the local task to task from redux store
-                // to avoid overwriting changes to subtasks array
-                if (currentTask) {
-                    setLocalTask(currentTask);
-                }
-            });
+            dispatch(addChildTask({ childTask, parentTaskId }));
             dispatch(hideNewChildTask(childTask._id ?? ''));
         },
-        [dispatch, currentTask]
+        [dispatch]
     );
 
     const handleDragStart = useCallback(
@@ -106,9 +97,9 @@ const TaskCard: React.FC<TaskCardProps> = ({
     const handleDragStop = useCallback(
         (e: DraggableEvent, data: DraggableData) => {
             setLocalTask((prevTask) => {
-                const newTask = { ...prevTask, x: data.x, y: data.y };
-                debouncedUpdate(newTask);
-                return newTask;
+                const newTaskData = { x: data.x, y: data.y };
+                debouncedUpdate(newTaskData);
+                return { ...prevTask, ...newTaskData };
             });
             dispatch(setGlobalDragging(false));
             dispatch(setDraggingCardId(null));
@@ -212,24 +203,27 @@ const TaskCard: React.FC<TaskCardProps> = ({
             setIsFocused(false);
             const fieldName = e.target.name;
             const fieldValue = e.target.value;
+            console.log('fieldName', fieldName);
 
-            const updatedFields = { [fieldName]: fieldValue };
             setLocalTask((prevTask) => {
-                const newTask = { ...prevTask, ...updatedFields };
-                debouncedUpdate(newTask);
-                return newTask;
+                const newTaskData = { [fieldName]: fieldValue };
+                // Do not use debouncedUpdate here.
+                // This is because we do not want the update to be inter
+                updateTaskInStore(newTaskData);
+                return { ...prevTask, ...newTaskData };
             });
             updateCardSize();
         },
-        [debouncedUpdate, updateCardSize, isFocused]
+        []
     );
 
     const handleProgressChange = useCallback(
         (newProgress: TaskProgress) => {
+            console.log('newProgress', newProgress);
             setLocalTask((prevTask) => {
-                const newTask = { ...prevTask, progress: newProgress };
-                debouncedUpdate(newTask);
-                return newTask;
+                const newTaskData = { progress: newProgress };
+                debouncedUpdate(newTaskData);
+                return { ...prevTask, ...newTaskData };
             });
         },
         [debouncedUpdate]

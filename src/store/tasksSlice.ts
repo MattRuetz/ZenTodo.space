@@ -51,24 +51,13 @@ export const updateTask = createAsyncThunk(
     'tasks/updateTask',
     async (
         partialTask: Partial<Task> & { _id: string },
-        { getState, rejectWithValue }
+        { rejectWithValue }
     ) => {
         try {
-            const state = getState() as RootState;
-            const existingTask = state.tasks.tasks.find(
-                (t: Task) => t._id === partialTask._id
-            );
-
-            if (!existingTask) {
-                throw new Error('Task not found');
-            }
-
-            const updatedTask = { ...existingTask, ...partialTask };
-
             const response = await fetch('/api/tasks', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(updatedTask),
+                body: JSON.stringify(partialTask), // Send only the partial update
             });
 
             if (!response.ok) {
