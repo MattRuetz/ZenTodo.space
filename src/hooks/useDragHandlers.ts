@@ -10,55 +10,74 @@ import { AppDispatch } from '../store/store';
 import debounce from 'lodash.debounce';
 import { setGlobalDragging, setDraggingCardId } from '../store/uiSlice';
 import { Task, TaskProgress } from '@/types';
+import { DraggableData, DraggableEvent } from 'react-draggable';
 
 interface UseDragHandlersProps {
     task: Task;
-    currentTask: Task | undefined;
     localTask: Task;
-    setLocalTask: (task: Task) => void;
+    setLocalTask: (task: (prev: Task) => Task) => void;
     setCardSize: (size: { width: number; height: number }) => void;
     onDragStart: () => void;
     onDragStop: () => void;
     getNewZIndex: () => number;
+    pushChildTask: (task: Task, parentId: string) => void;
+    debouncedUpdate: (task: Partial<Task>) => void;
+    updateCardSize: () => void;
+    updateTaskInStore: (task: Partial<Task>) => void;
+    deletingTasks: Set<string>;
+    setDeletingTasks: (
+        deletingTasks: (prev: Set<string>) => Set<string>
+    ) => void;
+    setIsFocused: (isFocused: boolean) => void;
+    cardRef: React.RefObject<HTMLDivElement>;
+    resizingRef: React.MutableRefObject<boolean>;
+    startPosRef: React.MutableRefObject<{ x: number; y: number }>;
+    startSizeRef: React.MutableRefObject<{ width: number; height: number }>;
 }
 
 export const useDragHandlers = ({
     task,
-    currentTask,
     localTask,
     setLocalTask,
     setCardSize,
     onDragStart,
     onDragStop,
     getNewZIndex,
+    pushChildTask,
+    debouncedUpdate,
+    updateCardSize,
+    updateTaskInStore,
+    deletingTasks,
+    setDeletingTasks,
+    setIsFocused,
+    cardRef,
+    resizingRef,
+    startPosRef,
+    startSizeRef,
 }: UseDragHandlersProps) => {
     const dispatch = useDispatch<AppDispatch>();
-
-    const updateTaskInStore = useCallback(
-        (updatedFields: Partial<Task>) => {
-            if (task._id) {
-                dispatch(updateTask({ _id: task._id, ...updatedFields }));
-            }
-        },
-        [dispatch, task._id]
-    );
-
-    const debouncedUpdate = useCallback(debounce(updateTaskInStore, 500), [
-        updateTaskInStore,
-    ]);
 
     const handleDragStart = useCallback(
         (e: DraggableEvent, data: DraggableData) => {
             const newZIndex = getNewZIndex();
+            setLocalTask((prevTask) => ({
+                ...prevTask,
+                zIndex: newZIndex,
+            }));
             dispatch(setGlobalDragging(true));
             dispatch(setDraggingCardId(task._id ?? ''));
             onDragStart();
         },
-        [getNewZIndex, onDragStart, dispatch, task._id]
+        [getNewZIndex, onDragStart, dispatch, task._id, setLocalTask]
     );
 
     const handleDragStop = useCallback(
         (e: DraggableEvent, data: DraggableData) => {
+            setLocalTask((prevTask) => {
+                const newTaskData = { x: data.x, y: data.y };
+                debouncedUpdate(newTaskData);
+                return { ...prevTask, ...newTaskData };
+            });
             dispatch(setGlobalDragging(false));
             dispatch(setDraggingCardId(null));
             onDragStop();
@@ -74,46 +93,62 @@ export const useDragHandlers = ({
             );
             const droppedOnCard = cardsUnderCursor[1];
             if (droppedOnCard && droppedOnCard !== e.target) {
-                console.log('Dropped card ID:', task._id);
-                console.log(
-                    'Target card ID:',
-                    droppedOnCard.getAttribute('data-task-id')
-                );
                 pushChildTask(
                     task,
                     droppedOnCard.getAttribute('data-task-id') ?? ''
                 );
             }
         },
-        [dispatch, onDragStop, task._id]
+        [
+            debouncedUpdate,
+            onDragStop,
+            dispatch,
+            task._id,
+            setLocalTask,
+            pushChildTask,
+        ]
     );
 
     const handleInputChange = useCallback(
         (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
             const { name, value } = e.target;
-            setLocalTask((prevTask) => ({ ...prevTask, [name]: value }));
+            setLocalTask(
+                (prev: Task): Task => ({
+                    ...prev,
+                    [name]: value,
+                })
+            );
+            if (name === 'taskDescription') updateCardSize();
         },
-        [setLocalTask]
+        [updateCardSize, setLocalTask]
     );
 
     const handleInputBlur = useCallback(
         (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-            const { name, value } = e.target;
+            setIsFocused(false);
+            const fieldName = e.target.name;
+            const fieldValue = e.target.value;
+            console.log('fieldName', fieldName);
+
             setLocalTask((prevTask) => {
-                const newTask = { ...prevTask, [name]: value };
-                debouncedUpdate(newTask);
-                return newTask;
+                const newTaskData = { [fieldName]: fieldValue };
+                // Do not use debouncedUpdate here.
+                // This is because we do not want the update to be inter
+                updateTaskInStore(newTaskData);
+                return { ...prevTask, ...newTaskData };
             });
+            updateCardSize();
         },
-        [debouncedUpdate, setLocalTask]
+        [setLocalTask, updateTaskInStore, updateCardSize]
     );
 
     const handleProgressChange = useCallback(
         (newProgress: TaskProgress) => {
+            console.log('newProgress', newProgress);
             setLocalTask((prevTask) => {
-                const newTask = { ...prevTask, progress: newProgress };
-                debouncedUpdate(newTask);
-                return newTask;
+                const newTaskData = { progress: newProgress };
+                debouncedUpdate(newTaskData);
+                return { ...prevTask, ...newTaskData };
             });
         },
         [debouncedUpdate, setLocalTask]
@@ -121,18 +156,25 @@ export const useDragHandlers = ({
 
     const handleDelete = useCallback(
         async (taskId: string) => {
-            await dispatch(deleteTask(taskId));
-        },
-        [dispatch]
-    );
+            if (deletingTasks.has(taskId)) return;
 
-    const handleCardClick = useCallback(() => {
-        const newZIndex = getNewZIndex();
-        setLocalTask((prevTask) => {
-            const updatedTask = { ...prevTask, zIndex: newZIndex };
-            return updatedTask;
-        });
-    }, [getNewZIndex, setLocalTask]);
+            setDeletingTasks((prev: Set<string>) => {
+                const newSet = new Set(prev);
+                newSet.add(taskId);
+                return newSet;
+            });
+            try {
+                await dispatch(deleteTask(taskId)).unwrap();
+            } finally {
+                setDeletingTasks((prev: Set<string>) => {
+                    const newSet = new Set(prev);
+                    newSet.delete(taskId);
+                    return newSet;
+                });
+            }
+        },
+        [deletingTasks, dispatch, setDeletingTasks]
+    );
 
     const handleMouseDown = useCallback((e: React.MouseEvent) => {
         if (cardRef.current) {
@@ -159,7 +201,6 @@ export const useDragHandlers = ({
         handleInputBlur,
         handleProgressChange,
         handleDelete,
-        handleCardClick,
         handleMouseDown,
     };
 };
