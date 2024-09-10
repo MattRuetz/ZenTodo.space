@@ -4,6 +4,23 @@ import { FaTrash, FaCheck, FaChevronDown } from 'react-icons/fa';
 import { Task, TaskProgress } from '@/types';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
+import SubtaskProgresses from './SubtaskProgresses';
+import { createSelector } from '@reduxjs/toolkit';
+
+const selectSubtasks = createSelector(
+    [
+        (state: RootState) => state.tasks.tasks,
+        (state: RootState, taskId: string) => taskId,
+    ],
+    (tasks, taskId) => {
+        const task = tasks.find((t) => t._id === taskId);
+        return (
+            task?.subtasks
+                ?.map((subtaskId) => tasks.find((t) => t._id === subtaskId))
+                .filter((t): t is Task => t !== undefined) || []
+        );
+    }
+);
 
 export interface TaskCardToolBarProps {
     taskId: string;
@@ -22,13 +39,8 @@ const TaskCardToolBar: React.FC<TaskCardToolBarProps> = React.memo(
             state.tasks.tasks.find((t) => t._id === taskId)
         );
 
-        const subtasks = useSelector(
-            (state: RootState) =>
-                task?.subtasks
-                    ?.map((subtaskId) =>
-                        state.tasks.tasks.find((t) => t._id === subtaskId)
-                    )
-                    .filter((t): t is Task => t !== undefined) || []
+        const subtasks = useSelector((state: RootState) =>
+            selectSubtasks(state, taskId)
         );
 
         const subtaskProgresses = useMemo(() => {
@@ -129,28 +141,10 @@ const TaskCardToolBar: React.FC<TaskCardToolBarProps> = React.memo(
                             }`}
                         />
                     </div>
-                    <div className="flex items-center gap-2 bg-slate-900 rounded-full p-2">
-                        {subtaskProgresses.notStarted > 0 && (
-                            <div className="subtask-count bg-gray-200 text-gray-700 rounded-full px-2 py-1 text-xs">
-                                {subtaskProgresses.notStarted}
-                            </div>
-                        )}
-                        {subtaskProgresses.inProgress > 0 && (
-                            <div className="subtask-count bg-yellow-400 text-gray-700 rounded-full px-2 py-1 text-xs">
-                                {subtaskProgresses.inProgress}
-                            </div>
-                        )}
-                        {subtaskProgresses.blocked > 0 && (
-                            <div className="subtask-count bg-red-500 text-gray-700 rounded-full px-2 py-1 text-xs">
-                                {subtaskProgresses.blocked}
-                            </div>
-                        )}
-                        {subtaskProgresses.complete > 0 && (
-                            <div className="subtask-count bg-green-500 text-gray-700 rounded-full px-2 py-1 text-xs">
-                                {subtaskProgresses.complete}
-                            </div>
-                        )}
-                    </div>
+                    <SubtaskProgresses
+                        subtaskProgresses={subtaskProgresses}
+                        parentTaskId={taskId}
+                    />
                 </div>
                 {isDropdownOpen && (
                     <div

@@ -5,10 +5,12 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchSpaces, createSpace, setCurrentSpace } from '@/store/spaceSlice';
 import Space from './Space';
 import { AppDispatch, RootState } from '@/store/store';
-import { SpaceData } from '@/types';
+import { SpaceData, Task } from '@/types';
 import ControlPanel from './ControlPanel';
 import Preloader from './Preloader';
 import { useSession } from 'next-auth/react';
+import SubtaskDrawer from './SubtaskDrawer';
+import { setSubtaskDrawerOpen } from '@/store/uiSlice';
 
 const SuperSpace = () => {
     const dispatch = useDispatch<AppDispatch>();
@@ -18,6 +20,16 @@ const SuperSpace = () => {
     const [isZoomedOut, setIsZoomedOut] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [fadeOut, setFadeOut] = useState(false);
+    const [subtasks, setSubtasks] = useState<Task[]>([]);
+
+    const isDrawerOpen = useSelector(
+        (state: RootState) => state.ui.isSubtaskDrawerOpen
+    );
+
+    const handleCloseDrawer = () => {
+        dispatch(setSubtaskDrawerOpen(false));
+    };
+
     const { data: session, status: sessionStatus } = useSession();
 
     useEffect(() => {
@@ -94,6 +106,7 @@ const SuperSpace = () => {
                     {isZoomedOut ? '↩' : '↪'}
                 </button>
             )}
+            <SubtaskDrawer isOpen={isDrawerOpen} onClose={handleCloseDrawer} />
         </div>
     );
 };
