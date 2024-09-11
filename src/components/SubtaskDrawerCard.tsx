@@ -6,6 +6,8 @@ import { Task, TaskProgress } from '@/types';
 import { ProgressDropdown } from './ProgressDropdown';
 import { useDrag } from 'react-dnd';
 import { convertSubtaskToTask } from '@/store/tasksSlice';
+import { FaTrash } from 'react-icons/fa';
+import { useDeleteTask } from '@/hooks/useDeleteTask';
 
 interface SubtaskDrawerCardProps {
     subtask: Task;
@@ -18,11 +20,21 @@ const SubtaskDrawerCard: React.FC<SubtaskDrawerCardProps> = ({ subtask }) => {
     const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
     const currentTaskNameRef = useRef(subtask.taskName);
 
+    const [deletingTasks, setDeletingTasks] = useState<Set<string>>(new Set());
+
+    const { handleDelete } = useDeleteTask({
+        deletingTasks,
+        setDeletingTasks,
+    });
+
     const [{ isDragging }, drag] = useDrag(() => ({
         type: 'SUBTASK',
         item: { ...subtask },
         end: (item, monitor) => {
-            const dropResult = monitor.getDropResult();
+            const dropResult = monitor.getDropResult() as {
+                x: number;
+                y: number;
+            };
             if (item && dropResult) {
                 dispatch(
                     convertSubtaskToTask({
@@ -177,11 +189,17 @@ const SubtaskDrawerCard: React.FC<SubtaskDrawerCardProps> = ({ subtask }) => {
                     </p>
                 )}
             </div>
-            <ProgressDropdown
-                progress={subtask.progress}
-                onProgressChange={handleProgressChange}
-                isSubtask={true}
-            />
+            <div className="flex justify-between items-top relative">
+                <ProgressDropdown
+                    progress={subtask.progress}
+                    onProgressChange={handleProgressChange}
+                    isSubtask={true}
+                />
+                <FaTrash
+                    className="cursor-pointer text-red-500 hover:text-red-700 transition-colors duration-200 hover:scale-110 hover:rotate-12 absolute top-1 right-0"
+                    onClick={() => handleDelete(subtask._id || '')}
+                />
+            </div>
         </li>
     );
 };

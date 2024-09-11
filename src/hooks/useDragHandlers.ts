@@ -1,15 +1,8 @@
 import { useCallback } from 'react';
 import { useDispatch } from 'react-redux';
-import {
-    updateTask,
-    deleteTask,
-    addChildTask,
-    hideNewChildTask,
-} from '../store/tasksSlice';
 import { AppDispatch } from '../store/store';
-import debounce from 'lodash.debounce';
 import { setGlobalDragging, setDraggingCardId } from '../store/uiSlice';
-import { Task, TaskProgress } from '@/types';
+import { Task } from '@/types';
 import { DraggableData, DraggableEvent } from 'react-draggable';
 
 interface UseDragHandlersProps {
@@ -24,10 +17,6 @@ interface UseDragHandlersProps {
     debouncedUpdate: (task: Partial<Task>) => void;
     updateCardSize: () => void;
     updateTaskInStore: (task: Partial<Task>) => void;
-    deletingTasks: Set<string>;
-    setDeletingTasks: (
-        deletingTasks: (prev: Set<string>) => Set<string>
-    ) => void;
     setIsFocused: (isFocused: boolean) => void;
     cardRef: React.RefObject<HTMLDivElement>;
     resizingRef: React.MutableRefObject<boolean>;
@@ -47,8 +36,6 @@ export const useDragHandlers = ({
     debouncedUpdate,
     updateCardSize,
     updateTaskInStore,
-    deletingTasks,
-    setDeletingTasks,
     setIsFocused,
     cardRef,
     resizingRef,
@@ -142,28 +129,6 @@ export const useDragHandlers = ({
         [setLocalTask, updateTaskInStore, updateCardSize]
     );
 
-    const handleDelete = useCallback(
-        async (taskId: string) => {
-            if (deletingTasks.has(taskId)) return;
-
-            setDeletingTasks((prev: Set<string>) => {
-                const newSet = new Set(prev);
-                newSet.add(taskId);
-                return newSet;
-            });
-            try {
-                await dispatch(deleteTask(taskId)).unwrap();
-            } finally {
-                setDeletingTasks((prev: Set<string>) => {
-                    const newSet = new Set(prev);
-                    newSet.delete(taskId);
-                    return newSet;
-                });
-            }
-        },
-        [deletingTasks, dispatch, setDeletingTasks]
-    );
-
     const handleMouseDown = useCallback((e: React.MouseEvent) => {
         if (cardRef.current) {
             const rect = cardRef.current.getBoundingClientRect();
@@ -187,7 +152,6 @@ export const useDragHandlers = ({
         handleDragStop,
         handleInputChange,
         handleInputBlur,
-        handleDelete,
         handleMouseDown,
     };
 };

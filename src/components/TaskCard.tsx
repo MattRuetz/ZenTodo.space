@@ -1,7 +1,7 @@
 // src/components/TaskCard.tsx
 'use client';
 
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import Draggable from 'react-draggable';
 import debounce from 'lodash.debounce';
@@ -18,6 +18,7 @@ import { useThrottle } from '@/hooks/useThrottle';
 import { useFadeOutEffect } from '@/hooks/useFadeOutEffect';
 import { useDragHandlers } from '@/hooks/useDragHandlers';
 import { useTaskState } from '@/hooks/useTaskState';
+import { useDeleteTask } from '@/hooks/useDeleteTask';
 
 interface TaskCardProps {
     task: Task;
@@ -58,8 +59,6 @@ const TaskCard: React.FC<TaskCardProps> = ({
         resizingRef,
         startPosRef,
         startSizeRef,
-        deletingTasks,
-        setDeletingTasks,
     } = useTaskState(task);
 
     const updateTaskInStore = useCallback(
@@ -130,7 +129,6 @@ const TaskCard: React.FC<TaskCardProps> = ({
         handleDragStop,
         handleInputChange,
         handleInputBlur,
-        handleDelete,
         handleMouseDown,
     } = useDragHandlers({
         task,
@@ -144,13 +142,18 @@ const TaskCard: React.FC<TaskCardProps> = ({
         debouncedUpdate,
         updateCardSize,
         updateTaskInStore,
-        deletingTasks,
-        setDeletingTasks,
         setIsFocused,
         cardRef,
         resizingRef,
         startPosRef,
         startSizeRef,
+    });
+
+    const [deletingTasks, setDeletingTasks] = useState<Set<string>>(new Set());
+
+    const { handleDelete } = useDeleteTask({
+        deletingTasks,
+        setDeletingTasks,
     });
 
     useEffect(() => {

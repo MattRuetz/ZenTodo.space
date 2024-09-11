@@ -158,19 +158,30 @@ export const convertSubtaskToTask = createAsyncThunk(
             ),
         };
 
-        // Convert subtask to main task
+        // Fetch the latest subtask data from the server
+        const response = await fetch(`/api/tasks/${subtask._id}`);
+        if (!response.ok) {
+            throw new Error('Failed to fetch latest subtask data');
+        }
+        const latestSubtaskData = await response.json();
+
+        // Convert subtask to main task using the latest data
         const newTask = {
-            ...subtask,
-            parentTask: null, // Remove the parentTask reference
+            ...latestSubtaskData,
+            parentTask: null,
             x: dropPosition.x,
             y: dropPosition.y,
         };
 
         // Update tasks in the database
         await dispatch(
-            updateTask(updatedParentTask as Partial<Task> & { _id: string })
+            updateTask(
+                updatedParentTask as unknown as Partial<Task> & { _id: string }
+            )
         );
-        await dispatch(updateTask(newTask as Partial<Task> & { _id: string }));
+        await dispatch(
+            updateTask(newTask as unknown as Partial<Task> & { _id: string })
+        );
 
         return { updatedParentTask, newTask };
     }
@@ -247,6 +258,7 @@ export const tasksSlice = createSlice({
                 const subtaskIndex = state.tasks.findIndex(
                     (task) => task._id === newTask._id
                 );
+                console.log('subtaskIndex', subtaskIndex);
                 if (subtaskIndex !== -1) {
                     state.tasks[subtaskIndex] = newTask;
                 } else {
