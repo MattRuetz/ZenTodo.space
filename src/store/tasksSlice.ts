@@ -132,6 +132,50 @@ export const deleteTask = createAsyncThunk(
     }
 );
 
+export const convertSubtaskToTask = createAsyncThunk(
+    'tasks/convertSubtaskToTask',
+    async (
+        {
+            subtask,
+            dropPosition,
+        }: { subtask: Task; dropPosition: { x: number; y: number } },
+        { getState, dispatch }
+    ) => {
+        const state = getState() as RootState;
+        const parentTask = state.tasks.tasks.find(
+            (task) => task._id === subtask.parentTask
+        );
+
+        if (!parentTask) {
+            throw new Error('Parent task not found');
+        }
+
+        // Remove subtask from parent
+        const updatedParentTask = {
+            ...parentTask,
+            subtasks: parentTask.subtasks.filter(
+                (subtaskId) => subtaskId !== subtask._id
+            ),
+        };
+
+        // Convert subtask to main task
+        const newTask = {
+            ...subtask,
+            parentTask: null, // Remove the parentTask reference
+            x: dropPosition.x,
+            y: dropPosition.y,
+        };
+
+        // Update tasks in the database
+        await dispatch(
+            updateTask(updatedParentTask as Partial<Task> & { _id: string })
+        );
+        await dispatch(updateTask(newTask as Partial<Task> & { _id: string }));
+
+        return { updatedParentTask, newTask };
+    }
+);
+
 export const tasksSlice = createSlice({
     name: 'tasks',
     initialState,
@@ -190,6 +234,23 @@ export const tasksSlice = createSlice({
                     state.tasks[childIndex] = updatedSubtask;
                 } else {
                     state.tasks.push(updatedSubtask);
+                }
+            })
+            .addCase(convertSubtaskToTask.fulfilled, (state, action) => {
+                const { updatedParentTask, newTask } = action.payload;
+                const parentIndex = state.tasks.findIndex(
+                    (task) => task._id === updatedParentTask._id
+                );
+                if (parentIndex !== -1) {
+                    state.tasks[parentIndex] = updatedParentTask;
+                }
+                const subtaskIndex = state.tasks.findIndex(
+                    (task) => task._id === newTask._id
+                );
+                if (subtaskIndex !== -1) {
+                    state.tasks[subtaskIndex] = newTask;
+                } else {
+                    state.tasks.push(newTask);
                 }
             });
     },

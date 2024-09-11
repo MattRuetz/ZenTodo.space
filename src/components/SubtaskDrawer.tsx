@@ -16,10 +16,24 @@ const SubtaskDrawer: React.FC<SubtaskDrawerProps> = ({ isOpen, onClose }) => {
     );
     const allTasks = useSelector((state: RootState) => state.tasks.tasks);
 
+    // const subtasks = React.useMemo(() => {
+    //     if (!parentTaskId) return [];
+    //     return allTasks.filter((task) => task.parentTask === parentTaskId);
+    // }, [allTasks, parentTaskId]);
+
     const subtasks = React.useMemo(() => {
         if (!parentTaskId) return [];
-        return allTasks.filter((task) => task.parentTask === parentTaskId);
+        const parentTask = allTasks.find((task) => task._id === parentTaskId);
+        return parentTask
+            ? parentTask.subtasks
+                  .map((subtaskId) =>
+                      allTasks.find((task) => task._id === subtaskId)
+                  )
+                  .filter(Boolean)
+            : [];
     }, [allTasks, parentTaskId]);
+
+    // ... rest of the component code
 
     return (
         <div
