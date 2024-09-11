@@ -4,7 +4,8 @@ import { AppDispatch } from '../store/store';
 import { updateTask } from '@/store/tasksSlice';
 import { Task, TaskProgress } from '@/types';
 import { ProgressDropdown } from './ProgressDropdown';
-import { Fa0, FaX } from 'react-icons/fa6';
+import { useDrag } from 'react-dnd';
+import { convertSubtaskToTask } from '@/store/tasksSlice';
 
 interface SubtaskDrawerCardProps {
     subtask: Task;
@@ -16,6 +17,25 @@ const SubtaskDrawerCard: React.FC<SubtaskDrawerCardProps> = ({ subtask }) => {
     const [isEditing, setIsEditing] = useState<string | null>(null);
     const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
     const currentTaskNameRef = useRef(subtask.taskName);
+
+    const [{ isDragging }, drag] = useDrag(() => ({
+        type: 'SUBTASK',
+        item: { ...subtask },
+        end: (item, monitor) => {
+            const dropResult = monitor.getDropResult();
+            if (item && dropResult) {
+                dispatch(
+                    convertSubtaskToTask({
+                        subtask: item,
+                        dropPosition: dropResult,
+                    })
+                );
+            }
+        },
+        collect: (monitor) => ({
+            isDragging: monitor.isDragging(),
+        }),
+    }));
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -81,8 +101,11 @@ const SubtaskDrawerCard: React.FC<SubtaskDrawerCardProps> = ({ subtask }) => {
 
     return (
         <li
+            ref={drag as unknown as React.RefObject<HTMLLIElement>}
             key={subtask._id}
             style={{
+                opacity: isDragging ? 0.5 : 1,
+                cursor: 'move',
                 border: '1px solid rgba(255, 255, 255, 0.2)',
             }}
             className={`p-2 rounded-lg my-6 bg-base-100 transition-colors duration-500 shadow-md shadow-black/20`}

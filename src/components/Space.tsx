@@ -10,9 +10,10 @@ import { RootState, AppDispatch } from '../store/store';
 import { addTask, fetchTasks, updateTask } from '../store/tasksSlice';
 import { TaskProgress, Task } from '@/types';
 import { updateSpaceMaxZIndex, fetchSpaceMaxZIndex } from '../store/spaceSlice';
-import debounce from 'lodash.debounce';
 import { setSubtaskDrawerOpen } from '@/store/uiSlice';
 import SubtaskDrawer from './SubtaskDrawer';
+import { useDrop } from 'react-dnd';
+import { convertSubtaskToTask } from '@/store/tasksSlice';
 
 // Memoized selectors
 const selectTasksForSpace = createSelector(
@@ -83,6 +84,17 @@ const Space: React.FC<SpaceProps> = ({ spaceId, onLoaded }) => {
     const handleCloseDrawer = () => {
         dispatch(setSubtaskDrawerOpen(false));
     };
+
+    const [, drop] = useDrop(() => ({
+        accept: 'SUBTASK',
+        drop: (item: Task, monitor) => {
+            const offset = monitor.getClientOffset();
+            return {
+                x: offset?.x || 0,
+                y: offset?.y || 0,
+            };
+        },
+    }));
 
     useEffect(() => {
         const loadTasks = async () => {
@@ -212,6 +224,7 @@ const Space: React.FC<SpaceProps> = ({ spaceId, onLoaded }) => {
 
     return (
         <div
+            ref={drop}
             className={`relative w-full h-screen bg-base-100 space-${spaceId}`}
             onMouseDown={handleSpaceClick}
         >
