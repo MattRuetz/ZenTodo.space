@@ -1,3 +1,4 @@
+// src/components/Preloader.tsx
 import React from 'react';
 
 const zenQuotes = [

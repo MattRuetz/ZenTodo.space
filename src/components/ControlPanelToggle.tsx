@@ -1,9 +1,13 @@
 // src/app/components/ControlPanelToggle.tsx
 'use client';
-import { useState } from 'react';
 import { useSession } from 'next-auth/react';
 
-const ControlPanelToggle = ({
+interface ControlPanelToggleProps {
+    isOpen: boolean;
+    setIsOpen: (isOpen: boolean) => void;
+}
+
+const ControlPanelToggle: React.FC<ControlPanelToggleProps> = ({
     isOpen,
     setIsOpen,
 }: {

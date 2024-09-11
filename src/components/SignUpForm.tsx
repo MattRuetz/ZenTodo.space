@@ -2,7 +2,7 @@
 import React, { useRef, useState } from 'react';
 import { signIn } from 'next-auth/react';
 import Draggable from 'react-draggable';
-import DragHandle from './DragHandle';
+import DragHandle from './TaskCardTopBar';
 
 interface SignUpFormProps {
     position: { x: number; y: number };

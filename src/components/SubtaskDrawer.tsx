@@ -51,7 +51,7 @@ const SubtaskDrawer = forwardRef<HTMLDivElement, SubtaskDrawerProps>(
                     <ul className="overflow-y-auto overflow-x-visible h-[calc(100vh-10rem)] subtask-drawer-items">
                         {subtasks.map((subtask) => (
                             <SubtaskDrawerCard
-                                key={subtask._id}
+                                key={subtask?._id}
                                 subtask={subtask as Task}
                             />
                         ))}
