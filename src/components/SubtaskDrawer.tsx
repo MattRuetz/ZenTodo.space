@@ -25,7 +25,10 @@ const SubtaskDrawer = forwardRef<HTMLDivElement, SubtaskDrawerProps>(
             return parentTask
                 ? parentTask.subtasks
                       .map((subtaskId) =>
-                          allTasks.find((task) => task._id === subtaskId)
+                          allTasks.find(
+                              (task) =>
+                                  task._id === (subtaskId as unknown as string)
+                          )
                       )
                       .filter((task): task is Task => Boolean(task))
                 : [];

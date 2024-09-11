@@ -1,6 +1,6 @@
 // src/models/Task.ts
 import { TaskProgress } from '@/types';
-import mongoose, { Document } from 'mongoose';
+import mongoose, { Document, Model } from 'mongoose';
 
 interface ITask extends Document {
     _id: string;
@@ -9,7 +9,13 @@ interface ITask extends Document {
     taskName: string;
     taskDescription: string;
     progress: TaskProgress;
-    space: { type: String; required: true };
+    space: mongoose.Types.ObjectId;
+    user: mongoose.Types.ObjectId;
+    zIndex: number;
+    subtasks: mongoose.Types.ObjectId[];
+    parentTask?: mongoose.Types.ObjectId;
+    createdAt: Date;
+    updatedAt: Date;
 }
 
 const TaskSchema = new mongoose.Schema({
@@ -35,6 +41,8 @@ const TaskSchema = new mongoose.Schema({
         ref: 'Task',
         required: false,
     },
+    createdAt: { type: Date, default: Date.now },
+    updatedAt: { type: Date, default: Date.now },
 });
 
 // Add this line to create the compound index
@@ -52,6 +60,18 @@ TaskSchema.pre('save', async function (next) {
     }
     next();
 });
+
+TaskSchema.pre(
+    'deleteOne',
+    { document: true, query: false },
+    async function () {
+        const task = this as unknown as ITask;
+        // Find all subtasks and remove them
+        await (this.constructor as Model<ITask>).deleteMany({
+            parentTask: task._id,
+        });
+    }
+);
 
 export default mongoose.models.Task ||
     mongoose.model<ITask>('Task', TaskSchema);

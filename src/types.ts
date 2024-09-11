@@ -17,6 +17,8 @@ export interface Task {
     zIndex: number;
     subtasks: Task[];
     parentTask?: string;
+    createdAt?: Date;
+    updatedAt?: Date;
 }
 
 export interface SpaceData {

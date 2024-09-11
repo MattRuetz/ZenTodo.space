@@ -4,6 +4,7 @@ import { authOptions } from '../auth/[...nextauth]/route';
 import dbConnect from '@/lib/mongodb';
 import Task from '@/models/Task';
 import Space from '@/models/Space'; // Assuming Space model is imported
+import mongoose from 'mongoose';
 
 async function getUserId(req: NextRequest) {
     const session = await getServerSession(authOptions);
@@ -78,8 +79,9 @@ export async function PUT(req: NextRequest) {
         // updateData can allow for partial updates
         const { _id, ...updateData } = body;
 
-        console.log('updateData', updateData);
+        updateData.updatedAt = new Date();
 
+        console.log('updateData', updateData);
         const updatedTask = await Task.findOneAndUpdate(
             { _id: _id, user: userId },
             { $set: updateData },
@@ -117,22 +119,50 @@ export async function DELETE(req: NextRequest) {
             );
         }
 
-        const deletedTask = await Task.findOneAndDelete({
-            _id: taskId,
-            user: userId,
-        });
+        const session = await mongoose.startSession();
+        session.startTransaction();
 
-        if (!deletedTask) {
+        try {
+            const task = await Task.findOne({
+                _id: taskId,
+                user: userId,
+            }).session(session);
+
+            if (!task) {
+                await session.abortTransaction();
+                return NextResponse.json(
+                    { error: 'Task not found or unauthorized' },
+                    { status: 404 }
+                );
+            }
+
+            // Recursively delete all subtasks
+            const deleteSubtasks = async (
+                taskId: mongoose.Types.ObjectId
+            ): Promise<void> => {
+                const subtasks = await Task.find({
+                    parentTask: taskId,
+                }).session(session);
+                for (const subtask of subtasks) {
+                    await deleteSubtasks(subtask._id);
+                    await subtask.deleteOne({ session });
+                }
+            };
+
+            await deleteSubtasks(task._id);
+            await task.deleteOne({ session });
+
+            await session.commitTransaction();
             return NextResponse.json(
-                { error: 'Task not found or unauthorized' },
-                { status: 404 }
+                { message: 'Task and all subtasks deleted successfully' },
+                { status: 200 }
             );
+        } catch (error) {
+            await session.abortTransaction();
+            throw error;
+        } finally {
+            session.endSession();
         }
-
-        return NextResponse.json(
-            { message: 'Task deleted successfully' },
-            { status: 200 }
-        );
     } catch (error) {
         console.error('Error deleting task:', error);
         if (error instanceof Error && error.message === 'Unauthorized') {

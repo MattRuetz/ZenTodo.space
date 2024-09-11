@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef } from 'react';
 import { Task } from '@/types';
 
 export const useFadeOutEffect = (
@@ -7,14 +7,9 @@ export const useFadeOutEffect = (
     isFocused: boolean,
     onDelete: (taskId: string) => void
 ) => {
-    const [opacity, setOpacity] = useState(1);
-    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-    const intervalRef = useRef<NodeJS.Timeout | null>(null);
-
-    const clearTimers = useCallback(() => {
-        if (timeoutRef.current) clearTimeout(timeoutRef.current);
-        if (intervalRef.current) clearInterval(intervalRef.current);
-    }, []);
+    const opacityRef = useRef(1);
+    const requestRef = useRef<number>();
+    const startTimeRef = useRef<number>();
 
     useEffect(() => {
         const shouldFadeOut =
@@ -23,25 +18,40 @@ export const useFadeOutEffect = (
             !task.taskName &&
             !task.taskDescription;
 
+        const animate = (time: number) => {
+            if (startTimeRef.current === undefined) {
+                startTimeRef.current = time;
+            }
+            const elapsed = time - startTimeRef.current;
+
+            if (elapsed > 3000) {
+                // Start fading after 3 seconds
+                opacityRef.current = Math.max(1 - (elapsed - 3000) / 1000, 0);
+
+                if (opacityRef.current <= 0) {
+                    onDelete(task._id ?? '');
+                    return;
+                }
+            }
+
+            requestRef.current = requestAnimationFrame(animate);
+        };
+
         if (shouldFadeOut) {
-            timeoutRef.current = setTimeout(() => {
-                intervalRef.current = setInterval(() => {
-                    setOpacity((prevOpacity) => {
-                        if (prevOpacity <= 0) {
-                            clearTimers();
-                            onDelete(task._id ?? '');
-                            return 0;
-                        }
-                        return Math.max(prevOpacity - 0.1, 0);
-                    });
-                }, 100);
-            }, 3000);
+            requestRef.current = requestAnimationFrame(animate);
         } else {
-            clearTimers();
-            setOpacity(1);
+            if (requestRef.current) {
+                cancelAnimationFrame(requestRef.current);
+            }
+            opacityRef.current = 1;
+            startTimeRef.current = undefined;
         }
 
-        return clearTimers;
+        return () => {
+            if (requestRef.current) {
+                cancelAnimationFrame(requestRef.current);
+            }
+        };
     }, [
         isHovering,
         isFocused,
@@ -49,8 +59,7 @@ export const useFadeOutEffect = (
         task.taskDescription,
         task._id,
         onDelete,
-        clearTimers,
     ]);
 
-    return opacity;
+    return opacityRef.current;
 };
