@@ -162,7 +162,7 @@ export const convertSubtaskToTask = createAsyncThunk(
         const updatedParentTask = {
             ...parentTask,
             subtasks: parentTask.subtasks.filter(
-                (subtaskId) => subtaskId !== subtask._id
+                (subtask) => subtask._id !== subtask._id
             ),
         };
 
@@ -274,12 +274,14 @@ export const tasksSlice = createSlice({
                 state.tasks = state.tasks.map((task) => {
                     if (
                         task.subtasks &&
-                        task.subtasks.includes(newTask._id as string)
+                        task.subtasks.some(
+                            (subtask) => subtask._id === newTask._id
+                        )
                     ) {
                         return {
                             ...task,
                             subtasks: task.subtasks.filter(
-                                (id) => id !== newTask._id
+                                (subtask) => subtask._id !== newTask._id
                             ),
                         };
                     }

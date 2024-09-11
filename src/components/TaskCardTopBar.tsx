@@ -29,13 +29,11 @@ const TaskCardTopBar: React.FC<TaskCardTopBarProps> = ({
                     style={{ height: '1px' }}
                 ></div>
             </div>
-            <button
+            <FaTrash
+                size={14}
+                className="cursor-pointer text-red-500 hover:text-red-700 transition-colors duration-200 hover:scale-110 hover:rotate-12"
                 onClick={onDelete}
-                className="delete-button no-drag text-red-500 hover:text-red-700 transition-colors duration-200"
-                aria-label="Delete task"
-            >
-                <FaTrash size={14} />
-            </button>
+            />
         </div>
     );
 };
