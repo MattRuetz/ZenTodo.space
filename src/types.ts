@@ -13,11 +13,10 @@ export interface Task {
     x: number;
     y: number;
     progress: TaskProgress;
-    isVirgin: boolean;
     space: String;
-    zIndex: number; // Add this line
-    // subtasks: string[]; // Array of subtask IDs
-    // parentTask?: string; // ID of the parent task, if this is a subtask
+    zIndex: number;
+    subtasks: Task[];
+    parentTask?: string;
 }
 
 export interface SpaceData {

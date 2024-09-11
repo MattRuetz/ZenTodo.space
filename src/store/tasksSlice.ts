@@ -1,18 +1,16 @@
 // src/store/tasksSlice.ts
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { v4 as uuidv4 } from 'uuid'; // You might need to install this package
 import { Task } from '../types';
+import { RootState } from './store';
 
 interface TasksState {
     tasks: Task[];
-    localTasks: Task[];
     status: 'idle' | 'loading' | 'succeeded' | 'failed';
     error: string | null;
 }
 
 const initialState: TasksState = {
     tasks: [],
-    localTasks: [],
     status: 'idle',
     error: null,
 };
@@ -30,13 +28,12 @@ export const fetchTasks = createAsyncThunk(
 
 export const addTask = createAsyncThunk(
     'tasks/addTask',
-    async (task: Task, { rejectWithValue }) => {
+    async (task: Omit<Task, '_id'>, { rejectWithValue }) => {
         try {
-            const { _id, isVirgin, ...taskData } = task; // Remove _id and isVirgin before sending to server
             const response = await fetch('/api/tasks', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(taskData),
+                body: JSON.stringify(task),
             });
             if (!response.ok) throw new Error('Failed to add task');
             const data = await response.json();
@@ -52,12 +49,15 @@ export const addTask = createAsyncThunk(
 
 export const updateTask = createAsyncThunk(
     'tasks/updateTask',
-    async (task: Task, { rejectWithValue }) => {
+    async (
+        partialTask: Partial<Task> & { _id: string },
+        { rejectWithValue }
+    ) => {
         try {
             const response = await fetch('/api/tasks', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(task),
+                body: JSON.stringify(partialTask), // Send only the partial update
             });
 
             if (!response.ok) {
@@ -66,6 +66,40 @@ export const updateTask = createAsyncThunk(
 
             const data = await response.json();
             return data.task;
+        } catch (error) {
+            if (error instanceof Error) {
+                return rejectWithValue(error.message);
+            }
+            return rejectWithValue('An unknown error occurred');
+        }
+    }
+);
+
+export const addChildTask = createAsyncThunk(
+    'tasks/addChildTask',
+    async (
+        { childTask, parentTaskId }: { childTask: Task; parentTaskId: string },
+        { getState, rejectWithValue }
+    ) => {
+        try {
+            const response = await fetch('/api/tasks/hierarchy', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    subtaskIdString: childTask._id,
+                    parentTaskIdString: parentTaskId,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to update task hierarchy');
+            }
+
+            const data = await response.json();
+            return {
+                updatedParentTask: data.updatedParentTask,
+                updatedSubtask: data.updatedSubtask,
+            };
         } catch (error) {
             if (error instanceof Error) {
                 return rejectWithValue(error.message);
@@ -98,24 +132,56 @@ export const deleteTask = createAsyncThunk(
     }
 );
 
+export const convertSubtaskToTask = createAsyncThunk(
+    'tasks/convertSubtaskToTask',
+    async (
+        {
+            subtask,
+            dropPosition,
+        }: { subtask: Task; dropPosition: { x: number; y: number } },
+        { getState, dispatch }
+    ) => {
+        const state = getState() as RootState;
+        const parentTask = state.tasks.tasks.find(
+            (task) => task._id === subtask.parentTask
+        );
+
+        if (!parentTask) {
+            throw new Error('Parent task not found');
+        }
+
+        // Remove subtask from parent
+        const updatedParentTask = {
+            ...parentTask,
+            subtasks: parentTask.subtasks.filter(
+                (subtaskId) => subtaskId !== subtask._id
+            ),
+        };
+
+        // Convert subtask to main task
+        const newTask = {
+            ...subtask,
+            parentTask: null, // Remove the parentTask reference
+            x: dropPosition.x,
+            y: dropPosition.y,
+        };
+
+        // Update tasks in the database
+        await dispatch(
+            updateTask(updatedParentTask as Partial<Task> & { _id: string })
+        );
+        await dispatch(updateTask(newTask as Partial<Task> & { _id: string }));
+
+        return { updatedParentTask, newTask };
+    }
+);
+
 export const tasksSlice = createSlice({
     name: 'tasks',
     initialState,
     reducers: {
-        addLocalTask: (state, action: PayloadAction<Task>) => {
-            const localId = uuidv4(); // Generate a temporary local ID
-            state.localTasks.push({ ...action.payload, _id: localId });
-        },
-        updateLocalTask: (state, action: PayloadAction<Task>) => {
-            const index = state.localTasks.findIndex(
-                (task) => task._id === action.payload._id
-            );
-            if (index !== -1) {
-                state.localTasks[index] = action.payload;
-            }
-        },
-        removeLocalTask: (state, action: PayloadAction<string>) => {
-            state.localTasks = state.localTasks.filter(
+        hideNewChildTask: (state, action: PayloadAction<string>) => {
+            state.tasks = state.tasks.filter(
                 (task) => task._id !== action.payload
             );
         },
@@ -135,10 +201,6 @@ export const tasksSlice = createSlice({
             })
             .addCase(addTask.fulfilled, (state, action) => {
                 state.tasks.push(action.payload);
-                // Remove the corresponding local task if it exists
-                state.localTasks = state.localTasks.filter(
-                    (task) => task._id !== action.meta.arg._id
-                );
             })
             .addCase(updateTask.fulfilled, (state, action) => {
                 const index = state.tasks.findIndex(
@@ -152,10 +214,51 @@ export const tasksSlice = createSlice({
                 state.tasks = state.tasks.filter(
                     (task) => task._id !== action.payload
                 );
+            })
+            .addCase(addChildTask.fulfilled, (state, action) => {
+                const { updatedParentTask, updatedSubtask } = action.payload;
+
+                // Update the parent task
+                const parentIndex = state.tasks.findIndex(
+                    (task) => task._id === updatedParentTask._id
+                );
+                if (parentIndex !== -1) {
+                    state.tasks[parentIndex] = updatedParentTask;
+                }
+
+                // Update or add the child task
+                const childIndex = state.tasks.findIndex(
+                    (task) => task._id === updatedSubtask._id
+                );
+                if (childIndex !== -1) {
+                    state.tasks[childIndex] = updatedSubtask;
+                } else {
+                    state.tasks.push(updatedSubtask);
+                }
+            })
+            .addCase(convertSubtaskToTask.fulfilled, (state, action) => {
+                const { updatedParentTask, newTask } = action.payload;
+                const parentIndex = state.tasks.findIndex(
+                    (task) => task._id === updatedParentTask._id
+                );
+                if (parentIndex !== -1) {
+                    state.tasks[parentIndex] = updatedParentTask;
+                }
+                const subtaskIndex = state.tasks.findIndex(
+                    (task) => task._id === newTask._id
+                );
+                if (subtaskIndex !== -1) {
+                    state.tasks[subtaskIndex] = newTask;
+                } else {
+                    state.tasks.push(newTask);
+                }
             });
     },
 });
-export const { addLocalTask, updateLocalTask, removeLocalTask } =
-    tasksSlice.actions;
+
+export const selectSubtasksByParentId = (state: RootState, parentId: string) =>
+    state.tasks.tasks.filter((task) => task.parentTask === parentId);
+
+export const { hideNewChildTask } = tasksSlice.actions;
 
 export default tasksSlice.reducer;

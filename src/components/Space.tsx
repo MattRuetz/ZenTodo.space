@@ -7,9 +7,13 @@ import { createSelector } from '@reduxjs/toolkit';
 import TaskCard from './TaskCard';
 import SignUpForm from './SignUpForm';
 import { RootState, AppDispatch } from '../store/store';
-import { addLocalTask, fetchTasks, updateTask } from '../store/tasksSlice';
+import { addTask, fetchTasks, updateTask } from '../store/tasksSlice';
 import { TaskProgress, Task } from '@/types';
 import { updateSpaceMaxZIndex, fetchSpaceMaxZIndex } from '../store/spaceSlice';
+import { setSubtaskDrawerOpen } from '@/store/uiSlice';
+import SubtaskDrawer from './SubtaskDrawer';
+import { useDrop } from 'react-dnd';
+import { convertSubtaskToTask } from '@/store/tasksSlice';
 
 // Memoized selectors
 const selectTasksForSpace = createSelector(
@@ -17,10 +21,18 @@ const selectTasksForSpace = createSelector(
         (state: RootState) => state.tasks.tasks,
         (state: RootState, spaceId: string) => spaceId,
     ],
-    (tasks, spaceId) => tasks.filter((task) => task.space === spaceId)
+    (tasks, spaceId) => {
+        const tasksInSpace = tasks.filter(
+            (task) => task.space === spaceId && !task.parentTask
+        );
+        return tasksInSpace.map((task) => ({
+            ...task,
+            subtasks: tasks.filter(
+                (subtask) => subtask.parentTask === task._id
+            ),
+        }));
+    }
 );
-
-const selectLocalTasks = (state: RootState) => state.tasks.localTasks;
 const selectTaskStatus = (state: RootState) => state.tasks.status;
 const selectCurrentSpace = createSelector(
     [
@@ -40,11 +52,7 @@ const Space: React.FC<SpaceProps> = ({ spaceId, onLoaded }) => {
     const currentSpace = useSelector((state: RootState) =>
         selectCurrentSpace(state, spaceId)
     );
-    const tasks = useSelector((state: RootState) =>
-        selectTasksForSpace(state, spaceId)
-    );
-    const localTasks = useSelector(selectLocalTasks);
-    const taskStatus = useSelector(selectTaskStatus);
+
     const { data: session, status: sessionStatus } = useSession();
     const isDraggingRef = useRef(false);
     const [showSignUpForm, setShowSignUpForm] = useState(false);
@@ -53,7 +61,13 @@ const Space: React.FC<SpaceProps> = ({ spaceId, onLoaded }) => {
     const cursorEffectRef = useRef<HTMLDivElement>(null);
     const [maxZIndex, setMaxZIndex] = useState(currentSpace?.maxZIndex || 1);
     const [resetTasks, setResetTasks] = useState<Task[]>([]);
+    const [canCreateTask, setCanCreateTask] = useState(true);
+    const cooldownTime = 500; // 500ms cooldown
     const initialLoadComplete = useRef(false);
+    const tasks = useSelector((state: RootState) =>
+        selectTasksForSpace(state, spaceId)
+    );
+    const taskStatus = useSelector(selectTaskStatus);
 
     const getNewZIndex = useCallback(() => {
         const newZIndex = maxZIndex + 1 || 1;
@@ -62,6 +76,25 @@ const Space: React.FC<SpaceProps> = ({ spaceId, onLoaded }) => {
         dispatch(updateSpaceMaxZIndex({ spaceId, maxZIndex: newZIndex }));
         return newZIndex;
     }, [maxZIndex, spaceId, dispatch]);
+
+    const isDrawerOpen = useSelector(
+        (state: RootState) => state.ui.isSubtaskDrawerOpen
+    );
+
+    const handleCloseDrawer = () => {
+        dispatch(setSubtaskDrawerOpen(false));
+    };
+
+    const [, drop] = useDrop(() => ({
+        accept: 'SUBTASK',
+        drop: (item: Task, monitor) => {
+            const offset = monitor.getClientOffset();
+            return {
+                x: offset?.x || 0,
+                y: offset?.y || 0,
+            };
+        },
+    }));
 
     useEffect(() => {
         const loadTasks = async () => {
@@ -119,7 +152,9 @@ const Space: React.FC<SpaceProps> = ({ spaceId, onLoaded }) => {
     useEffect(() => {
         if (resetTasks.length > 0) {
             resetTasks.forEach((task) => {
-                dispatch(updateTask(task));
+                if (task._id) {
+                    dispatch(updateTask({ ...task, _id: task._id }));
+                }
             });
             setResetTasks([]);
         }
@@ -146,26 +181,32 @@ const Space: React.FC<SpaceProps> = ({ spaceId, onLoaded }) => {
         }
     }, [cursorPosition]);
 
-    const handleSpaceClick = (e: React.MouseEvent<HTMLDivElement>) => {
-        if (e.target !== e.currentTarget) return;
-        if (isDraggingRef.current) return;
-        if (!session) {
-            setFormPosition({ x: e.clientX, y: e.clientY });
-            setShowSignUpForm(true);
-        } else {
-            const newTask: Task = {
-                taskName: '',
-                taskDescription: '',
-                x: e.clientX,
-                y: e.clientY,
-                progress: 'Not Started' as TaskProgress,
-                isVirgin: true, // Mark as local
-                space: spaceId,
-                zIndex: getNewZIndex(), //new tasks on top
-            };
-            dispatch(addLocalTask(newTask));
-        }
-    };
+    const handleSpaceClick = useCallback(
+        (e: React.MouseEvent<HTMLDivElement>) => {
+            if (e.target !== e.currentTarget) return;
+            if (isDraggingRef.current) return;
+            if (!session) {
+                setFormPosition({ x: e.clientX, y: e.clientY });
+                setShowSignUpForm(true);
+            } else if (canCreateTask) {
+                const newTask: Omit<Task, '_id'> = {
+                    taskName: '',
+                    taskDescription: '',
+                    x: e.clientX,
+                    y: e.clientY,
+                    progress: 'Not Started' as TaskProgress,
+                    space: spaceId,
+                    zIndex: getNewZIndex(),
+                    subtasks: [],
+                    parentTask: '',
+                };
+                dispatch(addTask(newTask));
+                setCanCreateTask(false);
+                setTimeout(() => setCanCreateTask(true), cooldownTime);
+            }
+        },
+        [session, canCreateTask, spaceId, getNewZIndex, dispatch]
+    );
 
     const handleFormDrag = (newPosition: { x: number; y: number }) => {
         setFormPosition(newPosition);
@@ -183,6 +224,7 @@ const Space: React.FC<SpaceProps> = ({ spaceId, onLoaded }) => {
 
     return (
         <div
+            ref={drop}
             className={`relative w-full h-screen bg-base-100 space-${spaceId}`}
             onMouseDown={handleSpaceClick}
         >
@@ -196,23 +238,14 @@ const Space: React.FC<SpaceProps> = ({ spaceId, onLoaded }) => {
                         (task) => (
                             <TaskCard
                                 key={task._id}
-                                task={task}
+                                task={task as Task}
                                 onDragStart={handleDragStart}
                                 onDragStop={handleDragStop}
                                 getNewZIndex={getNewZIndex}
+                                subtasks={task.subtasks}
                             />
                         )
                     )}
-                    {localTasks.map((task) => (
-                        <TaskCard
-                            key={task._id}
-                            task={task}
-                            onDragStart={handleDragStart}
-                            onDragStop={handleDragStop}
-                            isVirgin={true}
-                            getNewZIndex={getNewZIndex}
-                        />
-                    ))}
                 </>
             ) : (
                 showSignUpForm && (
@@ -223,6 +256,7 @@ const Space: React.FC<SpaceProps> = ({ spaceId, onLoaded }) => {
                     />
                 )
             )}
+            <SubtaskDrawer isOpen={isDrawerOpen} onClose={handleCloseDrawer} />
         </div>
     );
 };

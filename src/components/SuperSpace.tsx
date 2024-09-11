@@ -5,10 +5,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchSpaces, createSpace, setCurrentSpace } from '@/store/spaceSlice';
 import Space from './Space';
 import { AppDispatch, RootState } from '@/store/store';
-import { SpaceData } from '@/types';
+import { SpaceData, Task } from '@/types';
 import ControlPanel from './ControlPanel';
 import Preloader from './Preloader';
 import { useSession } from 'next-auth/react';
+import SubtaskDrawer from './SubtaskDrawer';
 
 const SuperSpace = () => {
     const dispatch = useDispatch<AppDispatch>();
@@ -18,6 +19,7 @@ const SuperSpace = () => {
     const [isZoomedOut, setIsZoomedOut] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [fadeOut, setFadeOut] = useState(false);
+
     const { data: session, status: sessionStatus } = useSession();
 
     useEffect(() => {

@@ -29,6 +29,12 @@ const TaskSchema = new mongoose.Schema({
         enum: ['Not Started', 'In Progress', 'Blocked', 'Complete'],
         default: 'Not Started',
     },
+    subtasks: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Task' }],
+    parentTask: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Task',
+        required: false,
+    },
 });
 
 // Add this line to create the compound index
