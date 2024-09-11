@@ -11,6 +11,8 @@ import { addTask, fetchTasks, updateTask } from '../store/tasksSlice';
 import { TaskProgress, Task } from '@/types';
 import { updateSpaceMaxZIndex, fetchSpaceMaxZIndex } from '../store/spaceSlice';
 import debounce from 'lodash.debounce';
+import { setSubtaskDrawerOpen } from '@/store/uiSlice';
+import SubtaskDrawer from './SubtaskDrawer';
 
 // Memoized selectors
 const selectTasksForSpace = createSelector(
@@ -73,6 +75,14 @@ const Space: React.FC<SpaceProps> = ({ spaceId, onLoaded }) => {
         dispatch(updateSpaceMaxZIndex({ spaceId, maxZIndex: newZIndex }));
         return newZIndex;
     }, [maxZIndex, spaceId, dispatch]);
+
+    const isDrawerOpen = useSelector(
+        (state: RootState) => state.ui.isSubtaskDrawerOpen
+    );
+
+    const handleCloseDrawer = () => {
+        dispatch(setSubtaskDrawerOpen(false));
+    };
 
     useEffect(() => {
         const loadTasks = async () => {
@@ -233,6 +243,7 @@ const Space: React.FC<SpaceProps> = ({ spaceId, onLoaded }) => {
                     />
                 )
             )}
+            <SubtaskDrawer isOpen={isDrawerOpen} onClose={handleCloseDrawer} />
         </div>
     );
 };

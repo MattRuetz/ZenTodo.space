@@ -12,7 +12,7 @@ import {
 } from '../store/tasksSlice';
 import { AppDispatch, RootState } from '../store/store';
 import TaskCardToolBar from './TaskCardToolBar';
-import { Task } from '@/types';
+import { Task, TaskProgress } from '@/types';
 import DraggableArea from './DraggableArea';
 import { useThrottle } from '@/hooks/useThrottle';
 import { useFadeOutEffect } from '@/hooks/useFadeOutEffect';
@@ -114,12 +114,22 @@ const TaskCard: React.FC<TaskCardProps> = ({
         }
     }, []);
 
+    const handleProgressChange = useCallback(
+        (newProgress: TaskProgress) => {
+            setLocalTask((prevTask) => {
+                const newTaskData = { progress: newProgress };
+                debouncedUpdate(newTaskData);
+                return { ...prevTask, ...newTaskData };
+            });
+        },
+        [debouncedUpdate, setLocalTask]
+    );
+
     const {
         handleDragStart,
         handleDragStop,
         handleInputChange,
         handleInputBlur,
-        handleProgressChange,
         handleDelete,
         handleMouseDown,
     } = useDragHandlers({
@@ -242,37 +252,6 @@ const TaskCard: React.FC<TaskCardProps> = ({
             maxHeight: '500px',
         }),
         [opacity, localTask.zIndex, cardSize.width, cardSize.height]
-    );
-
-    const getSubtaskProgresses = useCallback(
-        (subtasks: Task[]) => {
-            return subtasks.reduce(
-                (acc, subtask) => {
-                    switch (subtask.progress) {
-                        case 'Not Started':
-                            acc.notStarted++;
-                            break;
-                        case 'In Progress':
-                            acc.inProgress++;
-                            break;
-                        case 'Blocked':
-                            acc.blocked++;
-                            break;
-                        case 'Complete':
-                            acc.complete++;
-                            break;
-                    }
-                    return acc;
-                },
-                {
-                    notStarted: 0,
-                    inProgress: 0,
-                    blocked: 0,
-                    complete: 0,
-                }
-            );
-        },
-        [subtasks]
     );
 
     return (

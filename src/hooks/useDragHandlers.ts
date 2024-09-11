@@ -142,18 +142,6 @@ export const useDragHandlers = ({
         [setLocalTask, updateTaskInStore, updateCardSize]
     );
 
-    const handleProgressChange = useCallback(
-        (newProgress: TaskProgress) => {
-            console.log('newProgress', newProgress);
-            setLocalTask((prevTask) => {
-                const newTaskData = { progress: newProgress };
-                debouncedUpdate(newTaskData);
-                return { ...prevTask, ...newTaskData };
-            });
-        },
-        [debouncedUpdate, setLocalTask]
-    );
-
     const handleDelete = useCallback(
         async (taskId: string) => {
             if (deletingTasks.has(taskId)) return;
@@ -199,7 +187,6 @@ export const useDragHandlers = ({
         handleDragStop,
         handleInputChange,
         handleInputBlur,
-        handleProgressChange,
         handleDelete,
         handleMouseDown,
     };
