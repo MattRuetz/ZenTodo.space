@@ -27,27 +27,36 @@ const SubtaskDrawerCard: React.FC<SubtaskDrawerCardProps> = ({ subtask }) => {
         setDeletingTasks,
     });
 
-    const [{ isDragging }, drag] = useDrag(() => ({
-        type: 'SUBTASK',
-        item: { ...subtask },
-        end: (item, monitor) => {
-            const dropResult = monitor.getDropResult() as {
-                x: number;
-                y: number;
-            };
-            if (item && dropResult) {
-                dispatch(
-                    convertSubtaskToTask({
-                        subtask: item,
-                        dropPosition: dropResult,
-                    })
-                );
-            }
-        },
-        collect: (monitor) => ({
-            isDragging: monitor.isDragging(),
+    const [{ isDragging }, drag] = useDrag(
+        () => ({
+            type: 'SUBTASK',
+            item: () => {
+                // This function will be called when the drag starts
+                return { ...localSubtask };
+            },
+            end: (item, monitor) => {
+                console.log('item', item);
+                const dropResult = monitor.getDropResult() as {
+                    x: number;
+                    y: number;
+                };
+                console.log('dropResult', dropResult);
+
+                if (item && dropResult.x && dropResult.y) {
+                    dispatch(
+                        convertSubtaskToTask({
+                            subtask: { ...item },
+                            dropPosition: dropResult,
+                        })
+                    );
+                }
+            },
+            collect: (monitor) => ({
+                isDragging: monitor.isDragging(),
+            }),
         }),
-    }));
+        [localSubtask, dispatch]
+    ); // Add dependencies here
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -69,7 +78,6 @@ const SubtaskDrawerCard: React.FC<SubtaskDrawerCardProps> = ({ subtask }) => {
     }, [isEditing]);
 
     const handleBlur = useCallback(() => {
-        console.log('Blurring with task name:', currentTaskNameRef.current);
         if (isEditing === 'taskName' && !currentTaskNameRef.current.trim()) {
             setLocalSubtask((prevSubtask) => ({
                 ...prevSubtask,
@@ -89,6 +97,7 @@ const SubtaskDrawerCard: React.FC<SubtaskDrawerCardProps> = ({ subtask }) => {
             console.log('newProgress', newProgress);
             const updatedFields = { progress: newProgress };
             dispatch(updateTask({ _id: subtask._id, ...updatedFields }));
+            setLocalSubtask((prev) => ({ ...prev, progress: newProgress }));
         },
         [dispatch, subtask._id]
     );

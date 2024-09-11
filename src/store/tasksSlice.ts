@@ -131,16 +131,23 @@ export const deleteTask = createAsyncThunk(
         }
     }
 );
-
 export const convertSubtaskToTask = createAsyncThunk(
     'tasks/convertSubtaskToTask',
     async (
         {
             subtask,
             dropPosition,
-        }: { subtask: Task; dropPosition: { x: number; y: number } },
+        }: {
+            subtask: Task;
+            dropPosition: { x: number; y: number } | undefined;
+        },
         { getState, dispatch }
     ) => {
+        // If dropPosition is undefined, it means the subtask was dropped on an invalid target
+        if (!dropPosition) {
+            return null;
+        }
+
         const state = getState() as RootState;
         const parentTask = state.tasks.tasks.find(
             (task) => task._id === subtask.parentTask
@@ -158,17 +165,11 @@ export const convertSubtaskToTask = createAsyncThunk(
             ),
         };
 
-        // Fetch the latest subtask data from the server
-        const response = await fetch(`/api/tasks/${subtask._id}`);
-        if (!response.ok) {
-            throw new Error('Failed to fetch latest subtask data');
-        }
-        const latestSubtaskData = await response.json();
-
-        // Convert subtask to main task using the latest data
+        // Convert subtask to main task
         const newTask = {
-            ...latestSubtaskData,
-            parentTask: null,
+            ...subtask,
+            progress: subtask.progress,
+            parentTask: null, // Remove the parentTask reference
             x: dropPosition.x,
             y: dropPosition.y,
         };
@@ -248,19 +249,40 @@ export const tasksSlice = createSlice({
                 }
             })
             .addCase(convertSubtaskToTask.fulfilled, (state, action) => {
+                if (!action.payload) {
+                    // The conversion didn't happen, so we don't need to update the state
+                    return;
+                }
+
                 const { updatedParentTask, newTask } = action.payload;
+
+                // Update the parent task
                 const parentIndex = state.tasks.findIndex(
                     (task) => task._id === updatedParentTask._id
                 );
                 if (parentIndex !== -1) {
                     state.tasks[parentIndex] = updatedParentTask;
                 }
-                const subtaskIndex = state.tasks.findIndex(
+
+                // Remove the subtask from its original parent
+                state.tasks = state.tasks.map((task) => {
+                    if (task.subtasks && task.subtasks.includes(newTask._id)) {
+                        return {
+                            ...task,
+                            subtasks: task.subtasks.filter(
+                                (id) => id !== newTask._id
+                            ),
+                        };
+                    }
+                    return task;
+                });
+
+                // Add the new task (former subtask) to the main tasks array
+                const taskIndex = state.tasks.findIndex(
                     (task) => task._id === newTask._id
                 );
-                console.log('subtaskIndex', subtaskIndex);
-                if (subtaskIndex !== -1) {
-                    state.tasks[subtaskIndex] = newTask;
+                if (taskIndex !== -1) {
+                    state.tasks[taskIndex] = newTask;
                 } else {
                     state.tasks.push(newTask);
                 }
