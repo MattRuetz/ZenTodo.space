@@ -13,7 +13,7 @@ export interface Task {
     x: number;
     y: number;
     progress: TaskProgress;
-    space: String;
+    space: string;
     zIndex: number;
     subtasks: Task[];
     parentTask?: string;

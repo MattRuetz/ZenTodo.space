@@ -2,13 +2,15 @@
 'use client';
 import { signOut } from 'next-auth/react';
 import { useSession } from 'next-auth/react';
-import { useState } from 'react';
 
-const ControlPanelContent = ({ isOpen }: { isOpen: boolean }) => {
+interface ControlPanelContentProps {
+    isOpen: boolean;
+}
+
+const ControlPanelContent: React.FC<ControlPanelContentProps> = ({
+    isOpen,
+}) => {
     const { data: session } = useSession();
-
-    // Only show ctrl panel for logged in user
-    if (!session) return null;
 
     return (
         <div

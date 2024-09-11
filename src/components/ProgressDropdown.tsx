@@ -1,7 +1,6 @@
 import { TaskProgress } from '@/types';
 import React, { useEffect, useRef, useState } from 'react';
 import { FaCheck, FaChevronDown } from 'react-icons/fa';
-import { useSelector } from 'react-redux';
 
 interface ProgressDropdownProps {
     progress: TaskProgress;
@@ -19,6 +18,21 @@ export const ProgressDropdown: React.FC<ProgressDropdownProps> = ({
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [shouldOpenDropdown, setShouldOpenDropdown] = useState(false);
 
+    const PROGRESS_OPTIONS: TaskProgress[] = [
+        'Not Started',
+        'In Progress',
+        'Blocked',
+        'Complete',
+    ];
+
+    // Extract color mapping to a constant
+    const PROGRESS_COLORS: Record<TaskProgress, string> = {
+        'Not Started': 'bg-gray-300',
+        'In Progress': 'bg-yellow-400',
+        Blocked: 'bg-red-500',
+        Complete: 'bg-green-500',
+    };
+
     const handleProgressClick = () => {
         setShouldOpenDropdown(!isDropdownOpen);
     };
@@ -28,18 +42,7 @@ export const ProgressDropdown: React.FC<ProgressDropdownProps> = ({
         setShouldOpenDropdown(false);
     };
 
-    const getProgressColor = () => {
-        switch (progress) {
-            case 'In Progress':
-                return 'bg-yellow-400';
-            case 'Blocked':
-                return 'bg-red-500';
-            case 'Complete':
-                return 'bg-green-500';
-            default:
-                return 'bg-gray-300';
-        }
-    };
+    const getProgressColor = () => PROGRESS_COLORS[progress];
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -58,6 +61,11 @@ export const ProgressDropdown: React.FC<ProgressDropdownProps> = ({
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, []);
+
+    // Custom hook for click outside logic
+    useClickOutside([dropdownRef, progressCardRef], () =>
+        setShouldOpenDropdown(false)
+    );
 
     useEffect(() => {
         setIsDropdownOpen(shouldOpenDropdown);
@@ -92,28 +100,46 @@ export const ProgressDropdown: React.FC<ProgressDropdownProps> = ({
             </div>
             <div
                 ref={dropdownRef}
-                className={`progress-dropdown mt-2 bg-slate-600 rounded-md shadow-md overflow-hidden transition-all duration-300 ease-in-out w-full ${
+                className={`progress-dropdown mt-1 bg-slate-600 rounded-md shadow-md overflow-hidden transition-all duration-300 ease-in-out ${
                     isSubtask ? 'w-full' : 'w-48 absolute'
                 } ${isDropdownOpen ? 'max-h-40' : 'max-h-0'}`}
             >
-                {['Not Started', 'In Progress', 'Blocked', 'Complete'].map(
-                    (progressOption) => (
-                        <div
-                            key={progressOption}
-                            className={`p-2 cursor-pointer hover:bg-base-200 ${
-                                progress === progressOption ? 'bg-base-300' : ''
-                            }`}
-                            onClick={() =>
-                                handleProgressSelect(
-                                    progressOption as TaskProgress
-                                )
-                            }
-                        >
-                            {progressOption}
-                        </div>
-                    )
-                )}
+                {PROGRESS_OPTIONS.map((progressOption) => (
+                    <div
+                        key={progressOption}
+                        className={`p-2 cursor-pointer hover:bg-base-200 ${
+                            progress === progressOption ? 'bg-base-300' : ''
+                        }`}
+                        onClick={() => handleProgressSelect(progressOption)}
+                    >
+                        {progressOption}
+                    </div>
+                ))}
             </div>
         </div>
     );
 };
+
+// Custom hook for click outside logic
+function useClickOutside(
+    refs: React.RefObject<HTMLElement>[],
+    callback: () => void
+) {
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (
+                refs.every(
+                    (ref) =>
+                        ref.current &&
+                        !ref.current.contains(event.target as Node)
+                )
+            ) {
+                callback();
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () =>
+            document.removeEventListener('mousedown', handleClickOutside);
+    }, [refs, callback]);
+}

@@ -1,6 +1,6 @@
 // src/components/DraggableArea.tsx
 import React from 'react';
-import DragHandle from './DragHandle';
+import TaskCardTopBar from './TaskCardTopBar';
 
 interface DraggableAreaProps {
     children: React.ReactNode;
@@ -29,7 +29,7 @@ const DraggableArea: React.FC<DraggableAreaProps> = ({
             className={`draggable-area w-full h-full ${className}`}
             onMouseDown={handleMouseDown}
         >
-            <DragHandle className="pb-2" onDelete={onDelete} />
+            <TaskCardTopBar className="pb-2" onDelete={onDelete} />
             {children}
         </div>
     );

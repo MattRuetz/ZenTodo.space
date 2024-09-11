@@ -1,19 +1,19 @@
-// src/components/icons/DragHandle.tsx
+// src/components/icons/TaskCardTopBar.tsx
 import React from 'react';
 import { FaTrash } from 'react-icons/fa6';
 
-interface DragHandleProps {
+interface TaskCardTopBarProps {
     className?: string;
     onDelete: () => void;
 }
 
-const DragHandle: React.FC<DragHandleProps> = ({
+const TaskCardTopBar: React.FC<TaskCardTopBarProps> = ({
     className = '',
     onDelete,
 }) => {
     return (
         <div
-            className={`flex flex-row gap-6 drag-handle cursor-move bg-base-400 rounded-t flex items-center ${className}`}
+            className={`flex flex-row gap-6 drag-handle cursor-move ${className}`}
         >
             <div className="justify-center w-full">
                 <div
@@ -29,15 +29,13 @@ const DragHandle: React.FC<DragHandleProps> = ({
                     style={{ height: '1px' }}
                 ></div>
             </div>
-            <button
+            <FaTrash
+                size={14}
+                className="cursor-pointer text-red-500 hover:text-red-700 transition-colors duration-200 hover:scale-110 hover:rotate-12"
                 onClick={onDelete}
-                className="delete-button no-drag text-red-500 hover:text-red-700 transition-colors duration-200"
-                aria-label="Delete task"
-            >
-                <FaTrash size={14} />
-            </button>
+            />
         </div>
     );
 };
 
-export default DragHandle;
+export default TaskCardTopBar;

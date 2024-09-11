@@ -27,7 +27,7 @@ const SubtaskDrawer = forwardRef<HTMLDivElement, SubtaskDrawerProps>(
                       .map((subtaskId) =>
                           allTasks.find((task) => task._id === subtaskId)
                       )
-                      .filter(Boolean)
+                      .filter((task): task is Task => Boolean(task))
                 : [];
         }, [allTasks, parentTaskId]);
 
@@ -51,7 +51,7 @@ const SubtaskDrawer = forwardRef<HTMLDivElement, SubtaskDrawerProps>(
                     <ul className="overflow-y-auto overflow-x-visible h-[calc(100vh-10rem)] subtask-drawer-items">
                         {subtasks.map((subtask) => (
                             <SubtaskDrawerCard
-                                key={subtask._id}
+                                key={subtask?._id}
                                 subtask={subtask as Task}
                             />
                         ))}

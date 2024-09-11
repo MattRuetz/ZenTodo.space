@@ -181,7 +181,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
             if (isDraggingOver) {
                 setIsDropped(true);
                 // Something that happens when you drop a card
-                setTimeout(() => setIsDropped(false), 500);
+                setTimeout(() => setIsDropped(false), 400);
             }
             setIsDraggingOver(false);
         };
@@ -267,11 +267,11 @@ const TaskCard: React.FC<TaskCardProps> = ({
         >
             <div
                 ref={cardRef}
-                className={`task-card absolute bg-base-300 shadow cursor-move flex flex-col space-y-2 rounded-xl border-4 ${
+                className={`task-card absolute bg-base-300 shadow cursor-move flex flex-col space-y-2 rounded-xl transition-all duration-200 border-2  ${
                     isDraggingOver
-                        ? 'border-blue-500'
+                        ? 'filter brightness-110 border-blue-900'
                         : isDropped
-                        ? 'border-green-500'
+                        ? 'filter brightness-150 border-green-500'
                         : 'border-base-300'
                 }`}
                 style={cardStyle}

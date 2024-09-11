@@ -2,6 +2,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { Task } from '../types';
 import { RootState } from './store';
+import { fetchSpaceMaxZIndex } from './spaceSlice';
 
 interface TasksState {
     tasks: Task[];
@@ -161,13 +162,18 @@ export const convertSubtaskToTask = createAsyncThunk(
         const updatedParentTask = {
             ...parentTask,
             subtasks: parentTask.subtasks.filter(
-                (subtaskId) => subtaskId !== subtask._id
+                (subtask) => subtask._id !== subtask._id
             ),
         };
+
+        const newTaskZIndex = await dispatch(
+            fetchSpaceMaxZIndex(parentTask.space)
+        );
 
         // Convert subtask to main task
         const newTask = {
             ...subtask,
+            zIndex: newTaskZIndex.payload + 1,
             progress: subtask.progress,
             parentTask: null, // Remove the parentTask reference
             x: dropPosition.x,
@@ -266,11 +272,16 @@ export const tasksSlice = createSlice({
 
                 // Remove the subtask from its original parent
                 state.tasks = state.tasks.map((task) => {
-                    if (task.subtasks && task.subtasks.includes(newTask._id)) {
+                    if (
+                        task.subtasks &&
+                        task.subtasks.some(
+                            (subtask) => subtask._id === newTask._id
+                        )
+                    ) {
                         return {
                             ...task,
                             subtasks: task.subtasks.filter(
-                                (id) => id !== newTask._id
+                                (subtask) => subtask._id !== newTask._id
                             ),
                         };
                     }
@@ -282,9 +293,15 @@ export const tasksSlice = createSlice({
                     (task) => task._id === newTask._id
                 );
                 if (taskIndex !== -1) {
-                    state.tasks[taskIndex] = newTask;
+                    state.tasks[taskIndex] = {
+                        ...newTask,
+                        parentTask: newTask.parentTask || undefined,
+                    };
                 } else {
-                    state.tasks.push(newTask);
+                    state.tasks.push({
+                        ...newTask,
+                        parentTask: newTask.parentTask || undefined,
+                    });
                 }
             });
     },
