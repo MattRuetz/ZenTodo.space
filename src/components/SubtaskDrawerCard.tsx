@@ -6,6 +6,8 @@ import { Task, TaskProgress } from '@/types';
 import { ProgressDropdown } from './ProgressDropdown';
 import { useDrag } from 'react-dnd';
 import { convertSubtaskToTask } from '@/store/tasksSlice';
+import { FaTrash } from 'react-icons/fa';
+import { useDeleteTask } from '@/hooks/useDeleteTask';
 
 interface SubtaskDrawerCardProps {
     subtask: Task;
@@ -18,24 +20,43 @@ const SubtaskDrawerCard: React.FC<SubtaskDrawerCardProps> = ({ subtask }) => {
     const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
     const currentTaskNameRef = useRef(subtask.taskName);
 
-    const [{ isDragging }, drag] = useDrag(() => ({
-        type: 'SUBTASK',
-        item: { ...subtask },
-        end: (item, monitor) => {
-            const dropResult = monitor.getDropResult();
-            if (item && dropResult) {
-                dispatch(
-                    convertSubtaskToTask({
-                        subtask: item,
-                        dropPosition: dropResult,
-                    })
-                );
-            }
-        },
-        collect: (monitor) => ({
-            isDragging: monitor.isDragging(),
+    const [deletingTasks, setDeletingTasks] = useState<Set<string>>(new Set());
+
+    const { handleDelete } = useDeleteTask({
+        deletingTasks,
+        setDeletingTasks,
+    });
+
+    const [{ isDragging }, drag] = useDrag(
+        () => ({
+            type: 'SUBTASK',
+            item: () => {
+                // This function will be called when the drag starts
+                return { ...localSubtask };
+            },
+            end: (item, monitor) => {
+                console.log('item', item);
+                const dropResult = monitor.getDropResult() as {
+                    x: number;
+                    y: number;
+                };
+                console.log('dropResult', dropResult);
+
+                if (item && dropResult.x && dropResult.y) {
+                    dispatch(
+                        convertSubtaskToTask({
+                            subtask: { ...item },
+                            dropPosition: dropResult,
+                        })
+                    );
+                }
+            },
+            collect: (monitor) => ({
+                isDragging: monitor.isDragging(),
+            }),
         }),
-    }));
+        [localSubtask, dispatch]
+    ); // Add dependencies here
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -57,7 +78,6 @@ const SubtaskDrawerCard: React.FC<SubtaskDrawerCardProps> = ({ subtask }) => {
     }, [isEditing]);
 
     const handleBlur = useCallback(() => {
-        console.log('Blurring with task name:', currentTaskNameRef.current);
         if (isEditing === 'taskName' && !currentTaskNameRef.current.trim()) {
             setLocalSubtask((prevSubtask) => ({
                 ...prevSubtask,
@@ -77,6 +97,7 @@ const SubtaskDrawerCard: React.FC<SubtaskDrawerCardProps> = ({ subtask }) => {
             console.log('newProgress', newProgress);
             const updatedFields = { progress: newProgress };
             dispatch(updateTask({ _id: subtask._id, ...updatedFields }));
+            setLocalSubtask((prev) => ({ ...prev, progress: newProgress }));
         },
         [dispatch, subtask._id]
     );
@@ -177,11 +198,17 @@ const SubtaskDrawerCard: React.FC<SubtaskDrawerCardProps> = ({ subtask }) => {
                     </p>
                 )}
             </div>
-            <ProgressDropdown
-                progress={subtask.progress}
-                onProgressChange={handleProgressChange}
-                isSubtask={true}
-            />
+            <div className="flex justify-between items-top relative">
+                <ProgressDropdown
+                    progress={subtask.progress}
+                    onProgressChange={handleProgressChange}
+                    isSubtask={true}
+                />
+                <FaTrash
+                    className="cursor-pointer text-red-500 hover:text-red-700 transition-colors duration-200 hover:scale-110 hover:rotate-12 absolute top-1 right-0"
+                    onClick={() => handleDelete(subtask._id || '')}
+                />
+            </div>
         </li>
     );
 };

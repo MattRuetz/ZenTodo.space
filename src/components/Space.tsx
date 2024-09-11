@@ -85,16 +85,43 @@ const Space: React.FC<SpaceProps> = ({ spaceId, onLoaded }) => {
         dispatch(setSubtaskDrawerOpen(false));
     };
 
-    const [, drop] = useDrop(() => ({
-        accept: 'SUBTASK',
-        drop: (item: Task, monitor) => {
-            const offset = monitor.getClientOffset();
-            return {
-                x: offset?.x || 0,
-                y: offset?.y || 0,
-            };
-        },
-    }));
+    const subtaskDrawerRef = useRef<HTMLDivElement>(null);
+
+    const [, drop] = useDrop(
+        () => ({
+            accept: 'SUBTASK',
+            drop: (item: Task, monitor) => {
+                const offset = monitor.getClientOffset();
+                if (!offset) return undefined;
+
+                // Check if the drop position is within the subtask drawer
+                if (subtaskDrawerRef.current) {
+                    console.log(
+                        'subtaskDrawerRef.current',
+                        subtaskDrawerRef.current
+                    );
+                    const drawerRect =
+                        subtaskDrawerRef.current.getBoundingClientRect();
+                    if (
+                        offset.x >= drawerRect.left &&
+                        offset.x <= drawerRect.right &&
+                        offset.y >= drawerRect.top &&
+                        offset.y <= drawerRect.bottom
+                    ) {
+                        console.log('drop on drawer');
+                        return undefined; // Drop on drawer, don't convert to task
+                    }
+                }
+
+                // Drop outside drawer, convert to task
+                return {
+                    x: offset.x,
+                    y: offset.y,
+                };
+            },
+        }),
+        []
+    );
 
     useEffect(() => {
         const loadTasks = async () => {
@@ -256,7 +283,11 @@ const Space: React.FC<SpaceProps> = ({ spaceId, onLoaded }) => {
                     />
                 )
             )}
-            <SubtaskDrawer isOpen={isDrawerOpen} onClose={handleCloseDrawer} />
+            <SubtaskDrawer
+                ref={subtaskDrawerRef}
+                isOpen={isDrawerOpen}
+                onClose={handleCloseDrawer}
+            />
         </div>
     );
 };
