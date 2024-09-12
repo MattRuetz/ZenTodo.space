@@ -46,7 +46,7 @@ export const createSpace = createAsyncThunk(
 );
 
 export const updateSpaceMaxZIndex = createAsyncThunk(
-    'spaces/updateMaxZIndex',
+    'spaces/updateSpaceMaxZIndex',
     async ({ spaceId, maxZIndex }: { spaceId: string; maxZIndex: number }) => {
         const response = await fetch(`/api/spaces/${spaceId}`, {
             method: 'PATCH',

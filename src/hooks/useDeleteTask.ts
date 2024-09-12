@@ -18,6 +18,10 @@ export const useDeleteTask = ({
 
     const handleDelete = useCallback(
         async (taskId: string) => {
+            console.log('useDeleteTask');
+            console.log(deletingTasks);
+            console.log('taskId', taskId);
+
             if (deletingTasks.has(taskId)) return;
 
             setDeletingTasks((prev: Set<string>) => {

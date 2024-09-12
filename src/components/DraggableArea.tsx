@@ -29,7 +29,11 @@ const DraggableArea: React.FC<DraggableAreaProps> = ({
             className={`draggable-area w-full h-full ${className}`}
             onMouseDown={handleMouseDown}
         >
-            <TaskCardTopBar className="pb-2" onDelete={onDelete} />
+            <TaskCardTopBar
+                className="pb-2"
+                onDelete={onDelete}
+                onDetails={() => console.log('details')}
+            />
             {children}
         </div>
     );

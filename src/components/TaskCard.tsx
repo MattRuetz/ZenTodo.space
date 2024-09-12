@@ -19,6 +19,9 @@ import { useFadeOutEffect } from '@/hooks/useFadeOutEffect';
 import { useDragHandlers } from '@/hooks/useDragHandlers';
 import { useTaskState } from '@/hooks/useTaskState';
 import { useDeleteTask } from '@/hooks/useDeleteTask';
+import { useResizeHandle } from '@/hooks/useResizeHandle';
+import { Icon } from './Icon';
+import { FaGripVertical, FaSignal } from 'react-icons/fa';
 
 interface TaskCardProps {
     task: Task;
@@ -93,9 +96,8 @@ const TaskCard: React.FC<TaskCardProps> = React.memo(
                     Math.max(descriptionScrollHeight + 120, 200),
                     500
                 );
-
                 setCardSize((prev) => {
-                    if (prev.width !== newWidth || prev.height !== newHeight) {
+                    if (prev.width < newWidth || prev.height < newHeight) {
                         return { width: newWidth, height: newHeight };
                     }
                     return prev;
@@ -195,10 +197,6 @@ const TaskCard: React.FC<TaskCardProps> = React.memo(
             };
         }, [isGlobalDragging, draggingCardId, task._id, isDraggingOver]);
 
-        useEffect(() => {
-            updateCardSize();
-        }, [localTask.taskName, localTask.taskDescription, updateCardSize]);
-
         const opacity = useFadeOutEffect(
             localTask,
             isHovering,
@@ -216,10 +214,6 @@ const TaskCard: React.FC<TaskCardProps> = React.memo(
             const animationId = requestAnimationFrame(animate);
             return () => cancelAnimationFrame(animationId);
         }, []);
-
-        console.log(
-            `TaskCard render for task ${task._id}, opacity: ${opacity}`
-        );
 
         const throttledSetCardSize = useThrottle(setCardSize, 50);
 
@@ -258,21 +252,37 @@ const TaskCard: React.FC<TaskCardProps> = React.memo(
             };
         }, [handleMouseMove]);
 
+        const { handleResizeStart, isResizing } = useResizeHandle({
+            cardRef,
+            setCardSize,
+            minWidth: 250,
+            maxWidth: 500,
+            minHeight: 230,
+            maxHeight: 500,
+        });
+
         const cardStyle: React.CSSProperties = useMemo(
             () => ({
                 opacity,
                 zIndex: localTask.zIndex,
                 width: `${cardSize.width}px`,
                 height: `${cardSize.height}px`,
+                position: 'absolute',
                 transition: 'border-color 0.3s ease',
-                resize: 'both',
-                overflow: 'auto',
                 minWidth: '250px',
                 maxWidth: '500px',
                 minHeight: '230px',
                 maxHeight: '500px',
+                overflow: 'visible',
             }),
-            [opacity, localTask.zIndex, cardSize.width, cardSize.height]
+            [
+                opacity,
+                localTask.zIndex,
+                cardSize.width,
+                cardSize.height,
+                task.x,
+                task.y,
+            ]
         );
 
         return (
@@ -291,7 +301,7 @@ const TaskCard: React.FC<TaskCardProps> = React.memo(
                             : isDropped
                             ? 'filter brightness-150 border-green-500'
                             : 'border-base-300'
-                    }`}
+                    } ${isResizing ? 'select-none' : ''}`}
                     style={cardStyle}
                     onMouseDown={handleMouseDown}
                     onMouseEnter={() => setIsHovering(true)}
@@ -300,7 +310,7 @@ const TaskCard: React.FC<TaskCardProps> = React.memo(
                 >
                     <div className="flex flex-col h-full">
                         <DraggableArea
-                            className="flex flex-col h-full p-4"
+                            className="flex flex-col h-full p-4 pb-0"
                             onDelete={() => handleDelete(task._id ?? '')}
                         >
                             <input
@@ -334,9 +344,11 @@ const TaskCard: React.FC<TaskCardProps> = React.memo(
                                 maxLength={500}
                             />
                             <TaskCardToolBar
-                                taskId={task._id ?? ''}
+                                task={task}
                                 progress={localTask.progress}
                                 onProgressChange={handleProgressChange}
+                                handleResizeStart={handleResizeStart}
+                                isResizing={isResizing}
                             />
                         </DraggableArea>
                     </div>

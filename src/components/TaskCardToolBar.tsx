@@ -7,32 +7,41 @@ import { RootState } from '@/store/store';
 import SubtaskProgresses from './SubtaskProgresses';
 import { createSelector } from '@reduxjs/toolkit';
 import { ProgressDropdown } from './ProgressDropdown';
+import { useResizeHandle } from '@/hooks/useResizeHandle';
+import { useTaskState } from '@/hooks/useTaskState';
+import { Icon } from './Icon';
 
 const selectSubtasks = createSelector(
     [
         (state: RootState) => state.tasks.tasks,
-        (state: RootState, taskId: string) => taskId,
+        (state: RootState, task: Task) => task,
     ],
-    (tasks, taskId) => {
-        const task = tasks.find((t) => t._id === taskId);
-        return (
+    (tasks, task) => {
+        const subtasks =
             task?.subtasks
-                ?.map((subtaskId) => tasks.find((t) => t._id === subtaskId))
-                .filter((t): t is Task => t !== undefined) || []
-        );
+                ?.map((subtask) =>
+                    tasks.find(
+                        (t) => t._id === (subtask._id as unknown as string)
+                    )
+                )
+                .filter((t): t is Task => t !== undefined) || [];
+
+        return subtasks;
     }
 );
 
 export interface TaskCardToolBarProps {
-    taskId: string;
+    task: Task;
     progress: TaskProgress;
     onProgressChange: (progress: TaskProgress) => void;
+    handleResizeStart: (e: React.MouseEvent) => void;
+    isResizing: boolean;
 }
 
 const TaskCardToolBar: React.FC<TaskCardToolBarProps> = React.memo(
-    ({ taskId, progress, onProgressChange }) => {
+    ({ task, progress, onProgressChange, handleResizeStart, isResizing }) => {
         const subtasks = useSelector((state: RootState) =>
-            selectSubtasks(state, taskId)
+            selectSubtasks(state, task)
         );
 
         const subtaskProgresses = useMemo(() => {
@@ -74,8 +83,19 @@ const TaskCardToolBar: React.FC<TaskCardToolBarProps> = React.memo(
                 />
                 <SubtaskProgresses
                     subtaskProgresses={subtaskProgresses}
-                    parentTaskId={taskId}
+                    parentTaskId={task._id ?? ''}
                 />
+                <div
+                    className="absolute bottom-0 right-0 w-5 h-5 cursor-se-resize"
+                    onMouseDown={handleResizeStart}
+                >
+                    {/* <FaSignal size={12} className="text-neutral-500" /> */}
+                    <Icon
+                        name="resize"
+                        size={21}
+                        className="text-slate-700 hover:text-slate-500"
+                    />
+                </div>
             </div>
         );
     }
