@@ -117,17 +117,14 @@ const SubtaskDrawer = forwardRef<HTMLDivElement, SubtaskDrawerProps>(
                             index={0}
                             parentTask={parentTask as Task}
                         />
-                        {subtasks.map((subtask, index) => (
-                            <>
-                                <SubtaskDrawerCard
-                                    key={subtask?._id}
-                                    subtask={subtask as Task}
-                                />
+                        {subtasks.map((subtask) => (
+                            <React.Fragment key={subtask?._id}>
+                                <SubtaskDrawerCard subtask={subtask as Task} />
                                 <SubtaskDropZone
-                                    index={index + 1}
+                                    index={subtasks.indexOf(subtask) + 1}
                                     parentTask={parentTask as Task}
                                 />
-                            </>
+                            </React.Fragment>
                         ))}
                     </ul>
                 </div>

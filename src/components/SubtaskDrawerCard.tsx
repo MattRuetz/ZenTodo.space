@@ -134,6 +134,10 @@ const SubtaskDrawerCard: React.FC<SubtaskDrawerCardProps> = ({ subtask }) => {
                     isEditing === 'taskName'
                         ? 'border-slate-400'
                         : 'border-transparent'
+                } ${
+                    localSubtask.taskName === 'New Subtask'
+                        ? 'text-neutral-500'
+                        : ''
                 } font-semibold rounded-lg p-2 px-4 mb-2 bg-base-300 transition-colors duration-200 border-2`}
             >
                 {isEditing === 'taskName' ? (
@@ -143,9 +147,15 @@ const SubtaskDrawerCard: React.FC<SubtaskDrawerCardProps> = ({ subtask }) => {
                         name="taskName"
                         value={localSubtask.taskName}
                         onChange={handleInputChange}
+                        onKeyDown={(event) => {
+                            if (event.key === 'Enter') {
+                                event.currentTarget.blur();
+                            }
+                        }}
                         onBlur={handleBlur}
                         className="w-full resize-none border-none outline-none bg-transparent"
                         maxLength={35}
+                        onFocus={(event) => event.target.select()}
                         autoFocus
                     />
                 ) : (

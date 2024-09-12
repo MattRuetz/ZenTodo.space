@@ -41,7 +41,7 @@ const SubtaskDropZone: React.FC<SubtaskDropZoneProps> = ({
 
     const handleAddSubtask = () => {
         const newSubtask: Omit<Task, '_id'> = {
-            taskName: '',
+            taskName: 'New Subtask',
             taskDescription: '',
             x: parentTask.x,
             y: parentTask.y,
@@ -72,28 +72,41 @@ const SubtaskDropZone: React.FC<SubtaskDropZoneProps> = ({
     }, []);
 
     return (
-        <div
-            className={`w-full my-2 rounded-sm transition-all duration-300 ease-in-out cursor-pointer overflow-hidden ${
-                hoverStatus === 'hiding'
-                    ? 'h-5'
-                    : hoverStatus === 'peaking'
-                    ? 'h-5 bg-slate-800'
-                    : 'h-10 bg-sky-950'
-            }`}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-            onClick={handleAddSubtask}
-        >
-            <div
-                className="h-full flex items-center justify-center text-sm font-semibold"
-                style={{
-                    opacity: textOpacity,
-                    transition: 'opacity 300ms ease-in-out',
-                }}
-            >
-                + new subtask
-            </div>
-        </div>
+        <>
+            {index === 0 ? (
+                <div
+                    className="my-2 flex bg-slate-800 hover:bg-sky-900 transition-all duration-300 ease-in-out cursor-pointer rounded-lg px-2 py-1 justify-center text-sm font-semibold"
+                    onClick={handleAddSubtask}
+                >
+                    + new subtask
+                </div>
+            ) : (
+                <>
+                    <div
+                        className={`w-full my-2 rounded-lg transition-all duration-300 ease-in-out cursor-pointer overflow-hidden ${
+                            hoverStatus === 'hiding'
+                                ? 'h-2 bg-base-300'
+                                : hoverStatus === 'peaking'
+                                ? 'h-5 bg-slate-800'
+                                : 'h-10 bg-sky-950'
+                        }`}
+                        onMouseEnter={handleMouseEnter}
+                        onMouseLeave={handleMouseLeave}
+                        onClick={handleAddSubtask}
+                    >
+                        <div
+                            className="h-full flex items-center justify-center bg-sky-950 rounded-full px-2 py-1 text-sm font-semibold"
+                            style={{
+                                opacity: textOpacity,
+                                transition: 'opacity 0.3s ease-in-out',
+                            }}
+                        >
+                            + new subtask
+                        </div>
+                    </div>
+                </>
+            )}
+        </>
     );
 };
 
