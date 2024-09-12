@@ -8,6 +8,7 @@ import { useDrag } from 'react-dnd';
 import { convertSubtaskToTask } from '@/store/tasksSlice';
 import { FaTrash } from 'react-icons/fa';
 import { useDeleteTask } from '@/hooks/useDeleteTask';
+import SubtaskProgresses from './SubtaskProgresses';
 
 interface SubtaskDrawerCardProps {
     subtask: Task;
@@ -35,12 +36,10 @@ const SubtaskDrawerCard: React.FC<SubtaskDrawerCardProps> = ({ subtask }) => {
                 return { ...localSubtask };
             },
             end: (item, monitor) => {
-                console.log('item', item);
                 const dropResult = monitor.getDropResult() as {
                     x: number;
                     y: number;
                 };
-                console.log('dropResult', dropResult);
 
                 if (item && dropResult.x && dropResult.y) {
                     dispatch(
@@ -94,7 +93,6 @@ const SubtaskDrawerCard: React.FC<SubtaskDrawerCardProps> = ({ subtask }) => {
     const handleProgressChange = useCallback(
         (newProgress: TaskProgress) => {
             if (!subtask._id) return;
-            console.log('newProgress', newProgress);
             const updatedFields = { progress: newProgress };
             dispatch(updateTask({ _id: subtask._id, ...updatedFields }));
             setLocalSubtask((prev) => ({ ...prev, progress: newProgress }));
@@ -129,7 +127,7 @@ const SubtaskDrawerCard: React.FC<SubtaskDrawerCardProps> = ({ subtask }) => {
                 cursor: 'move',
                 border: '1px solid rgba(255, 255, 255, 0.2)',
             }}
-            className={`p-2 rounded-lg my-6 bg-base-100 transition-colors duration-500 shadow-md shadow-black/20`}
+            className={`p-2 rounded-lg my-0 bg-base-100 transition-colors duration-500 shadow-md shadow-black/20`}
         >
             <div
                 className={`${
@@ -198,15 +196,16 @@ const SubtaskDrawerCard: React.FC<SubtaskDrawerCardProps> = ({ subtask }) => {
                     </p>
                 )}
             </div>
-            <div className="flex justify-between items-top relative">
+            <div className="flex justify-between items-center relative gap-2">
                 <ProgressDropdown
                     progress={subtask.progress}
                     onProgressChange={handleProgressChange}
                     isSubtask={true}
                 />
+                <SubtaskProgresses task={subtask} />
                 <FaTrash
-                    className="cursor-pointer text-red-500 hover:text-red-700 transition-colors duration-200 hover:scale-110 hover:rotate-12 absolute top-1 right-0"
-                    onClick={() => handleDelete(subtask._id || '')}
+                    className="cursor-pointer text-red-500"
+                    onClick={() => handleDelete(subtask._id as string)}
                 />
             </div>
         </li>

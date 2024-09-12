@@ -8,7 +8,7 @@ import debounce from 'lodash.debounce';
 import {
     updateTask,
     hideNewChildTask,
-    addChildTask,
+    convertTaskToSubtask,
 } from '../store/tasksSlice';
 import { AppDispatch, RootState } from '../store/store';
 import TaskCardToolBar from './TaskCardToolBar';
@@ -75,7 +75,7 @@ const TaskCard: React.FC<TaskCardProps> = React.memo(
         const pushChildTask = useCallback(
             async (childTask: Task, parentTaskId: string) => {
                 // Assume task is already in the database
-                dispatch(addChildTask({ childTask, parentTaskId }));
+                dispatch(convertTaskToSubtask({ childTask, parentTaskId }));
                 dispatch(hideNewChildTask(childTask._id ?? ''));
             },
             [dispatch]

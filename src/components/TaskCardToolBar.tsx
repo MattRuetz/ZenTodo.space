@@ -44,36 +44,6 @@ const TaskCardToolBar: React.FC<TaskCardToolBarProps> = React.memo(
             selectSubtasks(state, task)
         );
 
-        const subtaskProgresses = useMemo(() => {
-            return subtasks.reduce(
-                (acc, subtask) => {
-                    if (subtask) {
-                        switch (subtask.progress) {
-                            case 'Not Started':
-                                acc.notStarted++;
-                                break;
-                            case 'In Progress':
-                                acc.inProgress++;
-                                break;
-                            case 'Blocked':
-                                acc.blocked++;
-                                break;
-                            case 'Complete':
-                                acc.complete++;
-                                break;
-                        }
-                    }
-                    return acc;
-                },
-                {
-                    notStarted: 0,
-                    inProgress: 0,
-                    blocked: 0,
-                    complete: 0,
-                }
-            );
-        }, [subtasks]);
-
         return (
             <div className="task-card-toolbar flex flex-row justify-between w-full py-2">
                 <ProgressDropdown
@@ -81,20 +51,12 @@ const TaskCardToolBar: React.FC<TaskCardToolBarProps> = React.memo(
                     onProgressChange={onProgressChange}
                     isSubtask={false}
                 />
-                <SubtaskProgresses
-                    subtaskProgresses={subtaskProgresses}
-                    parentTaskId={task._id ?? ''}
-                />
+                <SubtaskProgresses task={task} />
                 <div
                     className="absolute bottom-0 right-0 w-5 h-5 cursor-se-resize"
                     onMouseDown={handleResizeStart}
                 >
-                    {/* <FaSignal size={12} className="text-neutral-500" /> */}
-                    <Icon
-                        name="resize"
-                        size={21}
-                        className="text-slate-700 hover:text-slate-500"
-                    />
+                    <Icon name="resize" color="rgba(255, 255, 255, 0.3)" />
                 </div>
             </div>
         );

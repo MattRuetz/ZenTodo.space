@@ -92,6 +92,12 @@ export const useDragHandlers = ({
                     // If the card is dropped on itself... somehow... do nothing
                     return;
                 }
+                if (task.taskName.length === 0) {
+                    alert(
+                        'Please enter the task name before making it a subtask.'
+                    );
+                    return;
+                }
                 pushChildTask(
                     task,
                     droppedOnCard.getAttribute('data-task-id') ?? ''
