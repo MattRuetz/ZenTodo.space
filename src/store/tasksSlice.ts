@@ -3,6 +3,7 @@ import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { Task } from '../types';
 import { RootState } from './store';
 import { fetchSpaceMaxZIndex } from './spaceSlice';
+import { updateSpaceMaxZIndex } from './spaceSlice';
 
 interface TasksState {
     tasks: Task[];
@@ -166,18 +167,19 @@ export const convertSubtaskToTask = createAsyncThunk(
             ),
         };
 
-        const newTaskZIndex = await dispatch(
-            fetchSpaceMaxZIndex(parentTask.space)
-        );
+        // const newTaskZIndex = await dispatch(
+        //     fetchSpaceMaxZIndex(parentTask.space)
+        // );
 
-        // Convert subtask to main task
+        const newZIndex = await dispatch(fetchSpaceMaxZIndex(parentTask.space));
         const newTask = {
             ...subtask,
-            zIndex: newTaskZIndex.payload + 1,
+            zIndex: newZIndex.payload as number,
             progress: subtask.progress,
             parentTask: null, // Remove the parentTask reference
             x: dropPosition.x,
             y: dropPosition.y,
+            ancestors: [],
         };
 
         // Update tasks in the database
@@ -230,20 +232,11 @@ export const tasksSlice = createSlice({
             })
             .addCase(deleteTask.fulfilled, (state, action) => {
                 const deletedTaskId = action.payload;
-                // Remove the deleted task and all its subtasks from the state
-                const removeTaskAndSubtasks = (taskId: string) => {
-                    const taskIndex = state.tasks.findIndex(
-                        (task) => task._id === taskId
-                    );
-                    if (taskIndex !== -1) {
-                        const task = state.tasks[taskIndex];
-                        task.subtasks.forEach((subtask) =>
-                            removeTaskAndSubtasks(subtask._id || '')
-                        );
-                        state.tasks.splice(taskIndex, 1);
-                    }
-                };
-                removeTaskAndSubtasks(deletedTaskId);
+                state.tasks = state.tasks.filter(
+                    (task) =>
+                        task._id !== deletedTaskId &&
+                        !task.ancestors?.includes(deletedTaskId)
+                );
             })
             .addCase(addChildTask.fulfilled, (state, action) => {
                 const { updatedParentTask, updatedSubtask } = action.payload;

@@ -111,30 +111,53 @@ const Space: React.FC<SpaceProps> = ({ spaceId, onLoaded }) => {
     );
 
     useEffect(() => {
-        const loadTasks = async () => {
-            if (
-                sessionStatus === 'authenticated' &&
-                taskStatus === 'idle' &&
-                !initialLoadComplete.current
-            ) {
+        const loadTasksAndUpdateMaxZIndex = async () => {
+            if (taskStatus === 'idle' && !initialLoadComplete.current) {
                 try {
                     await dispatch(fetchTasks(spaceId));
+                    const fetchMaxZIndexAction = await dispatch(
+                        fetchSpaceMaxZIndex(spaceId)
+                    );
+
+                    if (
+                        fetchSpaceMaxZIndex.fulfilled.match(
+                            fetchMaxZIndexAction
+                        )
+                    ) {
+                        const fetchedMaxZIndex = fetchMaxZIndexAction.payload;
+                        setMaxZIndex(fetchedMaxZIndex);
+
+                        // Calculate the actual max zIndex from tasks
+                        const actualMaxZIndex = tasks.reduce(
+                            (max, task) => Math.max(max, task.zIndex),
+                            0
+                        );
+
+                        // Update the maxZIndex on the server if it's different
+                        if (actualMaxZIndex) {
+                            await dispatch(
+                                updateSpaceMaxZIndex({
+                                    spaceId,
+                                    maxZIndex: actualMaxZIndex,
+                                })
+                            );
+                            setMaxZIndex(actualMaxZIndex);
+                        }
+                    }
+
                     initialLoadComplete.current = true;
-                } catch (error) {
-                    console.error('Error fetching tasks:', error);
-                } finally {
                     onLoaded();
+                } catch (error) {
+                    console.error(
+                        'Error loading tasks or updating maxZIndex:',
+                        error
+                    );
                 }
-            } else if (
-                sessionStatus !== 'loading' &&
-                taskStatus !== 'loading'
-            ) {
-                onLoaded();
             }
         };
 
-        loadTasks();
-    }, [sessionStatus, taskStatus, dispatch, spaceId, onLoaded]);
+        loadTasksAndUpdateMaxZIndex();
+    }, [dispatch, spaceId, taskStatus, tasks, onLoaded]);
 
     useEffect(() => {
         if (tasks.length > 0 && initialLoadComplete.current) {

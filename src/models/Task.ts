@@ -43,10 +43,13 @@ const TaskSchema = new mongoose.Schema({
     },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
+    ancestors: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Task' }],
 });
 
 // Add this line to create the compound index
 TaskSchema.index({ userId: 1, spaceId: 1 });
+TaskSchema.index({ user: 1, _id: 1 });
+TaskSchema.index({ ancestors: 1 });
 
 TaskSchema.pre('save', async function (next) {
     if (this.isNew && !this.zIndex) {

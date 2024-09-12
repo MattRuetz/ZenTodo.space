@@ -4,6 +4,7 @@ import { AppDispatch } from '../store/store';
 import { setGlobalDragging, setDraggingCardId } from '../store/uiSlice';
 import { Task } from '@/types';
 import { DraggableData, DraggableEvent } from 'react-draggable';
+import { updateSpaceMaxZIndex } from '@/store/spaceSlice';
 
 interface UseDragHandlersProps {
     task: Task;
@@ -51,6 +52,9 @@ export const useDragHandlers = ({
                 ...prevTask,
                 zIndex: newZIndex,
             }));
+            const spaceId = task.space; // Assuming spaceId is a property of task
+            dispatch(updateSpaceMaxZIndex({ spaceId, maxZIndex: newZIndex }));
+
             dispatch(setGlobalDragging(true));
             dispatch(setDraggingCardId(task._id ?? ''));
             onDragStart();
@@ -61,7 +65,11 @@ export const useDragHandlers = ({
     const handleDragStop = useCallback(
         (e: DraggableEvent, data: DraggableData) => {
             setLocalTask((prevTask) => {
-                const newTaskData = { x: data.x, y: data.y };
+                const newTaskData = {
+                    x: data.x,
+                    y: data.y,
+                    zIndex: prevTask.zIndex,
+                };
                 debouncedUpdate(newTaskData);
                 return { ...prevTask, ...newTaskData };
             });
@@ -80,6 +88,10 @@ export const useDragHandlers = ({
             );
             const droppedOnCard = cardsUnderCursor[1];
             if (droppedOnCard && droppedOnCard !== e.target) {
+                if (droppedOnCard.getAttribute('data-task-id') === task._id) {
+                    // If the card is dropped on itself... somehow... do nothing
+                    return;
+                }
                 pushChildTask(
                     task,
                     droppedOnCard.getAttribute('data-task-id') ?? ''
@@ -105,7 +117,7 @@ export const useDragHandlers = ({
                     [name]: value,
                 })
             );
-            if (name === 'taskDescription') updateCardSize();
+            updateCardSize();
         },
         [updateCardSize, setLocalTask]
     );

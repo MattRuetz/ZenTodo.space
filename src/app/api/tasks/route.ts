@@ -106,74 +106,92 @@ export async function PUT(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-    try {
-        await dbConnect();
-        const userId = await getUserId(req);
-        const url = new URL(req.url);
-        const taskId = url.searchParams.get('id');
+    const maxRetries = 5;
+    let retries = 0;
 
-        if (!taskId) {
-            return NextResponse.json(
-                { error: 'Task ID is required' },
-                { status: 400 }
-            );
-        }
-
-        const session = await mongoose.startSession();
-        session.startTransaction();
-
+    while (retries < maxRetries) {
         try {
-            const task = await Task.findOne({
-                _id: taskId,
-                user: userId,
-            }).session(session);
+            await dbConnect();
+            const userId = await getUserId(req);
+            const url = new URL(req.url);
+            const taskId = url.searchParams.get('id');
 
-            if (!task) {
-                await session.abortTransaction();
+            if (!taskId) {
                 return NextResponse.json(
-                    { error: 'Task not found or unauthorized' },
-                    { status: 404 }
+                    { error: 'Task ID is required' },
+                    { status: 400 }
                 );
             }
 
-            // Recursively delete all subtasks
-            const deleteSubtasks = async (
-                taskId: mongoose.Types.ObjectId
-            ): Promise<void> => {
-                const subtasks = await Task.find({
-                    parentTask: taskId,
+            const session = await mongoose.startSession();
+            session.startTransaction();
+
+            try {
+                // Find the task and all its descendants in one query
+                const tasksToDelete = await Task.find({
+                    $or: [{ _id: taskId }, { ancestors: taskId }],
+                    user: userId,
                 }).session(session);
-                for (const subtask of subtasks) {
-                    await deleteSubtasks(subtask._id);
-                    await subtask.deleteOne({ session });
+
+                if (tasksToDelete.length === 0) {
+                    await session.abortTransaction();
+                    return NextResponse.json(
+                        { error: 'Task not found or unauthorized' },
+                        { status: 404 }
+                    );
                 }
-            };
 
-            await deleteSubtasks(task._id);
-            await task.deleteOne({ session });
+                // Delete all tasks in one operation
+                await Task.deleteMany({
+                    _id: { $in: tasksToDelete.map((task) => task._id) },
+                }).session(session);
 
-            await session.commitTransaction();
-            return NextResponse.json(
-                { message: 'Task and all subtasks deleted successfully' },
-                { status: 200 }
-            );
+                await session.commitTransaction();
+                return NextResponse.json(
+                    { message: 'Task and all subtasks deleted successfully' },
+                    { status: 200 }
+                );
+            } catch (error) {
+                await session.abortTransaction();
+                throw error;
+            } finally {
+                session.endSession();
+            }
         } catch (error) {
-            await session.abortTransaction();
-            throw error;
-        } finally {
-            session.endSession();
+            if (error instanceof Error && error.message === 'Unauthorized') {
+                return NextResponse.json(
+                    { error: 'Unauthorized' },
+                    { status: 401 }
+                );
+            }
+
+            if (
+                error instanceof mongoose.mongo.MongoServerError &&
+                error.code === 11000
+            ) {
+                retries++;
+                if (retries >= maxRetries) {
+                    console.error(
+                        'Max retries reached. Delete operation failed.'
+                    );
+                    return NextResponse.json(
+                        {
+                            error: 'Failed to delete task after multiple attempts',
+                        },
+                        { status: 500 }
+                    );
+                }
+                console.log(`Retry attempt ${retries} for delete operation`);
+                await new Promise((resolve) =>
+                    setTimeout(resolve, 100 * Math.pow(2, retries))
+                );
+            } else {
+                console.error('Error deleting task:', error);
+                return NextResponse.json(
+                    { error: 'Failed to delete task' },
+                    { status: 500 }
+                );
+            }
         }
-    } catch (error) {
-        console.error('Error deleting task:', error);
-        if (error instanceof Error && error.message === 'Unauthorized') {
-            return NextResponse.json(
-                { error: 'Unauthorized' },
-                { status: 401 }
-            );
-        }
-        return NextResponse.json(
-            { error: 'Failed to delete task' },
-            { status: 500 }
-        );
     }
 }

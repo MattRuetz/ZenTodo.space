@@ -31,8 +31,15 @@ const SubtaskProgresses: React.FC<SubtaskProgressesProps> = React.memo(
                 : dispatch(setSubtaskDrawerOpen(false));
         }, [dispatch, parentTaskId, isSubtaskDrawerOpen]);
 
+        const isVisible = Object.values(subtaskProgresses).some(
+            (count) => count > 0
+        );
+
         return (
             <div
+                style={{
+                    visibility: isVisible ? 'visible' : 'hidden',
+                }}
                 className="flex gap-1 bg-base-100 hover:bg-slate-800 transition-colors duration-200 rounded-full px-2 py-1 cursor-pointer items-center justify-center text-xs"
                 onClick={handleOpenDrawer}
             >

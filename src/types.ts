@@ -19,6 +19,7 @@ export interface Task {
     parentTask?: string;
     createdAt?: Date;
     updatedAt?: Date;
+    ancestors?: string[];
 }
 
 export interface SpaceData {
