@@ -22,7 +22,7 @@ export const Icon: React.FC<IconProps> = ({
             width={size}
             height={size}
             aria-hidden="true"
-            style={{ color: color, ...style }}
+            style={{ fill: color, color: color, ...style }}
         >
             <use href={`/icons/sprite.svg#${name}`} />
         </svg>

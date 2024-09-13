@@ -27,9 +27,7 @@ interface UseDragHandlersProps {
 
 export const useDragHandlers = ({
     task,
-    localTask,
     setLocalTask,
-    setCardSize,
     onDragStart,
     onDragStop,
     getNewZIndex,
@@ -55,6 +53,8 @@ export const useDragHandlers = ({
             const spaceId = task.space; // Assuming spaceId is a property of task
             dispatch(updateSpaceMaxZIndex({ spaceId, maxZIndex: newZIndex }));
 
+            console.log('drag start');
+
             dispatch(setGlobalDragging(true));
             dispatch(setDraggingCardId(task._id ?? ''));
             onDragStart();
@@ -70,6 +70,8 @@ export const useDragHandlers = ({
                     y: data.y,
                     zIndex: prevTask.zIndex,
                 };
+
+                console.log('drag stop');
                 debouncedUpdate(newTaskData);
                 return { ...prevTask, ...newTaskData };
             });
@@ -92,6 +94,10 @@ export const useDragHandlers = ({
                     'data-drawer-parent-id'
                 );
                 if (parentId) {
+                    if (parentId === task._id) {
+                        // Dont allow a task to be dragged into its own drawer
+                        return;
+                    }
                     pushChildTask(task, parentId);
                 }
                 return;

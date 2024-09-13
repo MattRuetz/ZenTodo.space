@@ -5,16 +5,25 @@ import React, {
     useCallback,
     useRef,
     useImperativeHandle,
+    useState,
+    useEffect,
 } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { AppDispatch, RootState } from '@/store/store';
 import { Task } from '@/types';
 import SubtaskDrawerCard from './SubtaskDrawerCard';
-import { FaAngleRight, FaAnglesRight, FaX, FaXmark } from 'react-icons/fa6';
-import { setSubtaskDrawerParentId } from '@/store/uiSlice';
-import { useDispatch } from 'react-redux';
+import {
+    FaAngleRight,
+    FaAnglesRight,
+    FaDiagramPredecessor,
+    FaXmark,
+} from 'react-icons/fa6';
+import { setGlobalDragging, setSubtaskDrawerParentId } from '@/store/uiSlice';
 import SubtaskDropZone from './SubtaskDropZone';
 import SortingDropdown from './SortingDropdown';
+import { useDrop } from 'react-dnd';
+import { useCombinedRefs } from '@/hooks/useCombinedRefs';
+import { Icon } from './Icon';
 
 interface SubtaskDrawerProps {
     isOpen: boolean;
@@ -25,11 +34,9 @@ const SubtaskDrawer = forwardRef<HTMLDivElement, SubtaskDrawerProps>(
     ({ isOpen, onClose }, ref: ForwardedRef<HTMLDivElement>) => {
         const dispatch: AppDispatch = useDispatch();
 
-        // Create a local ref
-        const localRef = useRef<HTMLDivElement>(null);
-
-        // Combine the forwarded ref with the local ref
-        useImperativeHandle(ref, () => localRef.current as HTMLDivElement);
+        const isGlobalDragging = useSelector(
+            (state: RootState) => state.ui.isGlobalDragging
+        );
 
         const sortOption = useSelector(
             (state: RootState) => state.ui.sortOption
@@ -113,16 +120,51 @@ const SubtaskDrawer = forwardRef<HTMLDivElement, SubtaskDrawerProps>(
             return sorted;
         }, [subtasks, sortOption, isReversed]);
 
+        const [isTaskCardOver, setIsTaskCardOver] = useState(false);
+
+        useEffect(() => {
+            const handleMouseMove = (e: MouseEvent) => {
+                if (!isGlobalDragging) {
+                    setIsTaskCardOver(false);
+                    return;
+                }
+                if (ref && 'current' in ref && ref.current) {
+                    const rect = ref.current.getBoundingClientRect();
+                    const isOver =
+                        e.clientX >= rect.left &&
+                        e.clientX <= rect.right &&
+                        e.clientY >= rect.top &&
+                        e.clientY <= rect.bottom;
+                    setIsTaskCardOver(isOver);
+                }
+            };
+            document.addEventListener('mousemove', handleMouseMove);
+
+            return () => {
+                document.removeEventListener('mousemove', handleMouseMove);
+            };
+        }, [isTaskCardOver, isGlobalDragging]);
+
+        useEffect(() => {
+            // Check if there are no subtasks and close the drawer
+            if (isOpen && sortedSubtasks.length === 0) {
+                onClose();
+            }
+        }, [isOpen, sortedSubtasks, isGlobalDragging]);
+
         return (
             <div
+                ref={ref}
                 data-drawer-parent-id={parentTask?._id}
-                className={`subtask-drawer fixed top-0 right-0 h-full bg-base-300 shadow-md transform w-[350px] ${
+                className={`subtask-drawer fixed top-0 right-0 h-full shadow-md transform w-[400px] border-l-2 border-dashed bg-base-300 ${
                     isOpen ? '' : 'translate-x-full'
-                } transition-transform duration-300 ease-in-out subtask-drawer-items`}
+                } transition-transform duration-300 ease-in-out subtask-drawer-items ${
+                    isTaskCardOver ? 'border-slate-500' : 'border-transparent'
+                }`}
             >
                 <div className="p-3 subtask-drawer-items">
                     <div className="flex flex-row justify-between items-center py-2">
-                        <h2 className="text-xl font-bold subtask-drawer-items">
+                        <h2 className="text-xl font-bold subtask-drawer-items text-center w-full">
                             Subtasks
                         </h2>
                         <button
@@ -133,13 +175,15 @@ const SubtaskDrawer = forwardRef<HTMLDivElement, SubtaskDrawerProps>(
                         </button>
                     </div>
                     <div className="flex flex-row gap-2 h-0.5 bg-base-100 w-full"></div>
-                    <div className="flex items-center py-2">
-                        <div className="flex flex-row items-center gap-2 w-full text-sm text-slate-300">
-                            {grandparentTask ? (
+                    <div className="flex flex-row gap-2 w-full pt-2">
+                        <p className="uppercase text-xs">Main Task:</p>
+                    </div>
+                    <div className="flex items-center gap-2 py-2 text-sm text-slate-300">
+                        <div className="flex flex-row items-center gap-3 w-full text-sm text-slate-300">
+                            {grandparentTask && (
                                 <>
-                                    <FaAngleRight className="text-sm text-slate-700" />
                                     <p
-                                        className="p-2 hover:text-white bg-sky-950 hover:bg-sky-800 rounded-md cursor-pointer max-w-28"
+                                        className="p-2 hover:text-white hover:bg-sky-800 rounded-md cursor-pointer w-full max-w-32 break-words overflow-wrap-anywhere"
                                         onClick={() =>
                                             handleSwitchParentTask(
                                                 grandparentTask as Task
@@ -148,14 +192,15 @@ const SubtaskDrawer = forwardRef<HTMLDivElement, SubtaskDrawerProps>(
                                     >
                                         {grandparentTask?.taskName}
                                     </p>
-                                    <FaAnglesRight className="text-sm text-slate-700" />
+                                    <FaAnglesRight
+                                        className="text-sm text-slate-700"
+                                        size={24}
+                                    />
                                 </>
-                            ) : (
-                                <FaAngleRight className="text-sm text-slate-700" />
                             )}
                             <>
                                 <p
-                                    className="p-2 rounded-md cursor-pointer max-w-28"
+                                    className="p-2 rounded-md cursor-default max-w-32 bg-slate-700/50 w-full break-words overflow-wrap-anywhere"
                                     onClick={() =>
                                         handleSwitchParentTask(
                                             parentTask as Task

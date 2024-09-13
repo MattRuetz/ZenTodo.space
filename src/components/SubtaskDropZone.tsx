@@ -1,6 +1,6 @@
 import { AppDispatch, RootState } from '@/store/store';
 import { addNewSubtask, moveSubtaskWithinLevel } from '@/store/tasksSlice';
-import { SortOption, Task, TaskProgress } from '@/types';
+import { Task, TaskProgress } from '@/types';
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useDrop } from 'react-dnd';
@@ -20,6 +20,7 @@ const SubtaskDropZone: React.FC<SubtaskDropZoneProps> = ({
     const [textOpacity, setTextOpacity] = useState(0);
     const hoverRef = useRef<boolean>(false);
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const dropRef = useRef<HTMLLIElement>(null);
 
     const handleDrop = useCallback(
         (item: Task) => {
@@ -49,6 +50,8 @@ const SubtaskDropZone: React.FC<SubtaskDropZoneProps> = ({
         }),
         [handleDrop]
     );
+
+    drop(dropRef);
 
     const handleMouseEnter = () => {
         hoverRef.current = true;
@@ -103,7 +106,10 @@ const SubtaskDropZone: React.FC<SubtaskDropZoneProps> = ({
     }, []);
 
     return (
-        <div ref={drop} className="w-full">
+        <div
+            ref={dropRef as unknown as React.RefObject<HTMLDivElement>}
+            className="w-full"
+        >
             {position === 'start' ? (
                 <div
                     className="flex mb-2 bg-slate-800 hover:bg-sky-950 transition-all duration-300 ease-in-out cursor-pointer rounded-lg px-2 py-1 justify-center text-sm font-semibold"

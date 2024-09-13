@@ -1,4 +1,4 @@
-import { SortOption, Task } from '@/types';
+import { SortOption } from '@/types';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface UIState {

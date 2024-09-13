@@ -37,7 +37,7 @@ const SortingDropdown: React.FC<SortingDropdownProps> = ({}) => {
         <div className="relative">
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center space-x-1 bg-base-200 hover:bg-base-300 rounded-md px-2 py-1"
+                className="flex items-center space-x-1 bg-sky-900 hover:bg-sky-800 rounded-md px-2 py-1"
             >
                 <FaSort />
                 <span>{sortOption === 'custom' ? 'Sort' : sortOption}</span>

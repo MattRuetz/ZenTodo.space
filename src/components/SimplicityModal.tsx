@@ -13,7 +13,7 @@ const SimplicityModal: React.FC<SimplicityModalProps> = ({
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 cursor-default">
-            <div className="bg-gradient-to-br from-slate-200 to-slate-400 p-8 rounded-lg shadow-lg max-w-md w-full w-11/12">
+            <div className="bg-slate-200 p-8 rounded-lg shadow-lg max-w-md w-11/12">
                 <h2 className="text-2xl font-bold mb-4 text-center text-gray-800">
                     Keep It Simple
                 </h2>

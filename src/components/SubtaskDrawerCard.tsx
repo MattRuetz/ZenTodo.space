@@ -4,7 +4,6 @@ import { AppDispatch, RootState } from '../store/store';
 import {
     convertSubtaskToTask,
     convertTaskToSubtask,
-    moveSubtask,
     updateTask,
 } from '@/store/tasksSlice';
 import { Task, TaskProgress } from '@/types';
@@ -84,16 +83,11 @@ const SubtaskDrawerCard: React.FC<SubtaskDrawerCardProps> = ({
                 console.error('Dragged subtask not found in the store');
                 return;
             }
-
-            console.log('dragged subtask', draggedSubtask);
             // Check if the dropped task is already a parent of the target subtask
             const isAlreadyParent =
                 draggedSubtask.subtasks.length > 0 ||
                 (draggedSubtask.ancestors &&
                     draggedSubtask.ancestors.length > 1);
-
-            console.log('draggedTask Subtasks', draggedSubtask.subtasks);
-            console.log('draggedTask Ancestors', draggedSubtask.ancestors);
 
             if (draggedSubtask._id === targetSubtask._id) {
                 return;
@@ -194,9 +188,12 @@ const SubtaskDrawerCard: React.FC<SubtaskDrawerCardProps> = ({
             style={{
                 opacity: isDragging ? 0.5 : 1,
                 cursor: 'move',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
             }}
-            className={`p-2 rounded-lg my-0 bg-base-100 transition-colors duration-500 shadow-md shadow-black/20`}
+            className={`p-2 rounded-lg my-0 bg-base-100 transition-colors duration-200 shadow-md shadow-black/20 border-2 ${
+                isOver && !isDragging
+                    ? 'filter brightness-110 border-blue-900'
+                    : 'border-transparent'
+            }`}
         >
             <div
                 className={`${
@@ -223,7 +220,7 @@ const SubtaskDrawerCard: React.FC<SubtaskDrawerCardProps> = ({
                         }}
                         onBlur={handleBlur}
                         className="w-full resize-none border-none outline-none bg-transparent"
-                        maxLength={35}
+                        maxLength={30}
                         onFocus={(event) => event.target.select()}
                         autoFocus
                     />

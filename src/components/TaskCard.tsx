@@ -20,8 +20,6 @@ import { useDragHandlers } from '@/hooks/useDragHandlers';
 import { useTaskState } from '@/hooks/useTaskState';
 import { useDeleteTask } from '@/hooks/useDeleteTask';
 import { useResizeHandle } from '@/hooks/useResizeHandle';
-import { Icon } from './Icon';
-import { FaGripVertical, FaSignal } from 'react-icons/fa';
 
 interface TaskCardProps {
     task: Task;
@@ -323,7 +321,7 @@ const TaskCard: React.FC<TaskCardProps> = React.memo(
                                 onFocus={() => setIsFocused(true)}
                                 onBlur={handleInputBlur}
                                 className="input input-bordered w-full p-4 pt-2 pb-2 h-8 mb-2 resize-none"
-                                maxLength={35}
+                                maxLength={30}
                             />
                             <textarea
                                 ref={taskDescriptionRef}

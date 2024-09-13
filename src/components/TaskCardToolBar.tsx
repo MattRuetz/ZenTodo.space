@@ -56,7 +56,11 @@ const TaskCardToolBar: React.FC<TaskCardToolBarProps> = React.memo(
                     className="absolute bottom-0 right-0 w-5 h-5 cursor-se-resize"
                     onMouseDown={handleResizeStart}
                 >
-                    <Icon name="resize" color="rgba(255, 255, 255, 0.3)" />
+                    <Icon
+                        name="resize"
+                        color="rgba(255, 255, 255, 0.3)"
+                        size={21}
+                    />
                 </div>
             </div>
         );
