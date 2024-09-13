@@ -114,7 +114,7 @@ export const convertTaskToSubtask = createAsyncThunk(
 export const addNewSubtask = createAsyncThunk(
     'tasks/addNewSubtask',
     async (
-        { subtask, index }: { subtask: Omit<Task, '_id'>; index: number },
+        { subtask, position }: { subtask: Omit<Task, '_id'>; position: string },
         { rejectWithValue }
     ) => {
         try {
@@ -132,7 +132,7 @@ export const addNewSubtask = createAsyncThunk(
                     parentTask: subtask.parentTask,
                     subtasks: [],
                     ancestors: subtask.ancestors,
-                    index: index,
+                    position: position,
                 }),
             });
 
@@ -251,15 +251,23 @@ export const moveSubtask = createAsyncThunk(
         {
             subtaskId,
             newParentId,
-            newIndex,
-        }: { subtaskId: string; newParentId: string; newIndex: number },
+            newPosition,
+        }: {
+            subtaskId: string;
+            newParentId: string;
+            newPosition: string;
+        },
         { rejectWithValue }
     ) => {
         try {
             const response = await fetch('/api/tasks/move-subtask', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ subtaskId, newParentId, newIndex }),
+                body: JSON.stringify({
+                    subtaskId,
+                    newParentId,
+                    newPosition,
+                }),
             });
 
             if (!response.ok) {

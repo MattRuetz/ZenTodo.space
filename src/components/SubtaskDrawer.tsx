@@ -114,17 +114,17 @@ const SubtaskDrawer = forwardRef<HTMLDivElement, SubtaskDrawerProps>(
                     </div>
                     <ul className="overflow-y-auto overflow-x-visible h-[calc(100vh-10rem)] subtask-drawer-items">
                         <SubtaskDropZone
-                            index={0}
+                            position="start"
                             parentTask={parentTask as Task}
                         />
-                        {subtasks.map((subtask) => (
+                        {subtasks.map((subtask, index) => (
                             <React.Fragment key={subtask?._id}>
                                 <SubtaskDrawerCard
                                     subtask={subtask as Task}
-                                    index={subtasks.indexOf(subtask)}
+                                    position={subtask._id as string}
                                 />
                                 <SubtaskDropZone
-                                    index={subtasks.indexOf(subtask) + 1}
+                                    position={`after_${subtask._id}`}
                                     parentTask={parentTask as Task}
                                 />
                             </React.Fragment>
