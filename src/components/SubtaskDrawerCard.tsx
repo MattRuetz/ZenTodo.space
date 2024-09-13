@@ -1,31 +1,71 @@
 import React, { useCallback, useState, useEffect, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '../store/store';
-import { updateTask } from '@/store/tasksSlice';
+import {
+    convertSubtaskToTask,
+    moveSubtask,
+    updateTask,
+} from '@/store/tasksSlice';
 import { Task, TaskProgress } from '@/types';
 import { ProgressDropdown } from './ProgressDropdown';
-import { useDrag } from 'react-dnd';
-import { convertSubtaskToTask } from '@/store/tasksSlice';
 import { FaTrash } from 'react-icons/fa';
 import { useDeleteTask } from '@/hooks/useDeleteTask';
 import SubtaskProgresses from './SubtaskProgresses';
+import { useDrag, useDrop } from 'react-dnd';
 
 interface SubtaskDrawerCardProps {
     subtask: Task;
+    index: number;
 }
 
-const SubtaskDrawerCard: React.FC<SubtaskDrawerCardProps> = ({ subtask }) => {
+const SubtaskDrawerCard: React.FC<SubtaskDrawerCardProps> = ({
+    subtask,
+    index,
+}) => {
     const dispatch = useDispatch<AppDispatch>();
     const [localSubtask, setLocalSubtask] = useState(subtask);
     const [isEditing, setIsEditing] = useState<string | null>(null);
     const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
     const currentTaskNameRef = useRef(subtask.taskName);
+    const ref = useRef<HTMLLIElement>(null);
 
     const [deletingTasks, setDeletingTasks] = useState<Set<string>>(new Set());
 
     const { handleDelete } = useDeleteTask({
         deletingTasks,
         setDeletingTasks,
+    });
+
+    const [, drop] = useDrop({
+        accept: 'SUBTASK',
+        hover(item: { index: number }, monitor) {
+            if (!ref.current) {
+                return;
+            }
+            const dragIndex = item.index;
+            const hoverIndex = index;
+
+            if (dragIndex === hoverIndex) {
+                return;
+            }
+
+            const hoverBoundingRect = ref.current?.getBoundingClientRect();
+            const hoverMiddleY =
+                (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
+            const clientOffset = monitor.getClientOffset();
+            const hoverClientY = clientOffset!.y - hoverBoundingRect.top;
+
+            if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) {
+                return;
+            }
+
+            if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) {
+                return;
+            }
+
+            moveSubtask(dragIndex, hoverIndex);
+            item.index = hoverIndex;
+        },
     });
 
     const [{ isDragging }, drag] = useDrag(
@@ -56,6 +96,8 @@ const SubtaskDrawerCard: React.FC<SubtaskDrawerCardProps> = ({ subtask }) => {
         }),
         [localSubtask, dispatch]
     ); // Add dependencies here
+
+    drag(drop(ref));
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -120,7 +162,7 @@ const SubtaskDrawerCard: React.FC<SubtaskDrawerCardProps> = ({ subtask }) => {
 
     return (
         <li
-            ref={drag as unknown as React.RefObject<HTMLLIElement>}
+            ref={ref as unknown as React.RefObject<HTMLLIElement>}
             key={subtask._id}
             style={{
                 opacity: isDragging ? 0.5 : 1,

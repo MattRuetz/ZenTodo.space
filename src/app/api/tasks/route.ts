@@ -5,14 +5,7 @@ import dbConnect from '@/lib/mongodb';
 import Task from '@/models/Task';
 import Space from '@/models/Space'; // Assuming Space model is imported
 import mongoose from 'mongoose';
-
-async function getUserId(req: NextRequest) {
-    const session = await getServerSession(authOptions);
-    if (!session || !session.user) {
-        throw new Error('Unauthorized');
-    }
-    return session.user.id;
-}
+import { getUserId } from '@/hooks/useGetUserId';
 
 export async function GET(req: NextRequest) {
     try {
