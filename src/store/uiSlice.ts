@@ -1,4 +1,4 @@
-import { Task } from '@/types';
+import { SortOption, Task } from '@/types';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface UIState {
@@ -6,15 +6,17 @@ interface UIState {
     draggingCardId: string | null;
     isSubtaskDrawerOpen: boolean;
     subtaskDrawerParentId: string | null;
+    sortOption: SortOption;
+    isReversed: boolean;
 }
 
 const initialState: UIState = {
     isGlobalDragging: false,
     draggingCardId: null,
     isSubtaskDrawerOpen: false,
-    // ... other initial state properties
-    isSubtaskDrawerOpen: false,
     subtaskDrawerParentId: null,
+    sortOption: 'custom',
+    isReversed: false,
 };
 
 const uiSlice = createSlice({
@@ -36,7 +38,12 @@ const uiSlice = createSlice({
         ) => {
             state.subtaskDrawerParentId = action.payload;
         },
-        // ... other reducers
+        setSortOption: (state, action: PayloadAction<SortOption>) => {
+            state.sortOption = action.payload;
+        },
+        setIsReversed: (state, action: PayloadAction<boolean>) => {
+            state.isReversed = action.payload;
+        },
     },
 });
 
@@ -45,5 +52,7 @@ export const {
     setDraggingCardId,
     setSubtaskDrawerOpen,
     setSubtaskDrawerParentId,
+    setSortOption,
+    setIsReversed,
 } = uiSlice.actions;
 export default uiSlice.reducer;

@@ -4,7 +4,6 @@ import { Task } from '../types';
 import { RootState } from './store';
 import { fetchSpaceMaxZIndex } from './spaceSlice';
 import { updateSpaceMaxZIndex } from './spaceSlice';
-import { rejectWithValue } from '@reduxjs/toolkit';
 
 interface TasksState {
     tasks: Task[];
