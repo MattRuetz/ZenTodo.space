@@ -12,9 +12,13 @@ import SubtaskProgresses from './SubtaskProgresses';
 
 interface SubtaskDrawerCardProps {
     subtask: Task;
+    position: string;
 }
 
-const SubtaskDrawerCard: React.FC<SubtaskDrawerCardProps> = ({ subtask }) => {
+const SubtaskDrawerCard: React.FC<SubtaskDrawerCardProps> = ({
+    subtask,
+    position,
+}) => {
     const dispatch = useDispatch<AppDispatch>();
     const [localSubtask, setLocalSubtask] = useState(subtask);
     const [isEditing, setIsEditing] = useState<string | null>(null);
@@ -32,8 +36,7 @@ const SubtaskDrawerCard: React.FC<SubtaskDrawerCardProps> = ({ subtask }) => {
         () => ({
             type: 'SUBTASK',
             item: () => {
-                // This function will be called when the drag starts
-                return { ...localSubtask };
+                return { ...localSubtask, position };
             },
             end: (item, monitor) => {
                 const dropResult = monitor.getDropResult() as {
@@ -54,8 +57,8 @@ const SubtaskDrawerCard: React.FC<SubtaskDrawerCardProps> = ({ subtask }) => {
                 isDragging: monitor.isDragging(),
             }),
         }),
-        [localSubtask, dispatch]
-    ); // Add dependencies here
+        [localSubtask, dispatch, position]
+    );
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
