@@ -18,10 +18,8 @@ export async function POST(req: NextRequest) {
             parentTask,
             ancestors,
             zIndex,
-            index,
+            position,
         } = body;
-
-        // Get the current maxZIndex for the space and increment it
 
         const newTask = new Task({
             taskName: taskName,
@@ -31,22 +29,46 @@ export async function POST(req: NextRequest) {
             progress: progress,
             space: space,
             user: userId,
-            zIndex: zIndex, // Set the zIndex here
+            zIndex: zIndex,
             parentTask: parentTask,
             subtasks: [],
             ancestors: ancestors,
         });
 
-        const updatedParentTask = await Task.findByIdAndUpdate(
-            parentTask,
-            {
+        let updateOperation;
+        if (position === 'start') {
+            updateOperation = {
                 $push: {
                     subtasks: {
                         $each: [newTask._id],
-                        $position: index,
+                        $position: 0,
                     },
                 },
-            },
+            };
+        } else if (position.startsWith('after_')) {
+            const afterId = position.split('_')[1];
+            updateOperation = {
+                $push: {
+                    subtasks: {
+                        $each: [newTask._id],
+                        $position: {
+                            $add: [
+                                { $indexOfArray: ['$subtasks', afterId] },
+                                1,
+                            ],
+                        },
+                    },
+                },
+            };
+        } else {
+            updateOperation = {
+                $push: { subtasks: newTask._id },
+            };
+        }
+
+        const updatedParentTask = await Task.findByIdAndUpdate(
+            parentTask,
+            updateOperation,
             { new: true }
         );
 
@@ -60,9 +82,9 @@ export async function POST(req: NextRequest) {
             { status: 201 }
         );
     } catch (error) {
-        console.error('Error creating task:', error);
+        console.error('Error adding new subtask:', error);
         return NextResponse.json(
-            { error: 'Failed to create task' },
+            { error: 'Internal Server Error' },
             { status: 500 }
         );
     }

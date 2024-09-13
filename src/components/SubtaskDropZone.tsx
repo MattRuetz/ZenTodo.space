@@ -6,12 +6,12 @@ import { useDispatch } from 'react-redux';
 import { useDrop } from 'react-dnd';
 
 interface SubtaskDropZoneProps {
-    index: number;
+    position: string;
     parentTask: Task | null;
 }
 
 const SubtaskDropZone: React.FC<SubtaskDropZoneProps> = ({
-    index,
+    position,
     parentTask,
 }) => {
     const dispatch = useDispatch<AppDispatch>();
@@ -29,7 +29,7 @@ const SubtaskDropZone: React.FC<SubtaskDropZoneProps> = ({
                         moveSubtask({
                             subtaskId: item._id as string,
                             newParentId: parentTask._id,
-                            newIndex: index,
+                            newPosition: position,
                         })
                     );
                 }
@@ -38,7 +38,7 @@ const SubtaskDropZone: React.FC<SubtaskDropZoneProps> = ({
                 isOver: !!monitor.isOver(),
             }),
         }),
-        [parentTask, index]
+        [parentTask, position]
     );
 
     const handleMouseEnter = () => {
@@ -73,14 +73,14 @@ const SubtaskDropZone: React.FC<SubtaskDropZoneProps> = ({
             subtasks: [],
             parentTask: parentTask?._id as string,
             ancestors: parentTask?.ancestors
-                ? [...parentTask.ancestors, parentTask?._id as string]
+                ? [...parentTask.ancestors, parentTask._id as string]
                 : [parentTask?._id as string],
         };
 
         dispatch(
             addNewSubtask({
                 subtask: newSubtask,
-                index: index,
+                position: position,
             })
         );
     };
@@ -94,16 +94,10 @@ const SubtaskDropZone: React.FC<SubtaskDropZoneProps> = ({
     }, []);
 
     return (
-        <div
-            className={`py-2 transition-all duration-300 ease-in-out ${
-                isOver ? 'bg-sky-950' : 'bg-transparent'
-            }`}
-            ref={drop as unknown as React.RefObject<HTMLDivElement>}
-        >
-            {index === 0 ? (
+        <div ref={drop} className="w-full">
+            {position === 'start' ? (
                 <div
-                    data-index={index}
-                    className="flex bg-transparent hover:bg-sky-900 transition-all duration-300 ease-in-out cursor-pointer rounded-lg px-2 py-1 justify-center text-sm font-semibold"
+                    className="flex mb-2 bg-slate-800 hover:bg-sky-950 transition-all duration-300 ease-in-out cursor-pointer rounded-lg px-2 py-1 justify-center text-sm font-semibold"
                     onClick={handleAddSubtask}
                 >
                     + new subtask
@@ -111,26 +105,29 @@ const SubtaskDropZone: React.FC<SubtaskDropZoneProps> = ({
             ) : (
                 <>
                     <div
-                        data-index={index}
-                        className={`w-full rounded-lg transition-all duration-300 ease-in-out cursor-pointer overflow-hidden ${
-                            hoverStatus === 'hiding'
-                                ? 'h-2 bg-transparent'
-                                : hoverStatus === 'peaking'
-                                ? 'h-5 bg-slate-800'
-                                : 'h-10 bg-sky-950'
-                        }`}
+                        className="p-2"
                         onMouseEnter={handleMouseEnter}
                         onMouseLeave={handleMouseLeave}
                         onClick={handleAddSubtask}
                     >
                         <div
-                            className="h-full flex items-center justify-center bg-sky-950 rounded-full px-2 py-1 text-sm font-semibold"
-                            style={{
-                                opacity: textOpacity,
-                                transition: 'opacity 0.3s ease-in-out',
-                            }}
+                            className={`w-full rounded-lg transition-all duration-300 ease-in-out cursor-pointer overflow-hidden ${
+                                hoverStatus === 'hiding'
+                                    ? 'h-1 bg-base-300'
+                                    : hoverStatus === 'peaking'
+                                    ? 'h-2 bg-slate-800'
+                                    : 'h-7 bg-sky-950'
+                            } ${isOver ? 'py-4 bg-sky-950' : ''}`}
                         >
-                            + new subtask
+                            <div
+                                className="h-full flex items-center justify-center bg-sky-950 rounded-full px-2 py-1 text-sm font-semibold"
+                                style={{
+                                    opacity: textOpacity,
+                                    transition: 'opacity 0.3s ease-in-out',
+                                }}
+                            >
+                                + new subtask
+                            </div>
                         </div>
                     </div>
                 </>

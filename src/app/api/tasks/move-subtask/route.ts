@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Task from '@/models/Task';
 import { getUserId } from '@/hooks/useGetUserId';
+import mongoose from 'mongoose';
 
 const MAX_RETRIES = 3;
-const RETRY_DELAY = 100; // milliseconds
+const RETRY_DELAY = 100;
 
 async function moveSubtask(
     userId: string,
@@ -35,7 +36,7 @@ async function moveSubtask(
 
         // Remove subtask from old parent
         oldParent.subtasks = oldParent.subtasks.filter(
-            (id) => id.toString() !== subtaskId
+            (id: mongoose.Types.ObjectId) => id.toString() !== subtaskId
         );
         await oldParent.save();
 
@@ -53,7 +54,10 @@ async function moveSubtask(
             movedSubtask: subtask,
         };
     } catch (error) {
-        if (error.name === 'VersionError' && retryCount < MAX_RETRIES) {
+        if (
+            error instanceof mongoose.Error.VersionError &&
+            retryCount < MAX_RETRIES
+        ) {
             await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
             return moveSubtask(
                 userId,

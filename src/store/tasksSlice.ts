@@ -114,7 +114,7 @@ export const convertTaskToSubtask = createAsyncThunk(
 export const addNewSubtask = createAsyncThunk(
     'tasks/addNewSubtask',
     async (
-        { subtask, index }: { subtask: Omit<Task, '_id'>; index: number },
+        { subtask, position }: { subtask: Omit<Task, '_id'>; position: string },
         { rejectWithValue }
     ) => {
         try {
@@ -132,7 +132,7 @@ export const addNewSubtask = createAsyncThunk(
                     parentTask: subtask.parentTask,
                     subtasks: [],
                     ancestors: subtask.ancestors,
-                    index: index,
+                    position: position,
                 }),
             });
 
@@ -251,11 +251,34 @@ export const moveSubtask = createAsyncThunk(
         {
             subtaskId,
             newParentId,
-            newIndex,
-        }: { subtaskId: string; newParentId: string; newIndex: number },
-        { rejectWithValue }
+            newPosition,
+        }: { subtaskId: string; newParentId: string; newPosition: string },
+        { getState, dispatch }
     ) => {
         try {
+            const state = getState() as RootState;
+            const subtask = state.tasks.tasks.find(
+                (task) => task._id === subtaskId
+            );
+            const newParent = state.tasks.tasks.find(
+                (task) => task._id === newParentId
+            );
+
+            if (!subtask || !newParent) {
+                throw new Error('Subtask or new parent not found');
+            }
+
+            let newIndex;
+            if (newPosition === 'start') {
+                newIndex = 0;
+            } else if (newPosition.startsWith('after_')) {
+                const afterId = newPosition.split('_')[1];
+                newIndex =
+                    newParent.subtasks.findIndex((id) => id === afterId) + 1;
+            } else {
+                newIndex = newParent.subtasks.length;
+            }
+
             const response = await fetch('/api/tasks/move-subtask', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
