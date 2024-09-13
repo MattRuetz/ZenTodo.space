@@ -1,4 +1,10 @@
-import React, { forwardRef, ForwardedRef, useMemo, useCallback } from 'react';
+import React, {
+    forwardRef,
+    ForwardedRef,
+    useMemo,
+    useCallback,
+    useState,
+} from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
 import { Task } from '@/types';
@@ -7,6 +13,8 @@ import { FaAngleRight, FaAnglesRight, FaX, FaXmark } from 'react-icons/fa6';
 import { setSubtaskDrawerParentId } from '@/store/uiSlice';
 import { useDispatch } from 'react-redux';
 import SubtaskDropZone from './SubtaskDropZone';
+import SortingDropdown from './SortingDropdown';
+import { updateSubtaskOrder } from '@/store/tasksSlice';
 
 interface SubtaskDrawerProps {
     isOpen: boolean;
@@ -61,6 +69,73 @@ const SubtaskDrawer = forwardRef<HTMLDivElement, SubtaskDrawerProps>(
             [dispatch]
         );
 
+        const [sortOption, setSortOption] = useState<
+            'custom' | 'name' | 'progress' | 'created' | 'lastEdited'
+        >('custom');
+        const [isReversed, setIsReversed] = useState(false);
+
+        const handleSortChange = useCallback(
+            (
+                option:
+                    | 'custom'
+                    | 'name'
+                    | 'progress'
+                    | 'created'
+                    | 'lastEdited',
+                reversed: boolean
+            ) => {
+                setSortOption(option);
+                setIsReversed(reversed);
+            },
+            []
+        );
+
+        const sortedSubtasks = useMemo(() => {
+            if (sortOption === 'custom') return subtasks;
+
+            return [...subtasks].sort((a, b) => {
+                let comparison = 0;
+                switch (sortOption) {
+                    case 'name':
+                        comparison = a.taskName.localeCompare(b.taskName);
+                        break;
+                    case 'progress':
+                        comparison = a.progress.localeCompare(b.progress);
+                        break;
+                    case 'created':
+                        comparison =
+                            new Date(a.createdAt as Date).getTime() -
+                            new Date(b.createdAt as Date).getTime();
+                        break;
+                    case 'lastEdited':
+                        comparison =
+                            new Date(a.updatedAt as Date).getTime() -
+                            new Date(b.updatedAt as Date).getTime();
+                        break;
+                }
+                return isReversed ? -comparison : comparison;
+            });
+        }, [subtasks, sortOption, isReversed]);
+
+        const handleReorder = useCallback(
+            (reorderedSubtasks: Task[]) => {
+                if (sortOption !== 'custom') {
+                    setSortOption('custom');
+                }
+                if (parentTask && parentTask._id) {
+                    dispatch(
+                        updateSubtaskOrder({
+                            parentId: parentTask._id,
+                            subtaskIds: reorderedSubtasks.map(
+                                (task) => task._id
+                            ),
+                        })
+                    );
+                }
+            },
+            [dispatch, parentTask, sortOption]
+        );
+
         return (
             <div
                 ref={ref}
@@ -73,6 +148,8 @@ const SubtaskDrawer = forwardRef<HTMLDivElement, SubtaskDrawerProps>(
                         <h2 className="text-xl font-bold subtask-drawer-items">
                             Subtasks
                         </h2>
+                        <SortingDropdown onSortChange={handleSortChange} />
+
                         <button
                             onClick={onClose}
                             className="text-red-500 flex items-center gap-1 subtask-drawer-items hover:text-white hover:bg-red-500 rounded-full transition-colors duration-300 p-1"
@@ -82,7 +159,6 @@ const SubtaskDrawer = forwardRef<HTMLDivElement, SubtaskDrawerProps>(
                     </div>
                     <div className="flex flex-row gap-2 h-0.5 bg-base-100 w-full"></div>
                     <div className="flex flex-row items-center gap-2 pt-2 w-full text-sm text-slate-300">
-                        {/* <span className="text-slate-700">Subtasks of</span> */}
                         {grandparentTask ? (
                             <>
                                 <FaAngleRight className="text-sm text-slate-700" />
@@ -116,16 +192,21 @@ const SubtaskDrawer = forwardRef<HTMLDivElement, SubtaskDrawerProps>(
                         <SubtaskDropZone
                             position="start"
                             parentTask={parentTask as Task}
+                            onReorder={handleReorder}
+                            setSortOption={setSortOption}
                         />
-                        {subtasks.map((subtask, index) => (
+                        {sortedSubtasks.map((subtask, index) => (
                             <React.Fragment key={subtask?._id}>
                                 <SubtaskDrawerCard
                                     subtask={subtask as Task}
                                     position={subtask._id as string}
+                                    onReorder={handleReorder}
                                 />
                                 <SubtaskDropZone
                                     position={`after_${subtask._id}`}
                                     parentTask={parentTask as Task}
+                                    onReorder={handleReorder}
+                                    setSortOption={setSortOption}
                                 />
                             </React.Fragment>
                         ))}

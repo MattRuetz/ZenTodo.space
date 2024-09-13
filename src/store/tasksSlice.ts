@@ -4,7 +4,6 @@ import { Task } from '../types';
 import { RootState } from './store';
 import { fetchSpaceMaxZIndex } from './spaceSlice';
 import { updateSpaceMaxZIndex } from './spaceSlice';
-import { rejectWithValue } from '@reduxjs/toolkit';
 
 interface TasksState {
     tasks: Task[];
@@ -316,6 +315,34 @@ export const moveSubtask = createAsyncThunk(
     }
 );
 
+export const updateSubtaskOrder = createAsyncThunk(
+    'tasks/updateSubtaskOrder',
+    async (
+        { parentId, subtaskIds }: { parentId: string; subtaskIds: string[] },
+        { rejectWithValue }
+    ) => {
+        try {
+            const response = await fetch('/api/tasks/subtask-order', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ parentId, subtaskIds }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to update subtask order');
+            }
+
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            if (error instanceof Error) {
+                return rejectWithValue(error.message);
+            }
+            return rejectWithValue('An unknown error occurred');
+        }
+    }
+);
+
 export const tasksSlice = createSlice({
     name: 'tasks',
     initialState,
@@ -448,6 +475,15 @@ export const tasksSlice = createSlice({
                 );
                 if (subtaskIndex !== -1) {
                     state.tasks[subtaskIndex] = movedSubtask;
+                }
+            })
+            .addCase(updateSubtaskOrder.fulfilled, (state, action) => {
+                const { parentId, updatedSubtasks } = action.payload;
+                const parentIndex = state.tasks.findIndex(
+                    (task) => task._id === parentId
+                );
+                if (parentIndex !== -1) {
+                    state.tasks[parentIndex].subtasks = updatedSubtasks;
                 }
             });
     },

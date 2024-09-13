@@ -8,11 +8,17 @@ import { useDrop } from 'react-dnd';
 interface SubtaskDropZoneProps {
     position: string;
     parentTask: Task | null;
+    setSortOption: React.Dispatch<
+        React.SetStateAction<
+            'custom' | 'name' | 'progress' | 'created' | 'lastEdited'
+        >
+    >;
 }
 
 const SubtaskDropZone: React.FC<SubtaskDropZoneProps> = ({
     position,
     parentTask,
+    setSortOption,
 }) => {
     const dispatch = useDispatch<AppDispatch>();
     const [hoverStatus, setHoverStatus] = useState('hiding');
@@ -25,6 +31,7 @@ const SubtaskDropZone: React.FC<SubtaskDropZoneProps> = ({
             accept: 'SUBTASK',
             drop: (item: Task) => {
                 if (parentTask && parentTask._id) {
+                    setSortOption('custom');
                     dispatch(
                         moveSubtask({
                             subtaskId: item._id as string,
