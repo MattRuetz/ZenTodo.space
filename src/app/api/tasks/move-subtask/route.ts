@@ -5,13 +5,13 @@ import { getUserId } from '@/hooks/useGetUserId';
 import mongoose from 'mongoose';
 
 const MAX_RETRIES = 3;
-const RETRY_DELAY = 100;
+const RETRY_DELAY = 100; // milliseconds
 
 async function moveSubtask(
     userId: string,
     subtaskId: string,
     newParentId: string,
-    newPosition: string,
+    newIndex: number,
     retryCount = 0
 ): Promise<any> {
     try {
@@ -40,22 +40,8 @@ async function moveSubtask(
         );
         await oldParent.save();
 
-        // Add subtask to new parent at the specified position
-        if (newPosition === 'start') {
-            newParent.subtasks.unshift(subtaskId);
-        } else if (newPosition.startsWith('after_')) {
-            const afterId = newPosition.split('_')[1];
-            const index = newParent.subtasks.findIndex(
-                (id: mongoose.Types.ObjectId) => id.toString() === afterId
-            );
-            if (index !== -1) {
-                newParent.subtasks.splice(index + 1, 0, subtaskId);
-            } else {
-                newParent.subtasks.push(subtaskId);
-            }
-        } else {
-            newParent.subtasks.push(subtaskId);
-        }
+        // Add subtask to new parent at the specified index
+        newParent.subtasks.splice(newIndex, 0, subtaskId);
         await newParent.save();
 
         // Update subtask's parent
@@ -77,7 +63,7 @@ async function moveSubtask(
                 userId,
                 subtaskId,
                 newParentId,
-                newPosition,
+                newIndex,
                 retryCount + 1
             );
         }
@@ -89,13 +75,13 @@ export async function PUT(req: NextRequest) {
     try {
         await dbConnect();
         const userId = await getUserId(req);
-        const { subtaskId, newParentId, newPosition } = await req.json();
+        const { subtaskId, newParentId, newIndex } = await req.json();
 
         const result = await moveSubtask(
             userId,
             subtaskId,
             newParentId,
-            newPosition
+            newIndex
         );
 
         if (result.error) {

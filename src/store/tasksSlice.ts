@@ -4,6 +4,7 @@ import { Task } from '../types';
 import { RootState } from './store';
 import { fetchSpaceMaxZIndex } from './spaceSlice';
 import { updateSpaceMaxZIndex } from './spaceSlice';
+import { rejectWithValue } from '@reduxjs/toolkit';
 
 interface TasksState {
     tasks: Task[];
@@ -206,7 +207,7 @@ export const convertSubtaskToTask = createAsyncThunk(
         const updatedParentTask = {
             ...parentTask,
             subtasks: parentTask.subtasks.filter(
-                (subId) => subId !== subtask._id
+                (subId) => subId.toString() !== subtask._id
             ),
         };
 
@@ -252,22 +253,52 @@ export const moveSubtask = createAsyncThunk(
             subtaskId,
             newParentId,
             newPosition,
-        }: {
-            subtaskId: string;
-            newParentId: string;
-            newPosition: string;
-        },
-        { rejectWithValue }
+        }: { subtaskId: string; newParentId: string; newPosition: string },
+        { getState, dispatch }
     ) => {
         try {
+            const state = getState() as RootState;
+            const subtask = state.tasks.tasks.find(
+                (task) => task._id === subtaskId
+            );
+            const newParent = state.tasks.tasks.find(
+                (task) => task._id === newParentId
+            );
+
+            if (!subtask || !newParent) {
+                throw new Error('Subtask or new parent not found');
+            }
+
+            let newIndex;
+            if (newPosition === 'start') {
+                newIndex = 0;
+            } else if (newPosition.startsWith('after_')) {
+                const afterId = newPosition.split('_')[1];
+                const currentIndex = newParent.subtasks.findIndex(
+                    (id) => id.toString() === subtaskId
+                );
+                const afterIndex = newParent.subtasks.findIndex(
+                    (id) => id.toString() === afterId
+                );
+
+                if (currentIndex === -1) {
+                    // The subtask is coming from a different parent
+                    newIndex = afterIndex + 1;
+                } else if (currentIndex < afterIndex) {
+                    // Moving down
+                    newIndex = afterIndex;
+                } else {
+                    // Moving up
+                    newIndex = afterIndex + 1;
+                }
+            } else {
+                newIndex = newParent.subtasks.length;
+            }
+
             const response = await fetch('/api/tasks/move-subtask', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    subtaskId,
-                    newParentId,
-                    newPosition,
-                }),
+                body: JSON.stringify({ subtaskId, newParentId, newIndex }),
             });
 
             if (!response.ok) {

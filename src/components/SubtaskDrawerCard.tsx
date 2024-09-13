@@ -15,12 +15,12 @@ import { useDrag, useDrop } from 'react-dnd';
 
 interface SubtaskDrawerCardProps {
     subtask: Task;
-    index: number;
+    position: string;
 }
 
 const SubtaskDrawerCard: React.FC<SubtaskDrawerCardProps> = ({
     subtask,
-    index,
+    position,
 }) => {
     const dispatch = useDispatch<AppDispatch>();
     const [localSubtask, setLocalSubtask] = useState(subtask);
@@ -40,8 +40,7 @@ const SubtaskDrawerCard: React.FC<SubtaskDrawerCardProps> = ({
         () => ({
             type: 'SUBTASK',
             item: () => {
-                // This function will be called when the drag starts
-                return { ...localSubtask };
+                return { ...localSubtask, position };
             },
             end: (item, monitor) => {
                 const dropResult = monitor.getDropResult() as {
@@ -62,8 +61,8 @@ const SubtaskDrawerCard: React.FC<SubtaskDrawerCardProps> = ({
                 isDragging: monitor.isDragging(),
             }),
         }),
-        [localSubtask, dispatch]
-    ); // Add dependencies here
+        [localSubtask, dispatch, position]
+    );
 
     drag(ref);
 
