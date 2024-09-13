@@ -148,7 +148,11 @@ const SubtaskDrawer = forwardRef<HTMLDivElement, SubtaskDrawerProps>(
         useEffect(() => {
             // Check if there are no subtasks and close the drawer
             if (isOpen && sortedSubtasks.length === 0) {
-                onClose();
+                if (grandparentTask) {
+                    handleSwitchParentTask(grandparentTask as Task);
+                } else {
+                    onClose();
+                }
             }
         }, [isOpen, sortedSubtasks, isGlobalDragging]);
 
@@ -163,8 +167,8 @@ const SubtaskDrawer = forwardRef<HTMLDivElement, SubtaskDrawerProps>(
                 }`}
             >
                 <div className="p-3 subtask-drawer-items">
-                    <div className="flex flex-row justify-between items-center py-2">
-                        <h2 className="text-xl font-bold subtask-drawer-items text-center w-full">
+                    <div className="flex flex-row justify-between items-center py-2 bg-base-100 px-3 rounded-md">
+                        <h2 className="text-lg font-bold uppercase subtask-drawer-items text-center w-full">
                             Subtasks
                         </h2>
                         <button
@@ -174,12 +178,11 @@ const SubtaskDrawer = forwardRef<HTMLDivElement, SubtaskDrawerProps>(
                             <FaXmark className="text-sm" />
                         </button>
                     </div>
-                    <div className="flex flex-row gap-2 h-0.5 bg-base-100 w-full"></div>
                     <div className="flex flex-row gap-2 w-full pt-2">
                         <p className="uppercase text-xs">Main Task:</p>
                     </div>
                     <div className="flex items-center gap-2 py-2 text-sm text-slate-300">
-                        <div className="flex flex-row items-center gap-3 w-full text-sm text-slate-300">
+                        <div className="flex flex-row items-center gap-2 w-full text-sm text-slate-300">
                             {grandparentTask && (
                                 <>
                                     <p
@@ -192,7 +195,7 @@ const SubtaskDrawer = forwardRef<HTMLDivElement, SubtaskDrawerProps>(
                                     >
                                         {grandparentTask?.taskName}
                                     </p>
-                                    <FaAnglesRight
+                                    <FaAngleRight
                                         className="text-sm text-slate-700"
                                         size={24}
                                     />
@@ -213,7 +216,9 @@ const SubtaskDrawer = forwardRef<HTMLDivElement, SubtaskDrawerProps>(
                         </div>
                         <SortingDropdown />
                     </div>
-                    <ul className="overflow-y-auto overflow-x-visible h-[calc(100vh-10rem)] subtask-drawer-items">
+                    <div className="flex flex-row gap-2 h-0.5 bg-base-100 w-full"></div>
+
+                    <ul className="overflow-y-auto overflow-x-visible h-[calc(100vh-10rem)] subtask-drawer-items pt-2">
                         <SubtaskDropZone
                             position="start"
                             parentTask={parentTask as Task}

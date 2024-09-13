@@ -181,7 +181,7 @@ export const deleteTask = createAsyncThunk(
                 throw new Error('Failed to delete task');
             }
 
-            return taskId;
+            return { taskId, parentTaskId };
         } catch (error) {
             if (error instanceof Error) {
                 return rejectWithValue(error.message);
@@ -372,12 +372,22 @@ export const tasksSlice = createSlice({
                 }
             })
             .addCase(deleteTask.fulfilled, (state, action) => {
-                const deletedTaskId = action.payload;
+                const deletedTaskId = action.payload.taskId;
                 state.tasks = state.tasks.filter(
                     (task) =>
                         task._id !== deletedTaskId &&
                         !task.ancestors?.includes(deletedTaskId)
                 );
+                const parentTaskId = action.payload.parentTaskId;
+
+                const parentTask = state.tasks.find(
+                    (task) => task._id === parentTaskId
+                );
+                if (parentTask) {
+                    parentTask.subtasks = parentTask.subtasks.filter(
+                        (subId) => subId.toString() !== deletedTaskId
+                    );
+                }
             })
             .addCase(convertTaskToSubtask.fulfilled, (state, action) => {
                 const {

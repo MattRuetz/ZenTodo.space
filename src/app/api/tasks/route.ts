@@ -149,7 +149,7 @@ export async function DELETE(req: NextRequest) {
 
                 await session.commitTransaction();
                 return NextResponse.json(
-                    { message: 'Task and all subtasks deleted successfully' },
+                    { taskId, parentTaskId },
                     { status: 200 }
                 );
             } catch (error) {

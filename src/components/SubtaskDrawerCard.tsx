@@ -89,6 +89,9 @@ const SubtaskDrawerCard: React.FC<SubtaskDrawerCardProps> = ({
                 (draggedSubtask.ancestors &&
                     draggedSubtask.ancestors.length > 1);
 
+            console.log('targetSubtask', targetSubtask);
+            console.log('draggedSubtask', draggedSubtask);
+
             if (draggedSubtask._id === targetSubtask._id) {
                 return;
             } else if (!isAlreadyParent) {
