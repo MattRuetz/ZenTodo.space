@@ -1,8 +1,8 @@
-import { AppDispatch } from '@/store/store';
+import { AppDispatch, RootState } from '@/store/store';
 import { addNewSubtask, moveSubtask } from '@/store/tasksSlice';
-import { Task, TaskProgress } from '@/types';
-import React, { useState, useRef, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import { SortOption, Task, TaskProgress } from '@/types';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { useDrop } from 'react-dnd';
 
 interface SubtaskDropZoneProps {
@@ -15,30 +15,39 @@ const SubtaskDropZone: React.FC<SubtaskDropZoneProps> = ({
     parentTask,
 }) => {
     const dispatch = useDispatch<AppDispatch>();
+    const sortOption = useSelector((state: RootState) => state.ui.sortOption);
     const [hoverStatus, setHoverStatus] = useState('hiding');
     const [textOpacity, setTextOpacity] = useState(0);
     const hoverRef = useRef<boolean>(false);
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+    const handleDrop = useCallback(
+        (item: Task) => {
+            console.log('global option', sortOption);
+            if (parentTask && parentTask._id && sortOption === 'custom') {
+                dispatch(
+                    moveSubtask({
+                        subtaskId: item._id as string,
+                        newParentId: parentTask._id,
+                        newPosition: position,
+                    })
+                );
+            } else {
+                alert('Custom sorting is not enabled.');
+            }
+        },
+        [dispatch, parentTask, position, sortOption]
+    );
+
     const [{ isOver }, drop] = useDrop(
         () => ({
             accept: 'SUBTASK',
-            drop: (item: Task) => {
-                if (parentTask && parentTask._id) {
-                    dispatch(
-                        moveSubtask({
-                            subtaskId: item._id as string,
-                            newParentId: parentTask._id,
-                            newPosition: position,
-                        })
-                    );
-                }
-            },
+            drop: handleDrop,
             collect: (monitor) => ({
                 isOver: !!monitor.isOver(),
             }),
         }),
-        [parentTask, position]
+        [handleDrop]
     );
 
     const handleMouseEnter = () => {

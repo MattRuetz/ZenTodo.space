@@ -29,6 +29,13 @@ export interface SpaceData {
     maxZIndex: number;
 }
 
+export type SortOption =
+    | 'name'
+    | 'progress'
+    | 'created'
+    | 'lastEdited'
+    | 'custom';
+
 // NextAuth type extensions
 declare module 'next-auth' {
     interface User {

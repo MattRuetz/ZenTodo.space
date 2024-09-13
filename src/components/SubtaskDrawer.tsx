@@ -1,12 +1,18 @@
 import React, { forwardRef, ForwardedRef, useMemo, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
-import { Task } from '@/types';
+import { SortOption, Task } from '@/types';
 import SubtaskDrawerCard from './SubtaskDrawerCard';
 import { FaAngleRight, FaAnglesRight, FaX, FaXmark } from 'react-icons/fa6';
-import { setSubtaskDrawerParentId } from '@/store/uiSlice';
+import {
+    setIsReversed,
+    setSortOption,
+    setSubtaskDrawerParentId,
+} from '@/store/uiSlice';
 import { useDispatch } from 'react-redux';
 import SubtaskDropZone from './SubtaskDropZone';
+import { useState } from 'react';
+import SortingDropdown from './SortingDropdown';
 
 interface SubtaskDrawerProps {
     isOpen: boolean;
@@ -16,6 +22,12 @@ interface SubtaskDrawerProps {
 const SubtaskDrawer = forwardRef<HTMLDivElement, SubtaskDrawerProps>(
     ({ isOpen, onClose }, ref: ForwardedRef<HTMLDivElement>) => {
         const dispatch = useDispatch();
+        const sortOption = useSelector(
+            (state: RootState) => state.ui.sortOption
+        ); // Add this line
+        const isReversed = useSelector(
+            (state: RootState) => state.ui.isReversed
+        ); // Add this line
 
         const parentTaskId = useSelector(
             (state: RootState) => state.ui.subtaskDrawerParentId
@@ -61,6 +73,38 @@ const SubtaskDrawer = forwardRef<HTMLDivElement, SubtaskDrawerProps>(
             [dispatch]
         );
 
+        const sortedSubtasks = useMemo(() => {
+            let sorted = [...subtasks];
+            switch (sortOption) {
+                case 'name':
+                    sorted.sort((a, b) => a.taskName.localeCompare(b.taskName));
+                    break;
+                case 'progress':
+                    sorted.sort((a, b) => a.progress.localeCompare(b.progress));
+                    break;
+                case 'created':
+                    sorted.sort(
+                        (a, b) =>
+                            new Date(b.createdAt as Date).getTime() -
+                            new Date(a.createdAt as Date).getTime()
+                    );
+                    break;
+                case 'lastEdited':
+                    sorted.sort(
+                        (a, b) =>
+                            new Date(b.updatedAt as Date).getTime() -
+                            new Date(a.updatedAt as Date).getTime()
+                    );
+                    break;
+                default:
+                    break;
+            }
+            if (isReversed) {
+                sorted.reverse();
+            }
+            return sorted;
+        }, [subtasks, sortOption, isReversed]);
+
         return (
             <div
                 ref={ref}
@@ -81,43 +125,47 @@ const SubtaskDrawer = forwardRef<HTMLDivElement, SubtaskDrawerProps>(
                         </button>
                     </div>
                     <div className="flex flex-row gap-2 h-0.5 bg-base-100 w-full"></div>
-                    <div className="flex flex-row items-center gap-2 pt-2 w-full text-sm text-slate-300">
-                        {/* <span className="text-slate-700">Subtasks of</span> */}
-                        {grandparentTask ? (
-                            <>
+                    <div className="flex items-center py-2">
+                        <div className="flex flex-row items-center gap-2 w-full text-sm text-slate-300">
+                            {grandparentTask ? (
+                                <>
+                                    <FaAngleRight className="text-sm text-slate-700" />
+                                    <p
+                                        className="p-2 hover:text-white bg-sky-950 hover:bg-sky-800 rounded-md cursor-pointer max-w-28"
+                                        onClick={() =>
+                                            handleSwitchParentTask(
+                                                grandparentTask as Task
+                                            )
+                                        }
+                                    >
+                                        {grandparentTask?.taskName}
+                                    </p>
+                                    <FaAnglesRight className="text-sm text-slate-700" />
+                                </>
+                            ) : (
                                 <FaAngleRight className="text-sm text-slate-700" />
+                            )}
+                            <>
                                 <p
-                                    className="p-2 hover:text-white bg-sky-950 hover:bg-sky-800 rounded-md cursor-pointer max-w-28"
+                                    className="p-2 rounded-md cursor-pointer max-w-28"
                                     onClick={() =>
                                         handleSwitchParentTask(
-                                            grandparentTask as Task
+                                            parentTask as Task
                                         )
                                     }
                                 >
-                                    {grandparentTask?.taskName}
+                                    {parentTask?.taskName}
                                 </p>
-                                <FaAnglesRight className="text-sm text-slate-700" />
                             </>
-                        ) : (
-                            <FaAngleRight className="text-sm text-slate-700" />
-                        )}
-                        <>
-                            <p
-                                className="p-2 rounded-md cursor-pointer max-w-28"
-                                onClick={() =>
-                                    handleSwitchParentTask(parentTask as Task)
-                                }
-                            >
-                                {parentTask?.taskName}
-                            </p>
-                        </>
+                        </div>
+                        <SortingDropdown />
                     </div>
                     <ul className="overflow-y-auto overflow-x-visible h-[calc(100vh-10rem)] subtask-drawer-items">
                         <SubtaskDropZone
                             position="start"
                             parentTask={parentTask as Task}
                         />
-                        {subtasks.map((subtask, index) => (
+                        {sortedSubtasks.map((subtask, index) => (
                             <React.Fragment key={subtask?._id}>
                                 <SubtaskDrawerCard
                                     subtask={subtask as Task}
