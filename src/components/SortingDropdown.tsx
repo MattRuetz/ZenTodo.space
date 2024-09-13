@@ -24,6 +24,7 @@ const SortingDropdown: React.FC<SortingDropdownProps> = ({}) => {
     const isReversed = useSelector((state: RootState) => state.ui.isReversed);
 
     const handleSortChange = (option: SortOption) => {
+        setIsOpen(false);
         if (option === sortOption && option !== 'custom') {
             dispatch(setIsReversed(!isReversed));
         } else {
@@ -33,14 +34,26 @@ const SortingDropdown: React.FC<SortingDropdownProps> = ({}) => {
         console.log('global option', option);
     };
 
+    const sortOptionString = {
+        name: isReversed ? 'Name (a-Z)' : 'Name (Z-a)',
+        progress: 'Progress',
+        created: 'Created ' + (isReversed ? '(Oldest)' : '(Newest)'),
+        lastEdited: 'Last Edited ' + (isReversed ? '(Oldest)' : '(Newest)'),
+        custom: 'Custom',
+    };
+
     return (
         <div className="relative">
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center space-x-1 bg-sky-900 hover:bg-sky-800 rounded-md px-2 py-1"
+                className="flex items-center space-x-1 bg-sky-900 hover:bg-sky-800 rounded-md px-2 py-1 text-xs"
             >
                 <FaSort />
-                <span>{sortOption === 'custom' ? 'Sort' : sortOption}</span>
+                <span>
+                    {sortOption === 'custom'
+                        ? 'Sort'
+                        : sortOptionString[sortOption]}
+                </span>
             </button>
             {isOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-base-300 rounded-md shadow-lg z-10">

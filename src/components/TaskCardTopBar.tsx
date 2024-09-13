@@ -1,6 +1,7 @@
 // src/components/icons/TaskCardTopBar.tsx
 import React, { useState } from 'react';
-import { FaEllipsisV, FaTrash, FaInfoCircle } from 'react-icons/fa';
+import { FaArrowsAlt, FaEllipsisV, FaInfoCircle } from 'react-icons/fa';
+import { FaCalendar, FaCopy, FaPlus, FaTrash } from 'react-icons/fa6';
 
 interface TaskCardTopBarProps {
     className?: string;
@@ -48,18 +49,6 @@ const TaskCardTopBar: React.FC<TaskCardTopBarProps> = ({
                             aria-labelledby="options-menu"
                         >
                             <button
-                                className="flex items-center px-4 py-2 text-sm text-red-700 hover:bg-slate-300 w-full"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    e.preventDefault();
-                                    console.log('delete');
-                                    onDelete();
-                                    setIsDropdownOpen(false);
-                                }}
-                            >
-                                <FaTrash className="mr-2" /> Delete
-                            </button>
-                            <button
                                 className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-slate-300 w-full"
                                 onClick={(e) => {
                                     e.stopPropagation();
@@ -70,6 +59,66 @@ const TaskCardTopBar: React.FC<TaskCardTopBarProps> = ({
                                 }}
                             >
                                 <FaInfoCircle className="mr-2" /> Details
+                            </button>
+                            <button
+                                className="flex items-center px-4 py-2 text-sm text-blue-700 hover:bg-slate-300 w-full"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                    console.log('set due date');
+                                    // Add set due date functionality here
+                                    setIsDropdownOpen(false);
+                                }}
+                            >
+                                <FaCalendar className="mr-2" /> Set Due Date
+                            </button>
+                            <button
+                                className="flex items-center px-4 py-2 text-sm text-green-700 hover:bg-slate-300 w-full"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                    console.log('add subtask');
+                                    // Add add subtask functionality here
+                                    setIsDropdownOpen(false);
+                                }}
+                            >
+                                <FaPlus className="mr-2" /> Add Subtask
+                            </button>
+                            <button
+                                className="flex items-center px-4 py-2 text-sm text-yellow-700 hover:bg-slate-300 w-full"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                    console.log('move task');
+                                    // Add move task functionality here
+                                    setIsDropdownOpen(false);
+                                }}
+                            >
+                                <FaArrowsAlt className="mr-2" /> Move Task
+                            </button>
+                            <button
+                                className="flex items-center px-4 py-2 text-sm text-purple-700 hover:bg-slate-300 w-full"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                    console.log('duplicate task');
+                                    // Add duplicate task functionality here
+                                    setIsDropdownOpen(false);
+                                }}
+                            >
+                                <FaCopy className="mr-2" /> Duplicate Task
+                            </button>
+                            <button
+                                className="flex items-center px-4 py-2 text-sm text-red-700 hover:bg-slate-300 w-full"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                    console.log('delete');
+                                    onDelete();
+                                    setIsDropdownOpen(false);
+                                }}
+                            >
+                                <FaTrash className="mr-2" /> Delete
                             </button>
                         </div>
                     </div>
