@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
                 throw new Error('Parent task not found');
             }
             const index = parentTaskDoc.subtasks.findIndex(
-                (id) => id.toString() === afterId
+                (id: string) => id === afterId
             );
             if (index === -1) {
                 // If the afterId is not found, append to the end
