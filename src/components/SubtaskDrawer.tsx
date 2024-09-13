@@ -68,7 +68,6 @@ const SubtaskDrawer = forwardRef<HTMLDivElement, SubtaskDrawerProps>(
         const handleSwitchParentTask = useCallback(
             (task: Task) => {
                 dispatch(setSubtaskDrawerParentId(task._id ?? ''));
-                // : dispatch(setSubtaskDrawerOpen(false));
             },
             [dispatch]
         );
