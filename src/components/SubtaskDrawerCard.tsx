@@ -1,8 +1,9 @@
 import React, { useCallback, useState, useEffect, useRef } from 'react';
-import { useDispatch } from 'react-redux';
-import { AppDispatch } from '../store/store';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '../store/store';
 import {
     convertSubtaskToTask,
+    convertTaskToSubtask,
     moveSubtask,
     updateTask,
 } from '@/store/tasksSlice';
@@ -12,6 +13,9 @@ import { FaTrash } from 'react-icons/fa';
 import { useDeleteTask } from '@/hooks/useDeleteTask';
 import SubtaskProgresses from './SubtaskProgresses';
 import { useDrag, useDrop } from 'react-dnd';
+import { store } from '@/store/store';
+import { setSimplicityModalOpen } from '@/store/uiSlice';
+import SimplicityModal from './SimplicityModal';
 
 interface SubtaskDrawerCardProps {
     subtask: Task;
@@ -28,6 +32,9 @@ const SubtaskDrawerCard: React.FC<SubtaskDrawerCardProps> = ({
     const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
     const currentTaskNameRef = useRef(subtask.taskName);
     const ref = useRef<HTMLLIElement>(null);
+    const isSimplicityModalOpen = useSelector(
+        (state: RootState) => state.ui.isSimplicityModalOpen
+    );
 
     const [deletingTasks, setDeletingTasks] = useState<Set<string>>(new Set());
 
@@ -64,7 +71,60 @@ const SubtaskDrawerCard: React.FC<SubtaskDrawerCardProps> = ({
         [localSubtask, dispatch, position]
     );
 
-    drag(ref);
+    const handleDrop = useCallback(
+        (item: Task) => {
+            const targetSubtask = subtask;
+            // Fetch the latest version of the dragged task from the Redux store
+            const state = store.getState() as RootState;
+            const draggedSubtask = state.tasks.tasks.find(
+                (task) => task._id === item._id
+            );
+
+            if (!draggedSubtask) {
+                console.error('Dragged subtask not found in the store');
+                return;
+            }
+
+            console.log('dragged subtask', draggedSubtask);
+            // Check if the dropped task is already a parent of the target subtask
+            const isAlreadyParent =
+                draggedSubtask.subtasks.length > 0 ||
+                (draggedSubtask.ancestors &&
+                    draggedSubtask.ancestors.length > 1);
+
+            console.log('draggedTask Subtasks', draggedSubtask.subtasks);
+            console.log('draggedTask Ancestors', draggedSubtask.ancestors);
+
+            if (draggedSubtask._id === targetSubtask._id) {
+                return;
+            } else if (!isAlreadyParent) {
+                dispatch(
+                    convertTaskToSubtask({
+                        childTask: draggedSubtask,
+                        parentTaskId: targetSubtask._id as string,
+                    })
+                );
+            } else {
+                dispatch(setSimplicityModalOpen(true));
+            }
+        },
+        [dispatch, subtask]
+    );
+
+    const [{ isOver }, drop] = useDrop(
+        () => ({
+            accept: 'SUBTASK',
+            drop: (item: Task) => {
+                handleDrop(item);
+            },
+            collect: (monitor) => ({
+                isOver: !!monitor.isOver(),
+            }),
+        }),
+        [handleDrop]
+    );
+
+    drag(drop(ref));
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -227,6 +287,10 @@ const SubtaskDrawerCard: React.FC<SubtaskDrawerCardProps> = ({
                     onClick={() => handleDelete(subtask._id as string)}
                 />
             </div>
+            <SimplicityModal
+                isOpen={isSimplicityModalOpen}
+                onClose={() => dispatch(setSimplicityModalOpen(false))}
+            />
         </li>
     );
 };

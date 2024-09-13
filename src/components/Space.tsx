@@ -32,6 +32,7 @@ const selectTasksForSpace = createSelector(
         }));
     }
 );
+
 const selectTaskStatus = (state: RootState) => state.tasks.status;
 const selectCurrentSpace = createSelector(
     [

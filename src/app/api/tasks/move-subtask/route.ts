@@ -10,7 +10,7 @@ const RETRY_DELAY = 100; // milliseconds
 async function moveSubtask(
     userId: string,
     subtaskId: string,
-    newParentId: string,
+    parentId: string,
     newIndex: number,
     retryCount = 0
 ): Promise<any> {
@@ -20,37 +20,30 @@ async function moveSubtask(
             return { error: 'Subtask not found', status: 404 };
         }
 
-        const oldParentId = subtask.parentTask;
-        const oldParent = await Task.findOne({
-            _id: oldParentId,
-            user: userId,
-        });
-        const newParent = await Task.findOne({
-            _id: newParentId,
-            user: userId,
-        });
+        const parent = await Task.findOne({ _id: parentId, user: userId });
 
-        if (!oldParent || !newParent) {
+        if (!parent) {
             return { error: 'Parent task not found', status: 404 };
         }
 
-        // Remove subtask from old parent
-        oldParent.subtasks = oldParent.subtasks.filter(
+        if (subtask.parentTask.toString() !== parentId) {
+            return {
+                error: 'Subtask does not belong to the specified parent',
+                status: 400,
+            };
+        }
+
+        // Remove subtask from its current position
+        parent.subtasks = parent.subtasks.filter(
             (id: mongoose.Types.ObjectId) => id.toString() !== subtaskId
         );
-        await oldParent.save();
 
-        // Add subtask to new parent at the specified index
-        newParent.subtasks.splice(newIndex, 0, subtaskId);
-        await newParent.save();
-
-        // Update subtask's parent
-        subtask.parentTask = newParentId;
-        await subtask.save();
+        // Add subtask to the new position
+        parent.subtasks.splice(newIndex, 0, subtaskId);
+        await parent.save();
 
         return {
-            updatedOldParent: oldParent,
-            updatedNewParent: newParent,
+            updatedParent: parent,
             movedSubtask: subtask,
         };
     } catch (error) {
@@ -62,7 +55,7 @@ async function moveSubtask(
             return moveSubtask(
                 userId,
                 subtaskId,
-                newParentId,
+                parentId,
                 newIndex,
                 retryCount + 1
             );
@@ -75,14 +68,9 @@ export async function PUT(req: NextRequest) {
     try {
         await dbConnect();
         const userId = await getUserId(req);
-        const { subtaskId, newParentId, newIndex } = await req.json();
+        const { subtaskId, parentId, newIndex } = await req.json();
 
-        const result = await moveSubtask(
-            userId,
-            subtaskId,
-            newParentId,
-            newIndex
-        );
+        const result = await moveSubtask(userId, subtaskId, parentId, newIndex);
 
         if (result.error) {
             return NextResponse.json(

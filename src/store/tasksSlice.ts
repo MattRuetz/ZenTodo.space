@@ -84,12 +84,18 @@ export const convertTaskToSubtask = createAsyncThunk(
         { getState, rejectWithValue }
     ) => {
         try {
+            const state = getState() as RootState;
+            const oldParentTask = state.tasks.tasks.find(
+                (task) => task._id === childTask.parentTask
+            );
+
             const response = await fetch('/api/tasks/hierarchy', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     subtaskIdString: childTask._id,
                     parentTaskIdString: parentTaskId,
+                    oldParentTaskIdString: oldParentTask?._id,
                 }),
             });
 
@@ -98,8 +104,10 @@ export const convertTaskToSubtask = createAsyncThunk(
             }
 
             const data = await response.json();
+            console.log('data From Server', data);
             return {
-                updatedParentTask: data.updatedParentTask,
+                updatedOldParentTask: data.updatedOldParentTask,
+                updatedNewParentTask: data.updatedNewParentTask,
                 updatedSubtask: data.updatedSubtask,
             };
         } catch (error) {
@@ -156,10 +164,17 @@ export const addNewSubtask = createAsyncThunk(
 
 export const deleteTask = createAsyncThunk(
     'tasks/deleteTask',
-    async (taskId: string, { rejectWithValue }) => {
+    async (taskId: string, { getState, rejectWithValue }) => {
         try {
+            const state = getState() as RootState;
+
+            const task = state.tasks.tasks.find((task) => task._id === taskId);
+            const parentTaskId = task?.parentTask;
+
             const response = await fetch(`/api/tasks?id=${taskId}`, {
                 method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ parentTaskId }),
             });
 
             if (!response.ok) {
@@ -245,27 +260,33 @@ export const convertSubtaskToTask = createAsyncThunk(
     }
 );
 
-export const moveSubtask = createAsyncThunk(
-    'tasks/moveSubtask',
+export const moveSubtaskWithinLevel = createAsyncThunk(
+    'tasks/moveSubtaskWithinLevel',
     async (
         {
             subtaskId,
-            newParentId,
+            parentId,
             newPosition,
-        }: { subtaskId: string; newParentId: string; newPosition: string },
-        { getState, dispatch }
+        }: { subtaskId: string; parentId: string; newPosition: string },
+        { getState, rejectWithValue }
     ) => {
         try {
             const state = getState() as RootState;
             const subtask = state.tasks.tasks.find(
                 (task) => task._id === subtaskId
             );
-            const newParent = state.tasks.tasks.find(
-                (task) => task._id === newParentId
+            const parent = state.tasks.tasks.find(
+                (task) => task._id === parentId
             );
 
-            if (!subtask || !newParent) {
-                throw new Error('Subtask or new parent not found');
+            if (!subtask || !parent) {
+                throw new Error('Subtask or parent not found');
+            }
+
+            if (subtask.parentTask !== parentId) {
+                throw new Error(
+                    'Subtask does not belong to the specified parent'
+                );
             }
 
             let newIndex;
@@ -273,17 +294,14 @@ export const moveSubtask = createAsyncThunk(
                 newIndex = 0;
             } else if (newPosition.startsWith('after_')) {
                 const afterId = newPosition.split('_')[1];
-                const currentIndex = newParent.subtasks.findIndex(
+                const currentIndex = parent.subtasks.findIndex(
                     (id) => id.toString() === subtaskId
                 );
-                const afterIndex = newParent.subtasks.findIndex(
+                const afterIndex = parent.subtasks.findIndex(
                     (id) => id.toString() === afterId
                 );
 
-                if (currentIndex === -1) {
-                    // The subtask is coming from a different parent
-                    newIndex = afterIndex + 1;
-                } else if (currentIndex < afterIndex) {
+                if (currentIndex < afterIndex) {
                     // Moving down
                     newIndex = afterIndex;
                 } else {
@@ -291,13 +309,17 @@ export const moveSubtask = createAsyncThunk(
                     newIndex = afterIndex + 1;
                 }
             } else {
-                newIndex = newParent.subtasks.length;
+                newIndex = parent.subtasks.length - 1;
             }
+
+            console.log('newIndex', newIndex);
+            console.log('subtaskId', subtaskId);
+            console.log('parentId', parentId);
 
             const response = await fetch('/api/tasks/move-subtask', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ subtaskId, newParentId, newIndex }),
+                body: JSON.stringify({ subtaskId, parentId, newIndex }),
             });
 
             if (!response.ok) {
@@ -358,24 +380,38 @@ export const tasksSlice = createSlice({
                 );
             })
             .addCase(convertTaskToSubtask.fulfilled, (state, action) => {
-                const { updatedParentTask, updatedSubtask } = action.payload;
+                const {
+                    updatedOldParentTask,
+                    updatedNewParentTask,
+                    updatedSubtask,
+                } = action.payload;
 
-                // Update the parent task
-                const parentIndex = state.tasks.findIndex(
-                    (task) => task._id === updatedParentTask._id
-                );
-                if (parentIndex !== -1) {
-                    state.tasks[parentIndex] = updatedParentTask;
+                // Update the old parent task
+                if (updatedOldParentTask) {
+                    const oldParentIndex = state.tasks.findIndex(
+                        (task) => task._id === updatedOldParentTask._id
+                    );
+                    if (oldParentIndex !== -1) {
+                        state.tasks[oldParentIndex] = updatedOldParentTask;
+                    }
                 }
 
-                // Update the child task (now a subtask)
-                const childIndex = state.tasks.findIndex(
+                // Update the new parent task
+                const newParentIndex = state.tasks.findIndex(
+                    (task) => task._id === updatedNewParentTask._id
+                );
+                if (newParentIndex !== -1) {
+                    state.tasks[newParentIndex] = updatedNewParentTask;
+                }
+
+                // Update or add the subtask
+                const subtaskIndex = state.tasks.findIndex(
                     (task) => task._id === updatedSubtask._id
                 );
-                if (childIndex !== -1) {
-                    state.tasks[childIndex] = updatedSubtask;
+                if (subtaskIndex !== -1) {
+                    state.tasks[subtaskIndex] = updatedSubtask;
                 } else {
-                    // If the subtask is not in the state, add it
+                    // Since UI filters out new subtasks that are already in the parent, we need to add it here
                     state.tasks.push(updatedSubtask);
                 }
             })
@@ -421,24 +457,15 @@ export const tasksSlice = createSlice({
                     state.tasks.push(newTask);
                 }
             })
-            .addCase(moveSubtask.fulfilled, (state, action) => {
-                const { updatedOldParent, updatedNewParent, movedSubtask } =
-                    action.payload;
+            .addCase(moveSubtaskWithinLevel.fulfilled, (state, action) => {
+                const { updatedParent, movedSubtask } = action.payload;
 
-                // Update the old parent
-                const oldParentIndex = state.tasks.findIndex(
-                    (task) => task._id === updatedOldParent._id
+                // Update the parent task
+                const parentIndex = state.tasks.findIndex(
+                    (task) => task._id === updatedParent._id
                 );
-                if (oldParentIndex !== -1) {
-                    state.tasks[oldParentIndex] = updatedOldParent;
-                }
-
-                // Update the new parent
-                const newParentIndex = state.tasks.findIndex(
-                    (task) => task._id === updatedNewParent._id
-                );
-                if (newParentIndex !== -1) {
-                    state.tasks[newParentIndex] = updatedNewParent;
+                if (parentIndex !== -1) {
+                    state.tasks[parentIndex] = updatedParent;
                 }
 
                 // Update the moved subtask

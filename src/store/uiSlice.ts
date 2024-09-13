@@ -8,6 +8,7 @@ interface UIState {
     subtaskDrawerParentId: string | null;
     sortOption: SortOption;
     isReversed: boolean;
+    isSimplicityModalOpen: boolean;
 }
 
 const initialState: UIState = {
@@ -17,6 +18,7 @@ const initialState: UIState = {
     subtaskDrawerParentId: null,
     sortOption: 'custom',
     isReversed: false,
+    isSimplicityModalOpen: false,
 };
 
 const uiSlice = createSlice({
@@ -44,6 +46,9 @@ const uiSlice = createSlice({
         setIsReversed: (state, action: PayloadAction<boolean>) => {
             state.isReversed = action.payload;
         },
+        setSimplicityModalOpen: (state, action: PayloadAction<boolean>) => {
+            state.isSimplicityModalOpen = action.payload;
+        },
     },
 });
 
@@ -54,5 +59,6 @@ export const {
     setSubtaskDrawerParentId,
     setSortOption,
     setIsReversed,
+    setSimplicityModalOpen,
 } = uiSlice.actions;
 export default uiSlice.reducer;

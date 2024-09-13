@@ -36,17 +36,27 @@ export async function PUT(req: NextRequest) {
                 );
             }
 
-            const { subtaskIdString, parentTaskIdString } = requestBody;
+            const {
+                subtaskIdString,
+                parentTaskIdString,
+                oldParentTaskIdString,
+            } = requestBody;
             const subtaskId = new ObjectId(subtaskIdString);
             const parentTaskId = new ObjectId(parentTaskIdString);
+            const oldParentTaskId = oldParentTaskIdString
+                ? new ObjectId(oldParentTaskIdString)
+                : null;
 
             const mongoSession = await mongoose.startSession();
             mongoSession.startTransaction();
 
             try {
-                const [parentTask, subtask] = await Promise.all([
+                const [parentTask, subtask, oldParentTask] = await Promise.all([
                     Task.findById(parentTaskId).session(mongoSession),
                     Task.findById(subtaskId).session(mongoSession),
+                    oldParentTaskId
+                        ? Task.findById(oldParentTaskId).session(mongoSession)
+                        : null,
                 ]);
 
                 if (!parentTask || !subtask) {
@@ -58,16 +68,14 @@ export async function PUT(req: NextRequest) {
                 }
 
                 // Remove subtask from previous parent if it exists
-                if (subtask.parentTask) {
-                    await Task.findByIdAndUpdate(subtask.parentTask, {
-                        $pull: { subtasks: subtaskId },
-                    }).session(mongoSession);
+                if (oldParentTask) {
+                    oldParentTask.subtasks = oldParentTask.subtasks.filter(
+                        (id: ObjectId) => id.toString() !== subtaskId.toString()
+                    );
+                    await oldParentTask.save({ session: mongoSession });
                 }
 
-                // Update parent task
-                if (!Array.isArray(parentTask.subtasks)) {
-                    parentTask.subtasks = [];
-                }
+                // Update NEW parent task
                 if (!parentTask.subtasks.includes(subtaskId)) {
                     parentTask.subtasks.push(subtaskId);
                 }
@@ -101,27 +109,16 @@ export async function PUT(req: NextRequest) {
 
                 // Save the changes to parent task and subtask
                 await Promise.all([
-                    Task.findByIdAndUpdate(
-                        parentTaskId,
-                        { $set: { subtasks: parentTask.subtasks } },
-                        { session: mongoSession }
-                    ),
-                    Task.findByIdAndUpdate(
-                        subtaskId,
-                        {
-                            $set: {
-                                ancestors: newAncestors,
-                                parentTask: parentTaskId,
-                            },
-                        },
-                        { session: mongoSession }
-                    ),
+                    // (already saved old parent task)
+                    parentTask.save({ session: mongoSession }),
+                    subtask.save({ session: mongoSession }),
                 ]);
 
                 await mongoSession.commitTransaction();
 
                 return NextResponse.json({
-                    updatedParentTask: parentTask.toObject(),
+                    updatedOldParentTask: oldParentTask?.toObject(),
+                    updatedNewParentTask: parentTask.toObject(),
                     updatedSubtask: subtask.toObject(),
                     descendantsUpdated: descendants.length,
                 });

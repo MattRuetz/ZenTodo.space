@@ -83,6 +83,19 @@ export const useDragHandlers = ({
                 clientX,
                 clientY
             );
+            const subtaskDrawerUnderCursor = elementsUnderCursor.filter((el) =>
+                el.classList.contains('subtask-drawer')
+            );
+            if (subtaskDrawerUnderCursor.length > 0) {
+                const subtaskDrawer = subtaskDrawerUnderCursor[0];
+                const parentId = subtaskDrawer.getAttribute(
+                    'data-drawer-parent-id'
+                );
+                if (parentId) {
+                    pushChildTask(task, parentId);
+                }
+                return;
+            }
             const cardsUnderCursor = elementsUnderCursor.filter((el) =>
                 el.classList.contains('task-card')
             );

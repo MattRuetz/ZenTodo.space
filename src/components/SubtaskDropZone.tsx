@@ -1,5 +1,5 @@
 import { AppDispatch, RootState } from '@/store/store';
-import { addNewSubtask, moveSubtask } from '@/store/tasksSlice';
+import { addNewSubtask, moveSubtaskWithinLevel } from '@/store/tasksSlice';
 import { SortOption, Task, TaskProgress } from '@/types';
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -26,9 +26,9 @@ const SubtaskDropZone: React.FC<SubtaskDropZoneProps> = ({
             console.log('global option', sortOption);
             if (parentTask && parentTask._id && sortOption === 'custom') {
                 dispatch(
-                    moveSubtask({
+                    moveSubtaskWithinLevel({
                         subtaskId: item._id as string,
-                        newParentId: parentTask._id,
+                        parentId: parentTask._id,
                         newPosition: position,
                     })
                 );

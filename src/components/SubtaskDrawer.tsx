@@ -1,17 +1,19 @@
-import React, { forwardRef, ForwardedRef, useMemo, useCallback } from 'react';
+import React, {
+    forwardRef,
+    ForwardedRef,
+    useMemo,
+    useCallback,
+    useRef,
+    useImperativeHandle,
+} from 'react';
 import { useSelector } from 'react-redux';
-import { RootState } from '@/store/store';
-import { SortOption, Task } from '@/types';
+import { AppDispatch, RootState } from '@/store/store';
+import { Task } from '@/types';
 import SubtaskDrawerCard from './SubtaskDrawerCard';
 import { FaAngleRight, FaAnglesRight, FaX, FaXmark } from 'react-icons/fa6';
-import {
-    setIsReversed,
-    setSortOption,
-    setSubtaskDrawerParentId,
-} from '@/store/uiSlice';
+import { setSubtaskDrawerParentId } from '@/store/uiSlice';
 import { useDispatch } from 'react-redux';
 import SubtaskDropZone from './SubtaskDropZone';
-import { useState } from 'react';
 import SortingDropdown from './SortingDropdown';
 
 interface SubtaskDrawerProps {
@@ -21,7 +23,14 @@ interface SubtaskDrawerProps {
 
 const SubtaskDrawer = forwardRef<HTMLDivElement, SubtaskDrawerProps>(
     ({ isOpen, onClose }, ref: ForwardedRef<HTMLDivElement>) => {
-        const dispatch = useDispatch();
+        const dispatch: AppDispatch = useDispatch();
+
+        // Create a local ref
+        const localRef = useRef<HTMLDivElement>(null);
+
+        // Combine the forwarded ref with the local ref
+        useImperativeHandle(ref, () => localRef.current as HTMLDivElement);
+
         const sortOption = useSelector(
             (state: RootState) => state.ui.sortOption
         ); // Add this line
@@ -106,8 +115,8 @@ const SubtaskDrawer = forwardRef<HTMLDivElement, SubtaskDrawerProps>(
 
         return (
             <div
-                ref={ref}
-                className={`fixed top-0 right-0 h-full bg-base-300 shadow-md transform w-[350px] ${
+                data-drawer-parent-id={parentTask?._id}
+                className={`subtask-drawer fixed top-0 right-0 h-full bg-base-300 shadow-md transform w-[350px] ${
                     isOpen ? '' : 'translate-x-full'
                 } transition-transform duration-300 ease-in-out subtask-drawer-items`}
             >

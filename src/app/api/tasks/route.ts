@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '../auth/[...nextauth]/route';
 import dbConnect from '@/lib/mongodb';
 import Task from '@/models/Task';
 import Space from '@/models/Space'; // Assuming Space model is imported
@@ -101,13 +99,14 @@ export async function PUT(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
     const maxRetries = 5;
     let retries = 0;
-
+    const body = await req.json();
     while (retries < maxRetries) {
         try {
             await dbConnect();
             const userId = await getUserId(req);
             const url = new URL(req.url);
             const taskId = url.searchParams.get('id');
+            const parentTaskId = body.parentTaskId;
 
             if (!taskId) {
                 return NextResponse.json(
@@ -131,6 +130,15 @@ export async function DELETE(req: NextRequest) {
                     return NextResponse.json(
                         { error: 'Task not found or unauthorized' },
                         { status: 404 }
+                    );
+                }
+
+                // Remove the task from its parent's subtasks array
+                if (parentTaskId) {
+                    await Task.findByIdAndUpdate(
+                        parentTaskId,
+                        { $pull: { subtasks: taskId } },
+                        { session }
                     );
                 }
 
