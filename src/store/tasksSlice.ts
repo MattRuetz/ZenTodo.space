@@ -104,7 +104,6 @@ export const convertTaskToSubtask = createAsyncThunk(
             }
 
             const data = await response.json();
-            console.log('data From Server', data);
             return {
                 updatedOldParentTask: data.updatedOldParentTask,
                 updatedNewParentTask: data.updatedNewParentTask,
@@ -316,10 +315,6 @@ export const moveSubtaskWithinLevel = createAsyncThunk(
                 newIndex = parent.subtasks.length - 1;
             }
 
-            console.log('newIndex', newIndex);
-            console.log('subtaskId', subtaskId);
-            console.log('parentId', parentId);
-
             const response = await fetch('/api/tasks/move-subtask', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
@@ -357,14 +352,20 @@ export const moveTaskToSpace = createAsyncThunk(
 export const duplicateTask = createAsyncThunk(
     'tasks/duplicateTask',
     async (task: Task) => {
-        const duplicate = async (taskToCopy: Task, parentId?: string) => {
+        const duplicate = async (
+            taskToCopy: Task,
+            parentId?: string
+        ): Promise<Task[]> => {
             const duplicatedTask = {
                 ...taskToCopy,
+                x: taskToCopy.x + 50,
+                y: taskToCopy.y + 50,
                 taskName: `(Copy) ${taskToCopy.taskName}`,
                 _id: undefined,
                 parentTask: parentId,
-                subtasks: [],
+                ancestors: [],
             };
+            console.log(`duplicatedTask: ${JSON.stringify(duplicatedTask)}`);
 
             const response = await fetch('/api/tasks', {
                 method: 'POST',
@@ -373,11 +374,19 @@ export const duplicateTask = createAsyncThunk(
             });
             const data = await response.json();
 
+            let allDuplicatedTasks = [data.task];
+
+            // recursively duplicate subtasks
             for (const subtask of taskToCopy.subtasks) {
-                await duplicate(subtask as Task, data.task._id);
+                const duplicatedSubtasks = await duplicate(
+                    subtask as Task,
+                    data.task._id
+                );
+                allDuplicatedTasks =
+                    allDuplicatedTasks.concat(duplicatedSubtasks);
             }
 
-            return data.task;
+            return allDuplicatedTasks;
         };
 
         return await duplicate(task);
@@ -539,7 +548,7 @@ export const tasksSlice = createSlice({
                 }
             })
             .addCase(duplicateTask.fulfilled, (state, action) => {
-                state.tasks.push(action.payload);
+                state.tasks = state.tasks.concat(action.payload);
             });
     },
 });

@@ -99,7 +99,6 @@ const TaskCardTopBar: React.FC<TaskCardTopBarProps> = ({
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     e.preventDefault();
-                                    console.log('details');
                                     onDetails();
                                     setIsDropdownOpen(false);
                                 }}
@@ -153,7 +152,6 @@ const TaskCardTopBar: React.FC<TaskCardTopBarProps> = ({
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     e.preventDefault();
-                                    console.log('delete');
                                     onDelete();
                                     setIsDropdownOpen(false);
                                 }}
