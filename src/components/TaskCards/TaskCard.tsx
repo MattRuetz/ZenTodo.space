@@ -29,6 +29,9 @@ import { useDeleteTask } from '@/hooks/useDeleteTask';
 import { useResizeHandle } from '@/hooks/useResizeHandle';
 import { toast } from 'react-toastify';
 import TaskCardTopBar from './TaskCardTopBar';
+import { FaX } from 'react-icons/fa6';
+import { FaInfoCircle } from 'react-icons/fa';
+import { useDateString, useDateTimeString } from '@/hooks/useDateString';
 
 interface TaskCardProps {
     task: Task;
@@ -61,6 +64,10 @@ const TaskCard = React.memo(
             setCardSize,
             setIsDraggingOver,
             setIsDropped,
+            showDetails,
+            setShowDetails,
+            deletingTasks,
+            setDeletingTasks,
             cardRef,
             taskNameRef,
             taskDescriptionRef,
@@ -155,10 +162,6 @@ const TaskCard = React.memo(
             startPosRef,
             startSizeRef,
         });
-
-        const [deletingTasks, setDeletingTasks] = useState<Set<string>>(
-            new Set()
-        );
 
         const { handleDelete } = useDeleteTask({
             deletingTasks,
@@ -353,6 +356,10 @@ const TaskCard = React.memo(
             });
         };
 
+        const handleShowDetails = () => {
+            setShowDetails(true);
+        };
+
         return (
             <Draggable
                 defaultPosition={{ x: task.x, y: task.y }}
@@ -376,72 +383,131 @@ const TaskCard = React.memo(
                     onMouseLeave={() => setIsHovering(false)}
                     data-task-id={task._id}
                 >
-                    <div className="flex flex-col h-full">
-                        <DraggableArea
-                            className="flex flex-col h-full p-4 pb-0"
-                            onDelete={() => handleDelete(task._id ?? '')}
-                            onDetails={() => console.log('details')}
-                            onSetDueDate={handleSetDueDate}
-                            onMoveTask={handleMoveTask}
-                            onCreateSpaceAndMoveTask={
-                                handleCreateSpaceAndMoveTask
-                            }
-                            onDuplicateTask={handleDuplicateTask}
-                            onAddSubtask={handleAddSubtask}
-                            task={task}
-                        >
-                            <TaskCardTopBar
-                                className="pb-2"
-                                task={task}
+                    <>
+                        <div className="flex flex-col h-full">
+                            <DraggableArea
+                                className="flex flex-col h-full p-4 pb-0"
                                 onDelete={() => handleDelete(task._id ?? '')}
                                 onDetails={() => console.log('details')}
                                 onSetDueDate={handleSetDueDate}
-                                onAddSubtask={handleAddSubtask}
                                 onMoveTask={handleMoveTask}
                                 onCreateSpaceAndMoveTask={
                                     handleCreateSpaceAndMoveTask
                                 }
                                 onDuplicateTask={handleDuplicateTask}
-                            />
-                            <input
-                                ref={taskNameRef}
-                                type="text"
-                                name="taskName"
-                                placeholder="Task Name"
-                                value={localTask.taskName}
-                                onChange={handleInputChange}
-                                onFocus={() => setIsFocused(true)}
-                                onBlur={handleInputBlur}
-                                className="input input-bordered w-full p-4 pt-2 pb-2 h-8 mb-2 resize-none"
-                                maxLength={30}
-                            />
-                            <textarea
-                                ref={taskDescriptionRef}
-                                name="taskDescription"
-                                placeholder="Task Description"
-                                value={localTask.taskDescription}
-                                onChange={handleInputChange}
-                                onFocus={() => setIsFocused(true)}
-                                onBlur={handleInputBlur}
-                                className="textarea textarea-bordered w-full p-4 pt-2 pb-2 resize-none flex-grow"
-                                style={{
-                                    width: '100%',
-                                    boxSizing: 'border-box',
-                                    minHeight: '100px',
-                                    maxHeight: '500px',
-                                    overflowY: 'auto',
-                                }}
-                                maxLength={500}
-                            />
-                            <TaskCardToolBar
+                                onAddSubtask={handleAddSubtask}
                                 task={task}
-                                progress={localTask.progress}
-                                onProgressChange={handleProgressChange}
-                                handleResizeStart={handleResizeStart}
-                                isResizing={isResizing}
-                            />
-                        </DraggableArea>
-                    </div>
+                            >
+                                {showDetails && (
+                                    <div className="absolute overflow-y-auto top-0 left-0 w-full h-full z-10 rounded-xl backdrop-blur-sm border border-slate-500 bg-base-200 bg-opacity-80 text-slate-200 p-4 overflow-hidden text-sm">
+                                        <div className="flex flex-row justify-between items-center">
+                                            <h3 className="text-sm font-bold px-4 py-2 rounded-lg bg-slate-200 text-slate-800 flex flex-row items-center gap-2">
+                                                <FaInfoCircle />
+                                                {task.taskName.substring(
+                                                    0,
+                                                    15
+                                                ) +
+                                                    (task.taskName.length > 15
+                                                        ? '...'
+                                                        : '')}
+                                            </h3>
+                                            <button
+                                                className="btn btn-circle btn-sm btn-ghost"
+                                                onClick={() =>
+                                                    setShowDetails(false)
+                                                }
+                                            >
+                                                <FaX />
+                                            </button>
+                                        </div>
+                                        <p className="mb-2">
+                                            {task.taskDescription}
+                                        </p>
+                                        <p>
+                                            Due Date:{' '}
+                                            {task.dueDate
+                                                ? useDateString(
+                                                      new Date(task.dueDate)
+                                                  )
+                                                : 'Not set'}
+                                        </p>
+                                        <hr className="my-2" />
+                                        <p>
+                                            Created:{' '}
+                                            {task.createdAt
+                                                ? useDateTimeString(
+                                                      new Date(task.createdAt)
+                                                  )
+                                                : 'Unknown'}
+                                        </p>
+                                        <hr className="my-2" />
+                                        <p>
+                                            Updated:{' '}
+                                            {task.updatedAt
+                                                ? useDateTimeString(
+                                                      new Date(task.updatedAt)
+                                                  )
+                                                : 'Unknown'}
+                                        </p>
+                                        <hr className="my-2" />
+                                        <p>Progress: {task.progress}</p>
+                                    </div>
+                                )}
+                                <TaskCardTopBar
+                                    className="pb-2"
+                                    task={task}
+                                    onDelete={() =>
+                                        handleDelete(task._id ?? '')
+                                    }
+                                    onDetails={handleShowDetails}
+                                    onSetDueDate={handleSetDueDate}
+                                    onAddSubtask={handleAddSubtask}
+                                    onMoveTask={handleMoveTask}
+                                    onCreateSpaceAndMoveTask={
+                                        handleCreateSpaceAndMoveTask
+                                    }
+                                    onDuplicateTask={handleDuplicateTask}
+                                />
+                                <input
+                                    ref={taskNameRef}
+                                    type="text"
+                                    name="taskName"
+                                    placeholder="Task Name"
+                                    value={localTask.taskName}
+                                    onChange={handleInputChange}
+                                    onFocus={() => setIsFocused(true)}
+                                    onBlur={handleInputBlur}
+                                    className="input input-bordered w-full p-4 pt-2 pb-2 h-8 mb-2 resize-none"
+                                    maxLength={30}
+                                />
+                                <textarea
+                                    ref={taskDescriptionRef}
+                                    name="taskDescription"
+                                    placeholder="Task Description"
+                                    value={localTask.taskDescription}
+                                    onChange={handleInputChange}
+                                    onFocus={() => setIsFocused(true)}
+                                    onBlur={handleInputBlur}
+                                    className="textarea textarea-bordered w-full p-4 pt-2 pb-2 resize-none flex-grow"
+                                    style={{
+                                        width: '100%',
+                                        boxSizing: 'border-box',
+                                        minHeight: '100px',
+                                        maxHeight: '500px',
+                                        overflowY: 'auto',
+                                    }}
+                                    maxLength={500}
+                                />
+                                <TaskCardToolBar
+                                    task={task}
+                                    progress={localTask.progress}
+                                    onProgressChange={handleProgressChange}
+                                    handleResizeStart={handleResizeStart}
+                                    isResizing={isResizing}
+                                />
+                            </DraggableArea>
+                        </div>
+                    </>
                 </div>
             </Draggable>
         );

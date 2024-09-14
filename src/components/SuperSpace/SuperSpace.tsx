@@ -19,7 +19,8 @@ const SuperSpace = React.memo(() => {
     );
 
     const [isZoomedOut, setIsZoomedOut] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
+    // CHANGE THIS DEFAULT STATE TO TRUE WHEN WE WANT TO SHOW THE PRELOADER
+    const [isLoading, setIsLoading] = useState(false);
     const [fadeOut, setFadeOut] = useState(false);
 
     const { data: session, status: sessionStatus } = useSession();

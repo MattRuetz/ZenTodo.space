@@ -4,7 +4,6 @@ import { FaArrowsAlt, FaEllipsisV, FaInfoCircle } from 'react-icons/fa';
 import { FaCalendar, FaCopy, FaPlus, FaTrash } from 'react-icons/fa6';
 import ReactDatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { Tooltip } from 'react-tooltip';
 import { SpaceData, Task } from '@/types';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
@@ -84,6 +83,11 @@ const TaskCardTopBar: React.FC<TaskCardTopBarProps> = React.memo(
             setIsMenuOpen(false);
         };
 
+        const handleShowDetails = () => {
+            onDetails();
+            setIsMenuOpen(false);
+        };
+
         return (
             <div
                 className={`flex flex-row gap-6 drag-handle cursor-move ${className}`}
@@ -109,7 +113,7 @@ const TaskCardTopBar: React.FC<TaskCardTopBarProps> = React.memo(
                         onClick={() => setIsMenuOpen(!isMenuOpen)}
                     />
                     {isMenuOpen && (
-                        <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-slate-200 ring-1 ring-black ring-opacity-5">
+                        <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-base-300 border border-slate-700 ring-1 ring-black ring-opacity-5">
                             <div
                                 className="py-1"
                                 role="menu"
@@ -117,18 +121,17 @@ const TaskCardTopBar: React.FC<TaskCardTopBarProps> = React.memo(
                                 aria-labelledby="options-menu"
                             >
                                 <button
-                                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-slate-300 w-full"
+                                    className="flex items-center px-4 py-2 text-sm text-slate-200 hover:bg-black w-full"
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         e.preventDefault();
-                                        onDetails();
-                                        setIsMenuOpen(false);
+                                        handleShowDetails();
                                     }}
                                 >
                                     <FaInfoCircle className="mr-2" /> Details
                                 </button>
                                 <button
-                                    className="flex items-center px-4 py-2 text-sm text-blue-700 hover:bg-slate-300 w-full"
+                                    className="flex items-center px-4 py-2 text-sm text-slate-200 hover:bg-black w-full"
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         e.preventDefault();
@@ -139,7 +142,7 @@ const TaskCardTopBar: React.FC<TaskCardTopBarProps> = React.memo(
                                     <FaCalendar className="mr-2" /> Set Due Date
                                 </button>
                                 <button
-                                    className="flex items-center px-4 py-2 text-sm text-green-700 hover:bg-slate-300 w-full"
+                                    className="flex items-center px-4 py-2 text-sm text-slate-200 hover:bg-black w-full"
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         e.preventDefault();
@@ -150,7 +153,7 @@ const TaskCardTopBar: React.FC<TaskCardTopBarProps> = React.memo(
                                     <FaPlus className="mr-2" /> Add Subtask
                                 </button>
                                 <button
-                                    className="flex items-center px-4 py-2 text-sm text-yellow-700 hover:bg-slate-300 w-full"
+                                    className="flex items-center px-4 py-2 text-sm text-slate-200 hover:bg-black w-full"
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         e.preventDefault();
@@ -161,7 +164,7 @@ const TaskCardTopBar: React.FC<TaskCardTopBarProps> = React.memo(
                                     <FaArrowsAlt className="mr-2" /> Move Task
                                 </button>
                                 <button
-                                    className="flex items-center px-4 py-2 text-sm text-purple-700 hover:bg-slate-300 w-full"
+                                    className="flex items-center px-4 py-2 text-sm text-slate-200 hover:bg-black w-full"
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         e.preventDefault();
@@ -172,7 +175,7 @@ const TaskCardTopBar: React.FC<TaskCardTopBarProps> = React.memo(
                                     <FaCopy className="mr-2" /> Duplicate Task
                                 </button>
                                 <button
-                                    className="flex items-center px-4 py-2 text-sm text-red-700 hover:bg-slate-300 w-full"
+                                    className="flex items-center px-4 py-2 text-sm text-red-700 hover:bg-black w-full"
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         e.preventDefault();
