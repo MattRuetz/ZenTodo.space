@@ -40,8 +40,12 @@ interface TaskCardProps {
 const TaskCard = React.memo(
     ({ task, onDragStart, onDragStop, getNewZIndex }: TaskCardProps) => {
         const dispatch = useDispatch<AppDispatch>();
-        const { isGlobalDragging, draggingCardId } = useSelector(
-            (state: RootState) => state.ui
+
+        const isGlobalDragging = useSelector(
+            (state: RootState) => state.ui.isGlobalDragging
+        );
+        const draggingCardId = useSelector(
+            (state: RootState) => state.ui.draggingCardId
         );
 
         const {

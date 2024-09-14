@@ -37,6 +37,7 @@ const TaskCardTopBar: React.FC<TaskCardTopBarProps> = React.memo(
         const [showDatePicker, setShowDatePicker] = useState(false);
         const [dueDate, setDueDate] = useState<Date | null>(null);
         const [showMoveOptions, setShowMoveOptions] = useState(false);
+
         const spaces = useSelector((state: RootState) => state.spaces.spaces);
 
         const handleMoveTask = (spaceId: string) => {

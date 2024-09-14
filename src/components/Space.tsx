@@ -13,34 +13,9 @@ import { addTask, fetchTasks, updateTask } from '../store/tasksSlice';
 import { updateSpaceMaxZIndex, fetchSpaceMaxZIndex } from '../store/spaceSlice';
 import { setSubtaskDrawerOpen } from '@/store/uiSlice';
 import { TaskProgress, Task } from '@/types';
+import { selectTasksForSpace } from '@/store/selectors';
 
 // Memoized selectors
-const selectTasksForSpace = createSelector(
-    [
-        (state: RootState) => state.tasks.tasks,
-        (state: RootState, spaceId: string) => spaceId,
-    ],
-    (tasks, spaceId) => {
-        const tasksInSpace = tasks.filter(
-            (task) => task.space === spaceId && !task.parentTask
-        );
-        return tasksInSpace.map((task) => ({
-            ...task,
-            subtasks: tasks.filter(
-                (subtask) => subtask.parentTask === task._id
-            ),
-        }));
-    }
-);
-
-const selectTaskStatus = (state: RootState) => state.tasks.status;
-const selectCurrentSpace = createSelector(
-    [
-        (state: RootState) => state.spaces.spaces,
-        (_, spaceId: string) => spaceId,
-    ],
-    (spaces, spaceId) => spaces.find((space) => space._id === spaceId)
-);
 
 interface SpaceProps {
     spaceId: string;
@@ -53,9 +28,9 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId, onLoaded }) => {
     const tasks = useSelector((state: RootState) =>
         selectTasksForSpace(state, spaceId)
     );
-    const taskStatus = useSelector(selectTaskStatus);
-    const currentSpace = useSelector((state: RootState) =>
-        selectCurrentSpace(state, spaceId)
+    const taskStatus = useSelector((state: RootState) => state.tasks.status);
+    const currentSpace = useSelector(
+        (state: RootState) => state.spaces.currentSpace
     );
     const isDrawerOpen = useSelector(
         (state: RootState) => state.ui.isSubtaskDrawerOpen
@@ -278,7 +253,6 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId, onLoaded }) => {
                                 onDragStart={handleDragStart}
                                 onDragStop={handleDragStop}
                                 getNewZIndex={getNewZIndex}
-                                subtasks={task.subtasks}
                             />
                         )
                     )}
@@ -294,7 +268,7 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId, onLoaded }) => {
             )}
             <SubtaskDrawer
                 ref={subtaskDrawerRef}
-                isOpen={isDrawerOpen}
+                isOpen={isDrawerOpen as boolean}
                 onClose={handleCloseDrawer}
             />
         </div>

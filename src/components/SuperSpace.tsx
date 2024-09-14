@@ -9,14 +9,15 @@ import { SpaceData, Task } from '@/types';
 import ControlPanel from './ControlPanel';
 import Preloader from './Preloader';
 import { useSession } from 'next-auth/react';
-import SubtaskDrawer from './SubtaskDrawer';
 import { Tooltip } from 'react-tooltip';
 
 const SuperSpace = React.memo(() => {
     const dispatch = useDispatch<AppDispatch>();
+
     const { spaces, currentSpace, status } = useSelector(
         (state: RootState) => state.spaces
     );
+
     const [isZoomedOut, setIsZoomedOut] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [fadeOut, setFadeOut] = useState(false);

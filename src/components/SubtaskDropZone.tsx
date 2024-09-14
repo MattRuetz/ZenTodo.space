@@ -13,11 +13,14 @@ interface SubtaskDropZoneProps {
 const SubtaskDropZone = React.memo(
     ({ position, parentTask }: SubtaskDropZoneProps) => {
         const dispatch = useDispatch<AppDispatch>();
+
         const sortOption = useSelector(
             (state: RootState) => state.ui.sortOption
         );
+
         const [hoverStatus, setHoverStatus] = useState('hiding');
         const [textOpacity, setTextOpacity] = useState(0);
+
         const hoverRef = useRef<boolean>(false);
         const timeoutRef = useRef<NodeJS.Timeout | null>(null);
         const dropRef = useRef<HTMLLIElement>(null);

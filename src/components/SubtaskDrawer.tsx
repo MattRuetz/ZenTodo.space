@@ -7,6 +7,7 @@ import React, {
     useEffect,
 } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { createSelector } from '@reduxjs/toolkit';
 import { AppDispatch, RootState } from '@/store/store';
 import { Task } from '@/types';
 import SubtaskDrawerCard from './SubtaskDrawerCard';
@@ -31,14 +32,12 @@ const SubtaskDrawer = React.memo(
             const isGlobalDragging = useSelector(
                 (state: RootState) => state.ui.isGlobalDragging
             );
-
             const sortOption = useSelector(
                 (state: RootState) => state.ui.sortOption
-            ); // Add this line
+            );
             const isReversed = useSelector(
                 (state: RootState) => state.ui.isReversed
-            ); // Add this line
-
+            );
             const parentTaskId = useSelector(
                 (state: RootState) => state.ui.subtaskDrawerParentId
             );
