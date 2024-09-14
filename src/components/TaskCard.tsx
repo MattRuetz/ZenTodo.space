@@ -9,9 +9,14 @@ import {
     updateTask,
     hideNewChildTask,
     convertTaskToSubtask,
-    // moveTaskToSpace,
-    // duplicateTask,
+    moveTaskToSpace,
+    duplicateTask,
+    addNewSubtask,
 } from '../store/tasksSlice';
+import {
+    setSubtaskDrawerOpen,
+    setSubtaskDrawerParentId,
+} from '../store/uiSlice';
 import { AppDispatch, RootState } from '../store/store';
 import TaskCardToolBar from './TaskCardToolBar';
 import { Task, TaskProgress } from '@/types';
@@ -22,6 +27,7 @@ import { useDragHandlers } from '@/hooks/useDragHandlers';
 import { useTaskState } from '@/hooks/useTaskState';
 import { useDeleteTask } from '@/hooks/useDeleteTask';
 import { useResizeHandle } from '@/hooks/useResizeHandle';
+import { toast } from 'react-toastify';
 
 interface TaskCardProps {
     task: Task;
@@ -285,28 +291,64 @@ const TaskCard: React.FC<TaskCardProps> = React.memo(
             ]
         );
 
-        // ... existing code ...
-
         const handleSetDueDate = (date: Date | null) => {
             setLocalTask((prevTask) => ({ ...prevTask, dueDate: date }));
             debouncedUpdate({ dueDate: date });
         };
 
-        // ... existing code ...
-
-        // const handleMoveTask = (spaceId: string) => {
-        //     dispatch(moveTaskToSpace({ taskId: task._id!, spaceId }));
-        //     toast.success('Task moved successfully');
-        // };
+        const handleMoveTask = (spaceId: string) => {
+            // dispatch(moveTaskToSpace({ taskId: task._id!, spaceId }));
+            toast.success('Task moved successfully');
+        };
 
         const handleCreateSpaceAndMoveTask = () => {
             // Implement logic to create a new space and move the task
         };
 
-        // const handleDuplicateTask = () => {
-        //     dispatch(duplicateTask(task));
-        //     toast.success('Task duplicated successfully');
-        // };
+        const handleDuplicateTask = () => {
+            dispatch(duplicateTask(task));
+            toast.success('Task duplicated successfully');
+        };
+
+        const handleAddSubtask = () => {
+            const parentTask = task;
+            const newSubtask: Omit<Task, '_id'> = {
+                taskName: 'New Subtask',
+                taskDescription: '',
+                x: parentTask?.x || 0,
+                y: parentTask?.y || 0,
+                progress: 'Not Started' as TaskProgress,
+                space: parentTask?.space || '',
+                zIndex: parentTask?.zIndex || 0,
+                subtasks: [],
+                parentTask: parentTask?._id as string,
+                ancestors: parentTask?.ancestors
+                    ? [...parentTask.ancestors, parentTask._id as string]
+                    : [parentTask?._id as string],
+            };
+
+            dispatch(
+                addNewSubtask({
+                    subtask: newSubtask,
+                    position: 'start',
+                })
+            );
+            dispatch(setSubtaskDrawerOpen(true));
+            dispatch(setSubtaskDrawerParentId(parentTask._id as string));
+            toast.success('Subtask added successfully', {
+                position: 'top-left',
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: 'dark',
+                style: {
+                    zIndex: 1000000,
+                },
+            });
+        };
 
         return (
             <Draggable
@@ -337,14 +379,12 @@ const TaskCard: React.FC<TaskCardProps> = React.memo(
                             onDelete={() => handleDelete(task._id ?? '')}
                             onDetails={() => console.log('details')}
                             onSetDueDate={handleSetDueDate}
-                            onMoveTask={() => console.log('move task')}
+                            onMoveTask={handleMoveTask}
                             onCreateSpaceAndMoveTask={
                                 handleCreateSpaceAndMoveTask
                             }
-                            onDuplicateTask={() =>
-                                console.log('duplicate task')
-                            }
-                            onAddSubtask={() => console.log('add subtask')}
+                            onDuplicateTask={handleDuplicateTask}
+                            onAddSubtask={handleAddSubtask}
                             task={task}
                         >
                             <input

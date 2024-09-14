@@ -122,7 +122,11 @@ export const convertTaskToSubtask = createAsyncThunk(
 export const addNewSubtask = createAsyncThunk(
     'tasks/addNewSubtask',
     async (
-        { subtask, position }: { subtask: Omit<Task, '_id'>; position: string },
+        {
+            subtask,
+            parentId,
+            position,
+        }: { subtask: Omit<Task, '_id'>; parentId?: string; position: string },
         { rejectWithValue }
     ) => {
         try {
@@ -137,7 +141,7 @@ export const addNewSubtask = createAsyncThunk(
                     progress: subtask.progress,
                     space: subtask.space,
                     zIndex: 0, // Set the zIndex here
-                    parentTask: subtask.parentTask,
+                    parentTask: parentId || subtask.parentTask,
                     subtasks: [],
                     ancestors: subtask.ancestors,
                     position: position,
@@ -430,9 +434,6 @@ export const tasksSlice = createSlice({
 
                 // Add the new subtask to the tasks array
                 state.tasks.push(newSubtask);
-
-                console.log(updatedParentTask);
-
                 // Update the parent task
                 const parentIndex = state.tasks.findIndex(
                     (task) => task._id === updatedParentTask._id

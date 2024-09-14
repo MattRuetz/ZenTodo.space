@@ -32,8 +32,8 @@ export const useDeleteTask = ({
 
             try {
                 const result = await dispatch(deleteTask(taskId)).unwrap();
-                if (result !== taskId) {
-                    throw new Error(result);
+                if (result.taskId !== taskId) {
+                    throw new Error('Task ID mismatch');
                 }
             } finally {
                 setDeletingTasks((prev: Set<string>) => {
