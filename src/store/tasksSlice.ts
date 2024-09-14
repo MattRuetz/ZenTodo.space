@@ -104,7 +104,6 @@ export const convertTaskToSubtask = createAsyncThunk(
             }
 
             const data = await response.json();
-            console.log('data From Server', data);
             return {
                 updatedOldParentTask: data.updatedOldParentTask,
                 updatedNewParentTask: data.updatedNewParentTask,
@@ -122,7 +121,11 @@ export const convertTaskToSubtask = createAsyncThunk(
 export const addNewSubtask = createAsyncThunk(
     'tasks/addNewSubtask',
     async (
-        { subtask, position }: { subtask: Omit<Task, '_id'>; position: string },
+        {
+            subtask,
+            parentId,
+            position,
+        }: { subtask: Omit<Task, '_id'>; parentId?: string; position: string },
         { rejectWithValue }
     ) => {
         try {
@@ -137,7 +140,7 @@ export const addNewSubtask = createAsyncThunk(
                     progress: subtask.progress,
                     space: subtask.space,
                     zIndex: 0, // Set the zIndex here
-                    parentTask: subtask.parentTask,
+                    parentTask: parentId || subtask.parentTask,
                     subtasks: [],
                     ancestors: subtask.ancestors,
                     position: position,
@@ -312,10 +315,6 @@ export const moveSubtaskWithinLevel = createAsyncThunk(
                 newIndex = parent.subtasks.length - 1;
             }
 
-            console.log('newIndex', newIndex);
-            console.log('subtaskId', subtaskId);
-            console.log('parentId', parentId);
-
             const response = await fetch('/api/tasks/move-subtask', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
@@ -334,6 +333,63 @@ export const moveSubtaskWithinLevel = createAsyncThunk(
             }
             return rejectWithValue('An unknown error occurred');
         }
+    }
+);
+
+export const moveTaskToSpace = createAsyncThunk(
+    'tasks/moveTaskToSpace',
+    async ({ taskId, spaceId }: { taskId: string; spaceId: string }) => {
+        const response = await fetch(`/api/tasks/${taskId}/move`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ spaceId }),
+        });
+        const data = await response.json();
+        return data.task;
+    }
+);
+
+export const duplicateTask = createAsyncThunk(
+    'tasks/duplicateTask',
+    async (task: Task) => {
+        const duplicate = async (
+            taskToCopy: Task,
+            parentId?: string
+        ): Promise<Task[]> => {
+            const duplicatedTask = {
+                ...taskToCopy,
+                x: taskToCopy.x + 50,
+                y: taskToCopy.y + 50,
+                taskName: `(Copy) ${taskToCopy.taskName}`,
+                _id: undefined,
+                parentTask: parentId,
+                ancestors: [],
+            };
+            console.log(`duplicatedTask: ${JSON.stringify(duplicatedTask)}`);
+
+            const response = await fetch('/api/tasks', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(duplicatedTask),
+            });
+            const data = await response.json();
+
+            let allDuplicatedTasks = [data.task];
+
+            // recursively duplicate subtasks
+            for (const subtask of taskToCopy.subtasks) {
+                const duplicatedSubtasks = await duplicate(
+                    subtask as Task,
+                    data.task._id
+                );
+                allDuplicatedTasks =
+                    allDuplicatedTasks.concat(duplicatedSubtasks);
+            }
+
+            return allDuplicatedTasks;
+        };
+
+        return await duplicate(task);
     }
 );
 
@@ -430,9 +486,6 @@ export const tasksSlice = createSlice({
 
                 // Add the new subtask to the tasks array
                 state.tasks.push(newSubtask);
-
-                console.log(updatedParentTask);
-
                 // Update the parent task
                 const parentIndex = state.tasks.findIndex(
                     (task) => task._id === updatedParentTask._id
@@ -485,6 +538,17 @@ export const tasksSlice = createSlice({
                 if (subtaskIndex !== -1) {
                     state.tasks[subtaskIndex] = movedSubtask;
                 }
+            })
+            .addCase(moveTaskToSpace.fulfilled, (state, action) => {
+                const index = state.tasks.findIndex(
+                    (t) => t._id === action.payload._id
+                );
+                if (index !== -1) {
+                    state.tasks[index] = action.payload;
+                }
+            })
+            .addCase(duplicateTask.fulfilled, (state, action) => {
+                state.tasks = state.tasks.concat(action.payload);
             });
     },
 });

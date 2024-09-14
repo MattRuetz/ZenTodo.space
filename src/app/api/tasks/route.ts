@@ -30,7 +30,18 @@ export async function POST(req: NextRequest) {
         await dbConnect();
         const userId = await getUserId(req);
         const body = await req.json();
-        const { taskName, taskDescription, x, y, progress, space } = body;
+        const {
+            taskName,
+            taskDescription,
+            x,
+            y,
+            progress,
+            space,
+            dueDate,
+            parentTask,
+            ancestors,
+            subtasks,
+        } = body;
 
         // Get the current maxZIndex for the space and increment it
         const currentSpace = await Space.findById(space);
@@ -45,6 +56,10 @@ export async function POST(req: NextRequest) {
             space,
             user: userId,
             zIndex: newZIndex, // Set the zIndex here
+            dueDate,
+            parentTask: parentTask ?? null,
+            ancestors: ancestors ?? [],
+            subtasks: subtasks ?? [],
         });
 
         const savedTask = await newTask.save();

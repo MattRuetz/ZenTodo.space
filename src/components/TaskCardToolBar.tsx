@@ -1,6 +1,6 @@
 // src/components/TaskCardToolBar.tsx
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { FaTrash, FaCheck, FaChevronDown } from 'react-icons/fa';
+import { FaTrash, FaCheck, FaChevronDown, FaClock } from 'react-icons/fa';
 import { Task, TaskProgress } from '@/types';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
@@ -10,6 +10,7 @@ import { ProgressDropdown } from './ProgressDropdown';
 import { useResizeHandle } from '@/hooks/useResizeHandle';
 import { useTaskState } from '@/hooks/useTaskState';
 import { Icon } from './Icon';
+import { Tooltip } from 'react-tooltip';
 
 const selectSubtasks = createSelector(
     [
@@ -45,13 +46,36 @@ const TaskCardToolBar: React.FC<TaskCardToolBarProps> = React.memo(
         );
 
         return (
-            <div className="task-card-toolbar flex flex-row justify-between w-full py-2">
-                <ProgressDropdown
-                    progress={progress}
-                    onProgressChange={onProgressChange}
-                    isSubtask={false}
+            <div className="task-card-toolbar flex flex-row justify-between w-full gap-2 py-2">
+                <div className="flex flex-row gap-2 items-center max-w-7/12">
+                    <ProgressDropdown
+                        progress={progress}
+                        onProgressChange={onProgressChange}
+                        isSubtask={false}
+                    />
+                    {task.dueDate && (
+                        <div className="text-xs">
+                            <div
+                                data-tooltip-id={`due-date-tooltip-${task._id}`}
+                                className="cursor-pointer"
+                            >
+                                <FaClock className="text-gray-400 text-lg" />
+                            </div>
+                            <Tooltip
+                                id={`due-date-tooltip-${task._id}`}
+                                place="top"
+                            >
+                                Due Date:{' '}
+                                {new Date(task.dueDate).toLocaleDateString()}
+                            </Tooltip>
+                        </div>
+                    )}
+                </div>
+                <SubtaskProgresses
+                    data-tooltip-id={`${task._id}-subtask-progresses-tooltip`}
+                    task={task}
                 />
-                <SubtaskProgresses task={task} />
+
                 <div
                     className="absolute bottom-0 right-0 w-5 h-5 cursor-se-resize"
                     onMouseDown={handleResizeStart}
