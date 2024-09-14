@@ -1,6 +1,5 @@
 // src/components/DraggableArea.tsx
 import React from 'react';
-import TaskCardTopBar from './TaskCardTopBar';
 import { Task } from '@/types';
 
 interface DraggableAreaProps {
@@ -17,18 +16,7 @@ interface DraggableAreaProps {
 }
 
 const DraggableArea: React.FC<DraggableAreaProps> = React.memo(
-    ({
-        children,
-        className,
-        onDelete,
-        onDetails,
-        onSetDueDate,
-        onAddSubtask,
-        onMoveTask,
-        onCreateSpaceAndMoveTask,
-        onDuplicateTask,
-        task,
-    }) => {
+    ({ children, className }) => {
         const handleMouseDown = (e: React.MouseEvent) => {
             // Prevent dragging when interacting with input fields or buttons
             if (

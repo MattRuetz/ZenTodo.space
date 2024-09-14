@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchSpaces, createSpace, setCurrentSpace } from '@/store/spaceSlice';
-import Space from './Space';
+import Space from '../Space/Space';
 import { AppDispatch, RootState } from '@/store/store';
 import { SpaceData, Task } from '@/types';
 import ControlPanel from './ControlPanel';

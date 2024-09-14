@@ -4,7 +4,7 @@ import { FaClock } from 'react-icons/fa';
 import { Task, TaskProgress } from '@/types';
 import SubtaskProgresses from './SubtaskProgresses';
 import { ProgressDropdown } from './ProgressDropdown';
-import { Icon } from './Icon';
+import { Icon } from '../Icon';
 import { Tooltip } from 'react-tooltip';
 
 export interface TaskCardToolBarProps {

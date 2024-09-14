@@ -1,5 +1,5 @@
 // src/components/icons/TaskCardTopBar.tsx
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { FaArrowsAlt, FaEllipsisV, FaInfoCircle } from 'react-icons/fa';
 import { FaCalendar, FaCopy, FaPlus, FaTrash } from 'react-icons/fa6';
 import ReactDatePicker from 'react-datepicker';
@@ -33,23 +33,55 @@ const TaskCardTopBar: React.FC<TaskCardTopBarProps> = React.memo(
         onCreateSpaceAndMoveTask,
         onDuplicateTask,
     }) => {
-        const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+        const spaces = useSelector((state: RootState) => state.spaces.spaces);
+
+        const [isMenuOpen, setIsMenuOpen] = useState(false);
         const [showDatePicker, setShowDatePicker] = useState(false);
         const [dueDate, setDueDate] = useState<Date | null>(null);
         const [showMoveOptions, setShowMoveOptions] = useState(false);
 
-        const spaces = useSelector((state: RootState) => state.spaces.spaces);
+        const menuRef = useRef<HTMLDivElement>(null);
+        const datePickerRef = useRef<HTMLDivElement>(null);
+        const moveOptionsRef = useRef<HTMLDivElement>(null);
+
+        useEffect(() => {
+            const handleClickOutside = (event: MouseEvent) => {
+                if (
+                    menuRef.current &&
+                    !menuRef.current.contains(event.target as Node)
+                ) {
+                    setIsMenuOpen(false);
+                }
+                if (
+                    datePickerRef.current &&
+                    !datePickerRef.current.contains(event.target as Node)
+                ) {
+                    setShowDatePicker(false);
+                }
+                if (
+                    moveOptionsRef.current &&
+                    !moveOptionsRef.current.contains(event.target as Node)
+                ) {
+                    setShowMoveOptions(false);
+                }
+            };
+
+            document.addEventListener('mousedown', handleClickOutside);
+            return () => {
+                document.removeEventListener('mousedown', handleClickOutside);
+            };
+        }, []);
 
         const handleMoveTask = (spaceId: string) => {
             onMoveTask(spaceId);
             setShowMoveOptions(false);
-            setIsDropdownOpen(false);
+            setIsMenuOpen(false);
         };
 
         const handleMoveTaskToNewSpace = () => {
             onCreateSpaceAndMoveTask();
             setShowMoveOptions(false);
-            setIsDropdownOpen(false);
+            setIsMenuOpen(false);
         };
 
         return (
@@ -70,25 +102,13 @@ const TaskCardTopBar: React.FC<TaskCardTopBarProps> = React.memo(
                         style={{ height: '1px' }}
                     ></div>
                 </div>
-                <div className="relative">
+                <div className="relative" ref={menuRef}>
                     <FaEllipsisV
-                        data-tooltip-id={`more-options-tooltip-${task._id}`}
                         size={14}
                         className="cursor-pointer text-sky-700 hover:text-sky-500 transition-colors duration-200"
-                        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                        onClick={() => setIsMenuOpen(!isMenuOpen)}
                     />
-                    <Tooltip
-                        id={`more-options-tooltip-${task._id}`}
-                        style={{
-                            zIndex: 100000,
-                            backgroundColor: 'white',
-                            color: 'black',
-                        }}
-                        place="left"
-                    >
-                        More Options
-                    </Tooltip>
-                    {isDropdownOpen && (
+                    {isMenuOpen && (
                         <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-slate-200 ring-1 ring-black ring-opacity-5">
                             <div
                                 className="py-1"
@@ -102,7 +122,7 @@ const TaskCardTopBar: React.FC<TaskCardTopBarProps> = React.memo(
                                         e.stopPropagation();
                                         e.preventDefault();
                                         onDetails();
-                                        setIsDropdownOpen(false);
+                                        setIsMenuOpen(false);
                                     }}
                                 >
                                     <FaInfoCircle className="mr-2" /> Details
@@ -113,6 +133,7 @@ const TaskCardTopBar: React.FC<TaskCardTopBarProps> = React.memo(
                                         e.stopPropagation();
                                         e.preventDefault();
                                         setShowDatePicker(true);
+                                        setIsMenuOpen(false);
                                     }}
                                 >
                                     <FaCalendar className="mr-2" /> Set Due Date
@@ -123,7 +144,7 @@ const TaskCardTopBar: React.FC<TaskCardTopBarProps> = React.memo(
                                         e.stopPropagation();
                                         e.preventDefault();
                                         onAddSubtask();
-                                        setIsDropdownOpen(false);
+                                        setIsMenuOpen(false);
                                     }}
                                 >
                                     <FaPlus className="mr-2" /> Add Subtask
@@ -134,6 +155,7 @@ const TaskCardTopBar: React.FC<TaskCardTopBarProps> = React.memo(
                                         e.stopPropagation();
                                         e.preventDefault();
                                         setShowMoveOptions(true);
+                                        setIsMenuOpen(false);
                                     }}
                                 >
                                     <FaArrowsAlt className="mr-2" /> Move Task
@@ -144,7 +166,7 @@ const TaskCardTopBar: React.FC<TaskCardTopBarProps> = React.memo(
                                         e.stopPropagation();
                                         e.preventDefault();
                                         onDuplicateTask();
-                                        setIsDropdownOpen(false);
+                                        setIsMenuOpen(false);
                                     }}
                                 >
                                     <FaCopy className="mr-2" /> Duplicate Task
@@ -155,7 +177,7 @@ const TaskCardTopBar: React.FC<TaskCardTopBarProps> = React.memo(
                                         e.stopPropagation();
                                         e.preventDefault();
                                         onDelete();
-                                        setIsDropdownOpen(false);
+                                        setIsMenuOpen(false);
                                     }}
                                 >
                                     <FaTrash className="mr-2" /> Delete
@@ -164,7 +186,10 @@ const TaskCardTopBar: React.FC<TaskCardTopBarProps> = React.memo(
                         </div>
                     )}
                     {showDatePicker && (
-                        <div className="absolute right-0 mt-2">
+                        <div
+                            ref={datePickerRef}
+                            className="absolute right-0 mt-2"
+                        >
                             <ReactDatePicker
                                 selected={dueDate}
                                 onChange={(date: Date | null) =>
@@ -176,7 +201,7 @@ const TaskCardTopBar: React.FC<TaskCardTopBarProps> = React.memo(
                                 onClick={() => {
                                     onSetDueDate(dueDate || undefined);
                                     setShowDatePicker(false);
-                                    setIsDropdownOpen(false);
+                                    setIsMenuOpen(false);
                                 }}
                                 className="mt-2 bg-blue-500 text-white px-4 py-2 rounded"
                             >
@@ -185,7 +210,10 @@ const TaskCardTopBar: React.FC<TaskCardTopBarProps> = React.memo(
                         </div>
                     )}
                     {showMoveOptions && (
-                        <div className="absolute right-0 mt-2 w-48 bg-slate-200 rounded-md shadow-lg">
+                        <div
+                            ref={moveOptionsRef}
+                            className="absolute right-0 mt-2 w-48 bg-slate-200 rounded-md shadow-lg"
+                        >
                             <div className="py-2 px-4">
                                 Move to different space:
                             </div>

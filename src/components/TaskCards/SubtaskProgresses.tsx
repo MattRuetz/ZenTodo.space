@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import {
     setSubtaskDrawerOpen,
     setSubtaskDrawerParentId,
-} from '../store/uiSlice';
+} from '../../store/uiSlice';
 import { Task } from '@/types';
 import { Tooltip } from 'react-tooltip';
 import { AppDispatch, RootState } from '@/store/store';

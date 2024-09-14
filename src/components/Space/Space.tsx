@@ -3,14 +3,16 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useSession } from 'next-auth/react';
-import { createSelector } from '@reduxjs/toolkit';
 import { useDrop } from 'react-dnd';
-import TaskCard from './TaskCard';
-import SignUpForm from './SignUpForm';
-import SubtaskDrawer from './SubtaskDrawer';
-import { RootState, AppDispatch } from '../store/store';
-import { addTask, fetchTasks, updateTask } from '../store/tasksSlice';
-import { updateSpaceMaxZIndex, fetchSpaceMaxZIndex } from '../store/spaceSlice';
+import TaskCard from '../TaskCards/TaskCard';
+import SignUpForm from '../SignUpForm';
+import SubtaskDrawer from '../Subtask/SubtaskDrawer';
+import { RootState, AppDispatch } from '../../store/store';
+import { addTask, fetchTasks, updateTask } from '../../store/tasksSlice';
+import {
+    updateSpaceMaxZIndex,
+    fetchSpaceMaxZIndex,
+} from '../../store/spaceSlice';
 import { setSubtaskDrawerOpen } from '@/store/uiSlice';
 import { TaskProgress, Task } from '@/types';
 import { selectTasksForSpace } from '@/store/selectors';

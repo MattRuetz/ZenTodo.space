@@ -12,12 +12,12 @@ import {
     moveTaskToSpace,
     duplicateTask,
     addNewSubtask,
-} from '../store/tasksSlice';
+} from '../../store/tasksSlice';
 import {
     setSubtaskDrawerOpen,
     setSubtaskDrawerParentId,
-} from '../store/uiSlice';
-import { AppDispatch, RootState } from '../store/store';
+} from '../../store/uiSlice';
+import { AppDispatch, RootState } from '../../store/store';
 import TaskCardToolBar from './TaskCardToolBar';
 import { Task, TaskProgress } from '@/types';
 import DraggableArea from './DraggableArea';

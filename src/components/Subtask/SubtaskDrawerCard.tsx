@@ -2,21 +2,21 @@ import React, { useCallback, useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { createSelector } from '@reduxjs/toolkit';
-import { AppDispatch, RootState } from '../store/store';
+import { AppDispatch, RootState } from '../../store/store';
 import {
     convertSubtaskToTask,
     convertTaskToSubtask,
     updateTask,
 } from '@/store/tasksSlice';
 import { Task, TaskProgress } from '@/types';
-import { ProgressDropdown } from './ProgressDropdown';
+import { ProgressDropdown } from '../TaskCards/ProgressDropdown';
 import { FaTrash } from 'react-icons/fa';
 import { useDeleteTask } from '@/hooks/useDeleteTask';
-import SubtaskProgresses from './SubtaskProgresses';
+import SubtaskProgresses from '../TaskCards/SubtaskProgresses';
 import { useDrag, useDrop } from 'react-dnd';
 import { store } from '@/store/store';
 import { setSimplicityModalOpen } from '@/store/uiSlice';
-import SimplicityModal from './SimplicityModal';
+import SimplicityModal from '../SimplicityModal';
 
 interface SubtaskDrawerCardProps {
     subtask: Task;
