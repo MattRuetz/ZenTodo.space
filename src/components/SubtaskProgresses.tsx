@@ -6,6 +6,7 @@ import {
 } from '../store/uiSlice';
 import { RootState } from '@/store/store';
 import { Task } from '@/types';
+import { Tooltip } from 'react-tooltip';
 
 export interface SubtaskProgressesProps {
     task: Task;
@@ -61,12 +62,13 @@ const SubtaskProgresses: React.FC<SubtaskProgressesProps> = React.memo(
 
         return (
             <div
+                data-tooltip-id={`${task._id}-subtask-progresses-tooltip`}
                 style={{
                     visibility: isVisible ? 'visible' : 'hidden',
                 }}
-                className={`flex gap-2 ${
+                className={`flex gap-1 ${
                     task.parentTask ? 'bg-base-300' : 'bg-base-100'
-                } hover:bg-slate-800 transition-colors duration-200 rounded-full cursor-pointer items-center justify-center text-xs h-8 px-2 hover:font-bold`}
+                } hover:bg-slate-800 transition-colors duration-200 rounded-full cursor-pointer items-center justify-center text-xs h-8 px-2 max-w-5/12`}
                 onClick={handleOpenDrawer}
             >
                 {subtaskProgresses.notStarted > 0 && (
@@ -89,6 +91,14 @@ const SubtaskProgresses: React.FC<SubtaskProgressesProps> = React.memo(
                         {subtaskProgresses.complete}
                     </div>
                 )}
+                <Tooltip
+                    id={`${task._id}-subtask-progresses-tooltip`}
+                    style={{ zIndex: 100000 }}
+                    place="top"
+                >
+                    {/* Due Date: {new Date(task.dueDate).toLocaleDateString()} */}
+                    Subtasks
+                </Tooltip>
             </div>
         );
     }

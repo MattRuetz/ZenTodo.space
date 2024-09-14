@@ -16,6 +16,7 @@ interface ITask extends Document {
     parentTask?: mongoose.Types.ObjectId;
     createdAt: Date;
     updatedAt: Date;
+    dueDate?: Date;
 }
 
 const TaskSchema = new mongoose.Schema({
@@ -44,6 +45,7 @@ const TaskSchema = new mongoose.Schema({
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
     ancestors: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Task' }],
+    dueDate: { type: Date, required: false },
 });
 
 // Add this line to create the compound index

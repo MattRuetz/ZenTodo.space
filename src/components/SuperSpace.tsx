@@ -10,6 +10,7 @@ import ControlPanel from './ControlPanel';
 import Preloader from './Preloader';
 import { useSession } from 'next-auth/react';
 import SubtaskDrawer from './SubtaskDrawer';
+import { Tooltip } from 'react-tooltip';
 
 const SuperSpace = () => {
     const dispatch = useDispatch<AppDispatch>();
@@ -89,12 +90,26 @@ const SuperSpace = () => {
                 )
             )}
             {session && (
-                <button
-                    onClick={toggleZoom}
-                    className="absolute bottom-4 right-4 bg-blue-500 text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl"
-                >
-                    {isZoomedOut ? '↩' : '↪'}
-                </button>
+                <>
+                    <button
+                        data-tooltip-id={`go-to-super-space-tooltip`}
+                        onClick={toggleZoom}
+                        className="absolute bottom-4 right-4 bg-blue-500 text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl"
+                    >
+                        {isZoomedOut ? '↩' : '↪'}
+                    </button>
+                    <Tooltip
+                        id={`go-to-super-space-tooltip`}
+                        style={{
+                            zIndex: 100000,
+                            backgroundColor: 'white',
+                            color: 'black',
+                        }}
+                        place="left"
+                    >
+                        Go to Super Space
+                    </Tooltip>
+                </>
             )}
         </div>
     );

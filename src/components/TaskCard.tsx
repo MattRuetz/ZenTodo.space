@@ -9,6 +9,8 @@ import {
     updateTask,
     hideNewChildTask,
     convertTaskToSubtask,
+    // moveTaskToSpace,
+    // duplicateTask,
 } from '../store/tasksSlice';
 import { AppDispatch, RootState } from '../store/store';
 import TaskCardToolBar from './TaskCardToolBar';
@@ -283,6 +285,29 @@ const TaskCard: React.FC<TaskCardProps> = React.memo(
             ]
         );
 
+        // ... existing code ...
+
+        const handleSetDueDate = (date: Date | null) => {
+            setLocalTask((prevTask) => ({ ...prevTask, dueDate: date }));
+            debouncedUpdate({ dueDate: date });
+        };
+
+        // ... existing code ...
+
+        // const handleMoveTask = (spaceId: string) => {
+        //     dispatch(moveTaskToSpace({ taskId: task._id!, spaceId }));
+        //     toast.success('Task moved successfully');
+        // };
+
+        const handleCreateSpaceAndMoveTask = () => {
+            // Implement logic to create a new space and move the task
+        };
+
+        // const handleDuplicateTask = () => {
+        //     dispatch(duplicateTask(task));
+        //     toast.success('Task duplicated successfully');
+        // };
+
         return (
             <Draggable
                 defaultPosition={{ x: task.x, y: task.y }}
@@ -310,6 +335,17 @@ const TaskCard: React.FC<TaskCardProps> = React.memo(
                         <DraggableArea
                             className="flex flex-col h-full p-4 pb-0"
                             onDelete={() => handleDelete(task._id ?? '')}
+                            onDetails={() => console.log('details')}
+                            onSetDueDate={handleSetDueDate}
+                            onMoveTask={() => console.log('move task')}
+                            onCreateSpaceAndMoveTask={
+                                handleCreateSpaceAndMoveTask
+                            }
+                            onDuplicateTask={() =>
+                                console.log('duplicate task')
+                            }
+                            onAddSubtask={() => console.log('add subtask')}
+                            task={task}
                         >
                             <input
                                 ref={taskNameRef}
