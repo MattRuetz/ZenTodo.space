@@ -5,14 +5,16 @@ import { FaCalendar, FaCopy, FaPlus, FaTrash } from 'react-icons/fa6';
 import ReactDatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { Tooltip } from 'react-tooltip';
-import { Task } from '@/types';
+import { SpaceData, Task } from '@/types';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store/store';
 
 interface TaskCardTopBarProps {
     className?: string;
     task: Task;
     onDelete: () => void;
     onDetails: () => void;
-    onSetDueDate: (date: Date | null) => void;
+    onSetDueDate: (date: Date | undefined) => void;
     onAddSubtask: () => void;
     onMoveTask: (spaceId: string) => void;
     onCreateSpaceAndMoveTask: () => void;
@@ -34,6 +36,19 @@ const TaskCardTopBar: React.FC<TaskCardTopBarProps> = ({
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [dueDate, setDueDate] = useState<Date | null>(null);
     const [showMoveOptions, setShowMoveOptions] = useState(false);
+    const spaces = useSelector((state: RootState) => state.spaces.spaces);
+
+    const handleMoveTask = (spaceId: string) => {
+        onMoveTask(spaceId);
+        setShowMoveOptions(false);
+        setIsDropdownOpen(false);
+    };
+
+    const handleMoveTaskToNewSpace = () => {
+        onCreateSpaceAndMoveTask();
+        setShowMoveOptions(false);
+        setIsDropdownOpen(false);
+    };
 
     return (
         <div
@@ -157,7 +172,7 @@ const TaskCardTopBar: React.FC<TaskCardTopBarProps> = ({
                         />
                         <button
                             onClick={() => {
-                                onSetDueDate(dueDate);
+                                onSetDueDate(dueDate || undefined);
                                 setShowDatePicker(false);
                                 setIsDropdownOpen(false);
                             }}
@@ -175,15 +190,21 @@ const TaskCardTopBar: React.FC<TaskCardTopBarProps> = ({
                         <ul>
                             <li
                                 className="px-4 py-2 hover:bg-slate-300 cursor-pointer"
-                                onClick={() => {
-                                    onCreateSpaceAndMoveTask();
-                                    setShowMoveOptions(false);
-                                    setIsDropdownOpen(false);
-                                }}
+                                onClick={() => handleMoveTaskToNewSpace()}
                             >
                                 + New Space
                             </li>
-                            {/* Map through spaces and create list items */}
+                            {spaces.map((space: SpaceData) => (
+                                <li
+                                    key={space._id}
+                                    className="px-4 py-2 hover:bg-slate-300 cursor-pointer"
+                                    onClick={() =>
+                                        handleMoveTask(space._id || '')
+                                    }
+                                >
+                                    {space.name}
+                                </li>
+                            ))}
                         </ul>
                     </div>
                 )}

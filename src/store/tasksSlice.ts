@@ -341,6 +341,49 @@ export const moveSubtaskWithinLevel = createAsyncThunk(
     }
 );
 
+export const moveTaskToSpace = createAsyncThunk(
+    'tasks/moveTaskToSpace',
+    async ({ taskId, spaceId }: { taskId: string; spaceId: string }) => {
+        const response = await fetch(`/api/tasks/${taskId}/move`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ spaceId }),
+        });
+        const data = await response.json();
+        return data.task;
+    }
+);
+
+export const duplicateTask = createAsyncThunk(
+    'tasks/duplicateTask',
+    async (task: Task) => {
+        const duplicate = async (taskToCopy: Task, parentId?: string) => {
+            const duplicatedTask = {
+                ...taskToCopy,
+                taskName: `(Copy) ${taskToCopy.taskName}`,
+                _id: undefined,
+                parentTask: parentId,
+                subtasks: [],
+            };
+
+            const response = await fetch('/api/tasks', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(duplicatedTask),
+            });
+            const data = await response.json();
+
+            for (const subtask of taskToCopy.subtasks) {
+                await duplicate(subtask as Task, data.task._id);
+            }
+
+            return data.task;
+        };
+
+        return await duplicate(task);
+    }
+);
+
 export const tasksSlice = createSlice({
     name: 'tasks',
     initialState,
@@ -486,6 +529,17 @@ export const tasksSlice = createSlice({
                 if (subtaskIndex !== -1) {
                     state.tasks[subtaskIndex] = movedSubtask;
                 }
+            })
+            .addCase(moveTaskToSpace.fulfilled, (state, action) => {
+                const index = state.tasks.findIndex(
+                    (t) => t._id === action.payload._id
+                );
+                if (index !== -1) {
+                    state.tasks[index] = action.payload;
+                }
+            })
+            .addCase(duplicateTask.fulfilled, (state, action) => {
+                state.tasks.push(action.payload);
             });
     },
 });

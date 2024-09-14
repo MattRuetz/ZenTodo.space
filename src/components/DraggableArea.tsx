@@ -8,7 +8,7 @@ interface DraggableAreaProps {
     className: String;
     onDelete: () => void;
     onDetails: () => void;
-    onSetDueDate: (date: Date | null) => void;
+    onSetDueDate: (date: Date | undefined) => void;
     onAddSubtask: () => void;
     onMoveTask: (spaceId: string) => void;
     onCreateSpaceAndMoveTask: () => void;
@@ -44,17 +44,6 @@ const DraggableArea: React.FC<DraggableAreaProps> = ({
             className={`draggable-area w-full h-full ${className}`}
             onMouseDown={handleMouseDown}
         >
-            <TaskCardTopBar
-                className="pb-2"
-                task={task}
-                onDelete={onDelete}
-                onDetails={onDetails}
-                onSetDueDate={onSetDueDate}
-                onAddSubtask={onAddSubtask}
-                onMoveTask={onMoveTask}
-                onCreateSpaceAndMoveTask={onCreateSpaceAndMoveTask}
-                onDuplicateTask={onDuplicateTask}
-            />
             {children}
         </div>
     );

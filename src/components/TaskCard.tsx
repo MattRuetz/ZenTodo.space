@@ -28,6 +28,7 @@ import { useTaskState } from '@/hooks/useTaskState';
 import { useDeleteTask } from '@/hooks/useDeleteTask';
 import { useResizeHandle } from '@/hooks/useResizeHandle';
 import { toast } from 'react-toastify';
+import TaskCardTopBar from './TaskCardTopBar';
 
 interface TaskCardProps {
     task: Task;
@@ -290,14 +291,13 @@ const TaskCard: React.FC<TaskCardProps> = React.memo(
                 task.y,
             ]
         );
-
-        const handleSetDueDate = (date: Date | null) => {
+        const handleSetDueDate = (date: Date | undefined) => {
             setLocalTask((prevTask) => ({ ...prevTask, dueDate: date }));
             debouncedUpdate({ dueDate: date });
         };
 
         const handleMoveTask = (spaceId: string) => {
-            // dispatch(moveTaskToSpace({ taskId: task._id!, spaceId }));
+            dispatch(moveTaskToSpace({ taskId: task._id!, spaceId }));
             toast.success('Task moved successfully');
         };
 
@@ -387,6 +387,19 @@ const TaskCard: React.FC<TaskCardProps> = React.memo(
                             onAddSubtask={handleAddSubtask}
                             task={task}
                         >
+                            <TaskCardTopBar
+                                className="pb-2"
+                                task={task}
+                                onDelete={() => handleDelete(task._id ?? '')}
+                                onDetails={() => console.log('details')}
+                                onSetDueDate={handleSetDueDate}
+                                onAddSubtask={handleAddSubtask}
+                                onMoveTask={handleMoveTask}
+                                onCreateSpaceAndMoveTask={
+                                    handleCreateSpaceAndMoveTask
+                                }
+                                onDuplicateTask={handleDuplicateTask}
+                            />
                             <input
                                 ref={taskNameRef}
                                 type="text"

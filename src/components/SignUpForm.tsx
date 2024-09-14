@@ -80,8 +80,7 @@ const SignUpForm: React.FC<SignUpFormProps> = ({
                 className="absolute w-64 bg-base-300 rounded shadow"
                 onMouseDown={handleMouseDown}
             >
-                {/* This needs to be something else... */}
-                <TaskCardTopBar onDelete={onClose} />
+                /{' '}
                 <div className="p-4">
                     <form onSubmit={handleSubmit} className="space-y-4">
                         {!isLogin && (
