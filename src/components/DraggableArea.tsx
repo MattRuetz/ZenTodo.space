@@ -16,37 +16,39 @@ interface DraggableAreaProps {
     task: Task;
 }
 
-const DraggableArea: React.FC<DraggableAreaProps> = ({
-    children,
-    className,
-    onDelete,
-    onDetails,
-    onSetDueDate,
-    onAddSubtask,
-    onMoveTask,
-    onCreateSpaceAndMoveTask,
-    onDuplicateTask,
-    task,
-}) => {
-    const handleMouseDown = (e: React.MouseEvent) => {
-        // Prevent dragging when interacting with input fields or buttons
-        if (
-            e.target instanceof HTMLInputElement ||
-            e.target instanceof HTMLTextAreaElement ||
-            e.target instanceof HTMLButtonElement
-        ) {
-            e.stopPropagation();
-        }
-    };
+const DraggableArea: React.FC<DraggableAreaProps> = React.memo(
+    ({
+        children,
+        className,
+        onDelete,
+        onDetails,
+        onSetDueDate,
+        onAddSubtask,
+        onMoveTask,
+        onCreateSpaceAndMoveTask,
+        onDuplicateTask,
+        task,
+    }) => {
+        const handleMouseDown = (e: React.MouseEvent) => {
+            // Prevent dragging when interacting with input fields or buttons
+            if (
+                e.target instanceof HTMLInputElement ||
+                e.target instanceof HTMLTextAreaElement ||
+                e.target instanceof HTMLButtonElement
+            ) {
+                e.stopPropagation();
+            }
+        };
 
-    return (
-        <div
-            className={`draggable-area w-full h-full ${className}`}
-            onMouseDown={handleMouseDown}
-        >
-            {children}
-        </div>
-    );
-};
+        return (
+            <div
+                className={`draggable-area w-full h-full ${className}`}
+                onMouseDown={handleMouseDown}
+            >
+                {children}
+            </div>
+        );
+    }
+);
 
 export default DraggableArea;

@@ -17,7 +17,7 @@ type SortOption = 'custom' | 'name' | 'progress' | 'created' | 'lastEdited';
 
 interface SortingDropdownProps {}
 
-const SortingDropdown: React.FC<SortingDropdownProps> = ({}) => {
+const SortingDropdown: React.FC<SortingDropdownProps> = React.memo(() => {
     const dispatch = useDispatch();
     const [isOpen, setIsOpen] = useState(false);
     const sortOption = useSelector((state: RootState) => state.ui.sortOption);
@@ -122,6 +122,6 @@ const SortingDropdown: React.FC<SortingDropdownProps> = ({}) => {
             )}
         </div>
     );
-};
+});
 
 export default SortingDropdown;

@@ -12,7 +12,7 @@ import { useSession } from 'next-auth/react';
 import SubtaskDrawer from './SubtaskDrawer';
 import { Tooltip } from 'react-tooltip';
 
-const SuperSpace = () => {
+const SuperSpace = React.memo(() => {
     const dispatch = useDispatch<AppDispatch>();
     const { spaces, currentSpace, status } = useSelector(
         (state: RootState) => state.spaces
@@ -113,6 +113,6 @@ const SuperSpace = () => {
             )}
         </div>
     );
-};
+});
 
 export default SuperSpace;

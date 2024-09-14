@@ -35,11 +35,10 @@ interface TaskCardProps {
     onDragStart: () => void;
     onDragStop: () => void;
     getNewZIndex: () => number;
-    subtasks: Task[];
 }
 
-const TaskCard: React.FC<TaskCardProps> = React.memo(
-    ({ task, onDragStart, onDragStop, getNewZIndex, subtasks }) => {
+const TaskCard = React.memo(
+    ({ task, onDragStart, onDragStop, getNewZIndex }: TaskCardProps) => {
         const dispatch = useDispatch<AppDispatch>();
         const { isGlobalDragging, draggingCardId } = useSelector(
             (state: RootState) => state.ui

@@ -47,7 +47,7 @@ interface SpaceProps {
     onLoaded: () => void;
 }
 
-const Space: React.FC<SpaceProps> = ({ spaceId, onLoaded }) => {
+const Space: React.FC<SpaceProps> = React.memo(({ spaceId, onLoaded }) => {
     const dispatch = useDispatch<AppDispatch>();
     const { data: session, status: sessionStatus } = useSession();
     const tasks = useSelector((state: RootState) =>
@@ -299,6 +299,6 @@ const Space: React.FC<SpaceProps> = ({ spaceId, onLoaded }) => {
             />
         </div>
     );
-};
+});
 
 export default Space;
