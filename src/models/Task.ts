@@ -14,6 +14,7 @@ interface ITask extends Document {
     zIndex: number;
     subtasks: mongoose.Types.ObjectId[];
     parentTask?: mongoose.Types.ObjectId;
+    ancestors: mongoose.Types.ObjectId[];
     createdAt: Date;
     updatedAt: Date;
     dueDate?: Date;
@@ -42,9 +43,9 @@ const TaskSchema = new mongoose.Schema({
         ref: 'Task',
         required: false,
     },
+    ancestors: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Task' }],
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
-    ancestors: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Task' }],
     dueDate: { type: Date, required: false },
 });
 

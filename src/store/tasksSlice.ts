@@ -348,13 +348,13 @@ export const moveTaskToSpace = createAsyncThunk(
         return data.task;
     }
 );
-
 export const duplicateTask = createAsyncThunk(
     'tasks/duplicateTask',
     async (task: Task) => {
         const duplicate = async (
             taskToCopy: Task,
-            parentId?: string
+            parentId?: string,
+            ancestors: string[] = []
         ): Promise<Task[]> => {
             const duplicatedTask = {
                 ...taskToCopy,
@@ -363,9 +363,9 @@ export const duplicateTask = createAsyncThunk(
                 taskName: `(Copy) ${taskToCopy.taskName}`,
                 _id: undefined,
                 parentTask: parentId,
-                ancestors: [],
+                ancestors: [...ancestors], // Use the passed ancestors array
+                subtasks: [], // Initialize with an empty array
             };
-            console.log(`duplicatedTask: ${JSON.stringify(duplicatedTask)}`);
 
             const response = await fetch('/api/tasks', {
                 method: 'POST',
@@ -373,23 +373,54 @@ export const duplicateTask = createAsyncThunk(
                 body: JSON.stringify(duplicatedTask),
             });
             const data = await response.json();
+            const newTask = data.task;
 
-            let allDuplicatedTasks = [data.task];
+            let allDuplicatedTasks = [newTask];
 
-            // recursively duplicate subtasks
+            // Recursively duplicate subtasks
             for (const subtask of taskToCopy.subtasks) {
                 const duplicatedSubtasks = await duplicate(
                     subtask as Task,
-                    data.task._id
+                    newTask._id, // Pass the new parent ID
+                    [...newTask.ancestors, newTask._id] // Pass updated ancestors array
                 );
                 allDuplicatedTasks =
                     allDuplicatedTasks.concat(duplicatedSubtasks);
+
+                // Update the subtasks array of the new parent task
+                newTask.subtasks.push(duplicatedSubtasks[0]._id);
+            }
+
+            // If this is the top-level task, update it with the new subtask IDs
+            if (!parentId) {
+                const updateResponse = await fetch(`/api/tasks/`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        subtasks: newTask.subtasks,
+                        ancestors: newTask.ancestors,
+                        _id: newTask._id,
+                    }),
+                });
+                if (!updateResponse.ok) {
+                    console.error(
+                        'Error updating task:',
+                        await updateResponse.text()
+                    );
+                    throw new Error(
+                        `HTTP error! status: ${updateResponse.status}`
+                    );
+                }
+                const updatedData = await updateResponse.json();
+                allDuplicatedTasks[0] = updatedData.task;
             }
 
             return allDuplicatedTasks;
         };
 
-        return await duplicate(task);
+        const result = await duplicate(task);
+        console.log('Duplicate task result:', result);
+        return result;
     }
 );
 
@@ -548,7 +579,22 @@ export const tasksSlice = createSlice({
                 }
             })
             .addCase(duplicateTask.fulfilled, (state, action) => {
-                state.tasks = state.tasks.concat(action.payload);
+                // Create a map of existing tasks for quick lookup
+                const existingTasksMap = new Map(
+                    state.tasks.map((task) => [task._id, task])
+                );
+
+                // Add or update tasks from the action payload
+                action.payload.forEach((newTask) => {
+                    if (newTask._id) {
+                        existingTasksMap.set(newTask._id, newTask);
+                    } else {
+                        state.tasks.push(newTask);
+                    }
+                });
+
+                // Update state with the new map values
+                state.tasks = Array.from(existingTasksMap.values());
             });
     },
 });

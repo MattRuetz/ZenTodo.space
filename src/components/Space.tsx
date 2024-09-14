@@ -205,7 +205,8 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId, onLoaded }) => {
                     space: spaceId,
                     zIndex: getNewZIndex(),
                     subtasks: [],
-                    parentTask: '',
+                    parentTask: undefined,
+                    ancestors: [],
                 };
                 dispatch(addTask(newTask));
                 setCanCreateTask(false);
