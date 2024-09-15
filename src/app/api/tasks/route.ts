@@ -41,6 +41,7 @@ export async function POST(req: NextRequest) {
             parentTask,
             ancestors,
             subtasks,
+            emoji,
         } = body;
 
         // Get the current maxZIndex for the space and increment it
@@ -60,6 +61,7 @@ export async function POST(req: NextRequest) {
             parentTask: parentTask ?? undefined,
             ancestors: ancestors ?? [],
             subtasks: subtasks ?? [],
+            emoji: emoji ?? '',
         });
 
         const savedTask = await newTask.save();
@@ -100,6 +102,8 @@ export async function PUT(req: NextRequest) {
                 { status: 404 }
             );
         }
+
+        console.log('updatedTask', updatedTask);
 
         return NextResponse.json({ task: updatedTask }, { status: 200 });
     } catch (error) {

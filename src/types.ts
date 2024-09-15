@@ -21,6 +21,7 @@ export interface Task {
     updatedAt?: Date;
     ancestors?: string[];
     dueDate?: Date;
+    emoji?: string;
 }
 
 export interface SpaceData {

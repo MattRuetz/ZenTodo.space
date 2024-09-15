@@ -1,12 +1,19 @@
 // src/components/icons/TaskCardTopBar.tsx
 import React, { useEffect, useRef, useState } from 'react';
-import { FaArrowsAlt, FaEllipsisV, FaInfoCircle } from 'react-icons/fa';
-import { FaCalendar, FaCopy, FaPlus, FaTrash } from 'react-icons/fa6';
+import {
+    FaArrowsAlt,
+    FaEllipsisV,
+    FaInfoCircle,
+    FaQuestionCircle,
+} from 'react-icons/fa';
+import { FaCalendar, FaCopy, FaPlus, FaTag, FaTrash } from 'react-icons/fa6';
 import ReactDatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { SpaceData, Task } from '@/types';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/store/store';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '@/store/store';
+import EmojiDropdown from '../EmojiDropdown';
+import { updateTask } from '@/store/tasksSlice';
 
 interface TaskCardTopBarProps {
     className?: string;
@@ -32,6 +39,7 @@ const TaskCardTopBar: React.FC<TaskCardTopBarProps> = React.memo(
         onCreateSpaceAndMoveTask,
         onDuplicateTask,
     }) => {
+        const dispatch = useDispatch<AppDispatch>();
         const spaces = useSelector((state: RootState) => state.spaces.spaces);
 
         const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -88,10 +96,21 @@ const TaskCardTopBar: React.FC<TaskCardTopBarProps> = React.memo(
             setIsMenuOpen(false);
         };
 
+        const handleSetTaskEmoji = (emoji: string) => {
+            if (task._id) {
+                dispatch(updateTask({ _id: task._id, emoji: emoji }));
+            }
+        };
+
         return (
             <div
-                className={`flex flex-row gap-6 drag-handle cursor-move ${className}`}
+                className={`flex flex-row gap-6 drag-handle cursor-move items-center ${className}`}
             >
+                <EmojiDropdown
+                    taskEmoji={task.emoji || <FaTag />}
+                    setTaskEmoji={handleSetTaskEmoji}
+                />
+
                 <div className="justify-center w-full">
                     <div
                         className="mb-1 w-full bg-sky-950"

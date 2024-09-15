@@ -18,6 +18,7 @@ interface ITask extends Document {
     createdAt: Date;
     updatedAt: Date;
     dueDate?: Date;
+    emoji?: string;
 }
 
 const TaskSchema = new mongoose.Schema({
@@ -47,6 +48,7 @@ const TaskSchema = new mongoose.Schema({
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
     dueDate: { type: Date, required: false },
+    emoji: { type: String, required: false },
 });
 
 // Add this line to create the compound index

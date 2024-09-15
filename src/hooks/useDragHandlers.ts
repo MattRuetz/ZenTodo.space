@@ -72,13 +72,12 @@ export const useDragHandlers = ({
                 };
 
                 console.log('drag stop');
-                debouncedUpdate(newTaskData);
+                // debouncedUpdate(newTaskData);
                 return { ...prevTask, ...newTaskData };
             });
             dispatch(setGlobalDragging(false));
             dispatch(setDraggingCardId(null));
             onDragStop();
-
             const clientX = 'clientX' in e ? e.clientX : e.touches[0].clientX;
             const clientY = 'clientY' in e ? e.clientY : e.touches[0].clientY;
             const elementsUnderCursor = document.elementsFromPoint(

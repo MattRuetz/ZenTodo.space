@@ -274,29 +274,6 @@ const TaskCard = React.memo(
             maxHeight: 500,
         });
 
-        const cardStyle: React.CSSProperties = useMemo(
-            () => ({
-                opacity,
-                zIndex: localTask.zIndex,
-                width: `${cardSize.width}px`,
-                height: `${cardSize.height}px`,
-                position: 'absolute',
-                transition: 'border-color 0.3s ease',
-                minWidth: '250px',
-                maxWidth: '500px',
-                minHeight: '230px',
-                maxHeight: '500px',
-                overflow: 'visible',
-            }),
-            [
-                opacity,
-                localTask.zIndex,
-                cardSize.width,
-                cardSize.height,
-                task.x,
-                task.y,
-            ]
-        );
         const handleSetDueDate = (date: Date | undefined) => {
             setLocalTask((prevTask) => ({ ...prevTask, dueDate: date }));
             debouncedUpdate({ dueDate: date });
@@ -359,6 +336,30 @@ const TaskCard = React.memo(
         const handleShowDetails = () => {
             setShowDetails(true);
         };
+
+        const cardStyle: React.CSSProperties = useMemo(
+            () => ({
+                opacity,
+                zIndex: localTask.zIndex,
+                width: `${cardSize.width}px`,
+                height: `${cardSize.height}px`,
+                position: 'absolute',
+                transition: 'border-color 0.3s ease',
+                minWidth: '270px',
+                maxWidth: '500px',
+                minHeight: '250px',
+                maxHeight: '500px',
+                overflow: 'visible',
+            }),
+            [
+                opacity,
+                localTask.zIndex,
+                cardSize.width,
+                cardSize.height,
+                task.x,
+                task.y,
+            ]
+        );
 
         return (
             <Draggable
