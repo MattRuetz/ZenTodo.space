@@ -15,6 +15,8 @@ import { FaAngleRight, FaXmark } from 'react-icons/fa6';
 import { setSubtaskDrawerParentId } from '@/store/uiSlice';
 import SubtaskDropZone from './SubtaskDropZone';
 import SortingDropdown from './SortingDropdown';
+import SimplicityModal from '../SimplicityModal';
+import { setSimplicityModalOpen } from '@/store/uiSlice';
 
 interface SubtaskDrawerProps {
     isOpen: boolean;
@@ -28,6 +30,10 @@ const SubtaskDrawer = React.memo(
             ref: ForwardedRef<HTMLDivElement>
         ) => {
             const dispatch = useDispatch<AppDispatch>();
+
+            const isSimplicityModalOpen = useSelector(
+                (state: RootState) => state.ui.isSimplicityModalOpen
+            );
 
             const isGlobalDragging = useSelector(
                 (state: RootState) => state.ui.isGlobalDragging
@@ -167,6 +173,10 @@ const SubtaskDrawer = React.memo(
                             : 'border-transparent'
                     }`}
                 >
+                    <SimplicityModal
+                        isOpen={isSimplicityModalOpen}
+                        onClose={() => dispatch(setSimplicityModalOpen(false))}
+                    />
                     <div className="p-3 subtask-drawer-items">
                         <div className="flex flex-row justify-between items-center py-2 bg-base-100 px-3 rounded-md">
                             <h2 className="text-lg font-bold uppercase subtask-drawer-items text-center w-full">

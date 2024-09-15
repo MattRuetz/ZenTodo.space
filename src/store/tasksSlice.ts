@@ -24,7 +24,8 @@ export const fetchTasks = createAsyncThunk(
         if (!response.ok) {
             throw new Error('Failed to fetch tasks');
         }
-        return response.json();
+        const tasks = await response.json();
+        return tasks;
     }
 );
 
@@ -348,6 +349,7 @@ export const moveTaskToSpace = createAsyncThunk(
         return data.task;
     }
 );
+
 export const duplicateTask = createAsyncThunk(
     'tasks/duplicateTask',
     async (task: Task) => {
@@ -361,9 +363,13 @@ export const duplicateTask = createAsyncThunk(
                 x: taskToCopy.x + 50,
                 y: taskToCopy.y + 50,
                 taskName: `(Copy) ${taskToCopy.taskName}`,
+                space: taskToCopy.space,
                 _id: undefined,
-                parentTask: parentId,
-                ancestors: [...ancestors], // Use the passed ancestors array
+                parentTask: parentId || taskToCopy.parentTask,
+                ancestors:
+                    ancestors.length > 0
+                        ? [...ancestors]
+                        : taskToCopy.ancestors, // Use the passed ancestors array if it exists, otherwise use the task's ancestors
                 subtasks: [], // Initialize with an empty array
             };
 

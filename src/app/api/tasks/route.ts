@@ -89,7 +89,7 @@ export async function PUT(req: NextRequest) {
 
         updateData.updatedAt = new Date();
 
-        console.log('updateData', updateData);
+        // console.log('updateData', updateData);
         const updatedTask = await Task.findOneAndUpdate(
             { _id: _id, user: userId },
             { $set: updateData },
@@ -102,8 +102,6 @@ export async function PUT(req: NextRequest) {
                 { status: 404 }
             );
         }
-
-        console.log('updatedTask', updatedTask);
 
         return NextResponse.json({ task: updatedTask }, { status: 200 });
     } catch (error) {

@@ -72,7 +72,7 @@ export const useDragHandlers = ({
                 };
 
                 console.log('drag stop');
-                // debouncedUpdate(newTaskData);
+                debouncedUpdate(newTaskData);
                 return { ...prevTask, ...newTaskData };
             });
             dispatch(setGlobalDragging(false));

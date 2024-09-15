@@ -1,15 +1,17 @@
 import { TaskProgress } from '@/types';
 import React, { useEffect, useRef, useState } from 'react';
 import { FaCheck, FaChevronDown } from 'react-icons/fa';
+import { Tooltip } from 'react-tooltip';
 
 interface ProgressDropdownProps {
     progress: TaskProgress;
     onProgressChange: (progress: TaskProgress) => void;
     isSubtask?: boolean;
+    taskId: string;
 }
 
 export const ProgressDropdown: React.FC<ProgressDropdownProps> = React.memo(
-    ({ progress, onProgressChange, isSubtask }) => {
+    ({ progress, onProgressChange, isSubtask, taskId }) => {
         const dropdownRef = useRef<HTMLDivElement>(null);
         const progressCardRef = useRef<HTMLDivElement>(null);
         const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -69,12 +71,12 @@ export const ProgressDropdown: React.FC<ProgressDropdownProps> = React.memo(
         }, [shouldOpenDropdown]);
 
         return (
-            <div>
+            <div data-tooltip-id={`${taskId}-progress-tooltip`}>
                 <div className="flex flex-col w-full justify-start gap-2 items-center">
                     <div className="flex justify-between gap-2 items-center w-full">
                         <div
                             ref={progressCardRef}
-                            className="progress-card no-drag cursor-pointer p-2 bg-base-100 rounded-md flex text-xs text-slate-500 items-center gap-2"
+                            className="progress-card no-drag cursor-pointer p-2 bg-base-100 hover:bg-slate-800 transition-colors duration-200 rounded-md flex text-xs text-slate-500 items-center gap-2"
                             onClick={handleProgressClick}
                         >
                             <div
@@ -84,9 +86,14 @@ export const ProgressDropdown: React.FC<ProgressDropdownProps> = React.memo(
                                     <FaCheck className="text-white" />
                                 )}
                             </div>
-                            <div className="progressLabel">
-                                <span>{progress}</span>
-                            </div>
+                            <Tooltip
+                                id={`${taskId}-progress-tooltip`}
+                                place="top"
+                            >
+                                <div className="progressLabel">
+                                    <span>{progress}</span>
+                                </div>
+                            </Tooltip>
                             <FaChevronDown
                                 className={`transition-transform ${
                                     isDropdownOpen ? 'rotate-180' : ''

@@ -16,7 +16,8 @@ import SubtaskProgresses from '../TaskCards/SubtaskProgresses';
 import { useDrag, useDrop } from 'react-dnd';
 import { store } from '@/store/store';
 import { setSimplicityModalOpen } from '@/store/uiSlice';
-import SimplicityModal from '../SimplicityModal';
+import { SubtaskTopBar } from './SubtaskTopBar';
+import { SubtaskBottomBar } from './SubtaskBottomBar';
 
 interface SubtaskDrawerCardProps {
     subtask: Task;
@@ -31,18 +32,6 @@ const SubtaskDrawerCard = React.memo(
         const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
         const currentTaskNameRef = useRef(subtask.taskName);
         const ref = useRef<HTMLLIElement>(null);
-        const isSimplicityModalOpen = useSelector(
-            (state: RootState) => state.ui.isSimplicityModalOpen
-        );
-
-        const [deletingTasks, setDeletingTasks] = useState<Set<string>>(
-            new Set()
-        );
-
-        const { handleDelete } = useDeleteTask({
-            deletingTasks,
-            setDeletingTasks,
-        });
 
         const [{ isDragging }, drag] = useDrag(
             () => ({
@@ -56,7 +45,12 @@ const SubtaskDrawerCard = React.memo(
                         y: number;
                     };
 
-                    if (item && dropResult.x && dropResult.y) {
+                    if (
+                        item &&
+                        dropResult &&
+                        dropResult.x !== undefined &&
+                        dropResult.y !== undefined
+                    ) {
                         dispatch(
                             convertSubtaskToTask({
                                 subtask: { ...item },
@@ -173,6 +167,11 @@ const SubtaskDrawerCard = React.memo(
             [dispatch, subtask._id]
         );
 
+        const handleSetDueDate = (date: Date | undefined) => {
+            if (!subtask._id) return;
+            dispatch(updateTask({ _id: subtask._id, dueDate: date }));
+        };
+
         const handleInputChange = useCallback(
             (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
                 const { name, value } = e.target;
@@ -199,12 +198,17 @@ const SubtaskDrawerCard = React.memo(
                     opacity: isDragging ? 0.5 : 1,
                     cursor: 'move',
                 }}
-                className={`p-2 rounded-lg my-0 bg-base-100 transition-colors duration-200 shadow-md shadow-black/20 border-2 ${
+                className={`p-2 rounded-lg my-0 bg-base-100 transition-colors duration-200 shadow-md shadow-black/20 border-2 relative ${
                     isOver && !isDragging
                         ? 'filter brightness-110 border-blue-900'
                         : 'border-transparent'
                 }`}
             >
+                <SubtaskTopBar
+                    subtask={subtask}
+                    handleProgressChange={handleProgressChange}
+                    handleSetDueDate={handleSetDueDate}
+                />
                 <div
                     className={`${
                         isEditing === 'taskName'
@@ -243,7 +247,6 @@ const SubtaskDrawerCard = React.memo(
                         </h1>
                     )}
                 </div>
-
                 <div
                     className={`${
                         isEditing === 'taskDescription'
@@ -284,21 +287,10 @@ const SubtaskDrawerCard = React.memo(
                         </p>
                     )}
                 </div>
-                <div className="flex justify-between items-center relative gap-2">
-                    <ProgressDropdown
-                        progress={subtask.progress}
-                        onProgressChange={handleProgressChange}
-                        isSubtask={true}
-                    />
-                    <SubtaskProgresses task={subtask} />
-                    <FaTrash
-                        className="cursor-pointer text-red-500"
-                        onClick={() => handleDelete(subtask._id as string)}
-                    />
-                </div>
-                <SimplicityModal
-                    isOpen={isSimplicityModalOpen}
-                    onClose={() => dispatch(setSimplicityModalOpen(false))}
+                <SubtaskBottomBar
+                    subtask={subtask}
+                    handleProgressChange={handleProgressChange}
+                    handleSetDueDate={handleSetDueDate}
                 />
             </li>
         );

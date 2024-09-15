@@ -32,6 +32,8 @@ import TaskCardTopBar from './TaskCardTopBar';
 import { FaX } from 'react-icons/fa6';
 import { FaInfoCircle } from 'react-icons/fa';
 import { useDateString, useDateTimeString } from '@/hooks/useDateString';
+import { TaskDetails } from '../TaskDetails';
+import { useAddSubtask } from '@/hooks/useAddSubtask';
 
 interface TaskCardProps {
     task: Task;
@@ -163,6 +165,8 @@ const TaskCard = React.memo(
             startSizeRef,
         });
 
+        const { handleAddSubtask } = useAddSubtask({ task, position: 'start' });
+
         const { handleDelete } = useDeleteTask({
             deletingTasks,
             setDeletingTasks,
@@ -293,46 +297,6 @@ const TaskCard = React.memo(
             toast.success('Task duplicated successfully');
         };
 
-        const handleAddSubtask = () => {
-            const parentTask = task;
-            const newSubtask: Omit<Task, '_id'> = {
-                taskName: 'New Subtask',
-                taskDescription: '',
-                x: parentTask?.x || 0,
-                y: parentTask?.y || 0,
-                progress: 'Not Started' as TaskProgress,
-                space: parentTask?.space || '',
-                zIndex: parentTask?.zIndex || 0,
-                subtasks: [],
-                parentTask: parentTask?._id as string,
-                ancestors: parentTask?.ancestors
-                    ? [...parentTask.ancestors, parentTask._id as string]
-                    : [parentTask?._id as string],
-            };
-
-            dispatch(
-                addNewSubtask({
-                    subtask: newSubtask,
-                    position: 'start',
-                })
-            );
-            dispatch(setSubtaskDrawerOpen(true));
-            dispatch(setSubtaskDrawerParentId(parentTask._id as string));
-            toast.success('Subtask added successfully', {
-                position: 'top-left',
-                autoClose: 3000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                theme: 'dark',
-                style: {
-                    zIndex: 1000000,
-                },
-            });
-        };
-
         const handleShowDetails = () => {
             setShowDetails(true);
         };
@@ -389,7 +353,7 @@ const TaskCard = React.memo(
                             <DraggableArea
                                 className="flex flex-col h-full p-4 pb-0"
                                 onDelete={() => handleDelete(task._id ?? '')}
-                                onDetails={() => console.log('details')}
+                                onDetails={handleShowDetails}
                                 onSetDueDate={handleSetDueDate}
                                 onMoveTask={handleMoveTask}
                                 onCreateSpaceAndMoveTask={
@@ -400,59 +364,10 @@ const TaskCard = React.memo(
                                 task={task}
                             >
                                 {showDetails && (
-                                    <div className="absolute overflow-y-auto top-0 left-0 w-full h-full z-10 rounded-xl backdrop-blur-sm border border-slate-500 bg-base-200 bg-opacity-80 text-slate-200 p-4 overflow-hidden text-sm">
-                                        <div className="flex flex-row justify-between items-center">
-                                            <h3 className="text-sm font-bold px-4 py-2 rounded-lg bg-slate-200 text-slate-800 flex flex-row items-center gap-2">
-                                                <FaInfoCircle />
-                                                {task.taskName.substring(
-                                                    0,
-                                                    15
-                                                ) +
-                                                    (task.taskName.length > 15
-                                                        ? '...'
-                                                        : '')}
-                                            </h3>
-                                            <button
-                                                className="btn btn-circle btn-sm btn-ghost"
-                                                onClick={() =>
-                                                    setShowDetails(false)
-                                                }
-                                            >
-                                                <FaX />
-                                            </button>
-                                        </div>
-                                        <p className="mb-2">
-                                            {task.taskDescription}
-                                        </p>
-                                        <p>
-                                            Due Date:{' '}
-                                            {task.dueDate
-                                                ? useDateString(
-                                                      new Date(task.dueDate)
-                                                  )
-                                                : 'Not set'}
-                                        </p>
-                                        <hr className="my-2" />
-                                        <p>
-                                            Created:{' '}
-                                            {task.createdAt
-                                                ? useDateTimeString(
-                                                      new Date(task.createdAt)
-                                                  )
-                                                : 'Unknown'}
-                                        </p>
-                                        <hr className="my-2" />
-                                        <p>
-                                            Updated:{' '}
-                                            {task.updatedAt
-                                                ? useDateTimeString(
-                                                      new Date(task.updatedAt)
-                                                  )
-                                                : 'Unknown'}
-                                        </p>
-                                        <hr className="my-2" />
-                                        <p>Progress: {task.progress}</p>
-                                    </div>
+                                    <TaskDetails
+                                        task={task}
+                                        setShowDetails={setShowDetails}
+                                    />
                                 )}
                                 <TaskCardTopBar
                                     className="pb-2"

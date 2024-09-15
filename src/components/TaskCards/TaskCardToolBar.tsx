@@ -24,24 +24,8 @@ const TaskCardToolBar: React.FC<TaskCardToolBarProps> = React.memo(
                         progress={progress}
                         onProgressChange={onProgressChange}
                         isSubtask={false}
+                        taskId={task._id ?? ''}
                     />
-                    {task.dueDate && (
-                        <div className="text-xs">
-                            <div
-                                data-tooltip-id={`due-date-tooltip-${task._id}`}
-                                className="cursor-pointer"
-                            >
-                                <FaClock className="text-gray-400 text-lg" />
-                            </div>
-                            <Tooltip
-                                id={`due-date-tooltip-${task._id}`}
-                                place="top"
-                            >
-                                Due Date:{' '}
-                                {new Date(task.dueDate).toLocaleDateString()}
-                            </Tooltip>
-                        </div>
-                    )}
                 </div>
                 <SubtaskProgresses
                     data-tooltip-id={`${task._id}-subtask-progresses-tooltip`}
