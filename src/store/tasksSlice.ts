@@ -1,6 +1,6 @@
 // src/store/tasksSlice.ts
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { Task } from '../types';
+import { Tag, Task } from '../types';
 import { RootState } from './store';
 import { fetchSpaceMaxZIndex } from './spaceSlice';
 import { updateSpaceMaxZIndex } from './spaceSlice';
@@ -9,12 +9,14 @@ interface TasksState {
     tasks: Task[];
     status: 'idle' | 'loading' | 'succeeded' | 'failed';
     error: string | null;
+    tags: Tag[];
 }
 
 const initialState: TasksState = {
     tasks: [],
     status: 'idle',
     error: null,
+    tags: [],
 };
 
 export const fetchTasks = createAsyncThunk(

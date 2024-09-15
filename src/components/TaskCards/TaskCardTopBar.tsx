@@ -4,9 +4,13 @@ import { FaArrowsAlt, FaEllipsisV, FaInfoCircle } from 'react-icons/fa';
 import { FaCalendar, FaCopy, FaPlus, FaTrash } from 'react-icons/fa6';
 import ReactDatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { SpaceData, Task } from '@/types';
+import { SpaceData, Tag, Task } from '@/types';
 import { useSelector } from 'react-redux';
-import { RootState } from '@/store/store';
+import { AppDispatch, RootState } from '@/store/store';
+import TagLabel from '../Space/TagLabel';
+import { updateTask } from '@/store/tasksSlice';
+import { useDispatch } from 'react-redux';
+import TagSelector from './TagSelector';
 
 interface TaskCardTopBarProps {
     className?: string;
@@ -33,7 +37,7 @@ const TaskCardTopBar: React.FC<TaskCardTopBarProps> = React.memo(
         onDuplicateTask,
     }) => {
         const spaces = useSelector((state: RootState) => state.spaces.spaces);
-
+        const dispatch = useDispatch<AppDispatch>();
         const [isMenuOpen, setIsMenuOpen] = useState(false);
         const [showDatePicker, setShowDatePicker] = useState(false);
         const [dueDate, setDueDate] = useState<Date | null>(null);
@@ -88,10 +92,27 @@ const TaskCardTopBar: React.FC<TaskCardTopBarProps> = React.memo(
             setIsMenuOpen(false);
         };
 
+        const handleUpdateTags = (tags: Tag[]) => {
+            if (task._id && tags) {
+                dispatch(
+                    updateTask({
+                        _id: task._id,
+                        tags: [...(task.tags || []), ...tags],
+                    })
+                );
+            } else {
+                console.error('Task ID is undefined');
+            }
+        };
+
         return (
             <div
                 className={`flex flex-row gap-6 drag-handle cursor-move ${className}`}
             >
+                <TagSelector
+                    tags={task.tags || []}
+                    updateTags={handleUpdateTags}
+                />
                 <div className="justify-center w-full">
                     <div
                         className="mb-1 w-full bg-sky-950"

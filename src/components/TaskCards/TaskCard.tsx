@@ -218,15 +218,15 @@ const TaskCard = React.memo(
         );
 
         // Force re-render every animation frame
-        const [, forceUpdate] = useState({});
-        useEffect(() => {
-            const animate = () => {
-                forceUpdate({});
-                requestAnimationFrame(animate);
-            };
-            const animationId = requestAnimationFrame(animate);
-            return () => cancelAnimationFrame(animationId);
-        }, []);
+        // const [, forceUpdate] = useState({});
+        // useEffect(() => {
+        //     const animate = () => {
+        //         forceUpdate({});
+        //         requestAnimationFrame(animate);
+        //     };
+        //     const animationId = requestAnimationFrame(animate);
+        //     return () => cancelAnimationFrame(animationId);
+        // }, []);
 
         const throttledSetCardSize = useThrottle(setCardSize, 50);
 

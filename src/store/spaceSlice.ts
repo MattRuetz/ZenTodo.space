@@ -1,5 +1,5 @@
 // src/store/spaceSlice.ts
-import { SpaceData } from '@/types';
+import { SpaceData, Tag } from '@/types';
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 
 interface SpaceState {

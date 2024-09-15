@@ -1,5 +1,5 @@
 // src/models/Task.ts
-import { TaskProgress } from '@/types';
+import { Tag, TaskProgress } from '@/types';
 import mongoose, { Document, Model } from 'mongoose';
 
 interface ITask extends Document {
@@ -18,6 +18,7 @@ interface ITask extends Document {
     createdAt: Date;
     updatedAt: Date;
     dueDate?: Date;
+    tags: Tag[];
 }
 
 const TaskSchema = new mongoose.Schema({
@@ -47,6 +48,7 @@ const TaskSchema = new mongoose.Schema({
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
     dueDate: { type: Date, required: false },
+    tags: { type: Array, required: false },
 });
 
 // Add this line to create the compound index

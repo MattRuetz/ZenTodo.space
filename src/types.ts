@@ -21,6 +21,7 @@ export interface Task {
     updatedAt?: Date;
     ancestors?: string[];
     dueDate?: Date;
+    tags?: Tag[];
 }
 
 export interface SpaceData {
@@ -28,6 +29,13 @@ export interface SpaceData {
     name: string;
     color: string;
     maxZIndex: number;
+}
+
+export interface Tag {
+    _id?: string;
+    emoji: string;
+    name: string;
+    color: string;
 }
 
 export type SortOption =
