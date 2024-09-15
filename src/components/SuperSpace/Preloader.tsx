@@ -41,7 +41,7 @@ interface PreloaderProps {
     fadeOut: boolean;
 }
 
-const Preloader: React.FC<PreloaderProps> = ({ fadeOut }) => {
+const Preloader: React.FC<PreloaderProps> = React.memo(({ fadeOut }) => {
     const quote = getQuoteForDay();
 
     return (
@@ -57,6 +57,6 @@ const Preloader: React.FC<PreloaderProps> = ({ fadeOut }) => {
             </p>
         </div>
     );
-};
+});
 
 export default Preloader;

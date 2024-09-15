@@ -3,22 +3,24 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchSpaces, createSpace, setCurrentSpace } from '@/store/spaceSlice';
-import Space from './Space';
+import Space from '../Space/Space';
 import { AppDispatch, RootState } from '@/store/store';
 import { SpaceData, Task } from '@/types';
 import ControlPanel from './ControlPanel';
 import Preloader from './Preloader';
 import { useSession } from 'next-auth/react';
-import SubtaskDrawer from './SubtaskDrawer';
 import { Tooltip } from 'react-tooltip';
 
-const SuperSpace = () => {
+const SuperSpace = React.memo(() => {
     const dispatch = useDispatch<AppDispatch>();
+
     const { spaces, currentSpace, status } = useSelector(
         (state: RootState) => state.spaces
     );
+
     const [isZoomedOut, setIsZoomedOut] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
+    // CHANGE THIS DEFAULT STATE TO TRUE WHEN WE WANT TO SHOW THE PRELOADER
+    const [isLoading, setIsLoading] = useState(false);
     const [fadeOut, setFadeOut] = useState(false);
 
     const { data: session, status: sessionStatus } = useSession();
@@ -113,6 +115,6 @@ const SuperSpace = () => {
             )}
         </div>
     );
-};
+});
 
 export default SuperSpace;

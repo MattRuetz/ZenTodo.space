@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
             user: userId,
             zIndex: newZIndex, // Set the zIndex here
             dueDate,
-            parentTask: parentTask ?? null,
+            parentTask: parentTask ?? undefined,
             ancestors: ancestors ?? [],
             subtasks: subtasks ?? [],
         });

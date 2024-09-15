@@ -1,11 +1,11 @@
 // src/app/components/ControlPanel.tsx
 'use client';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import ControlPanelToggle from './ControlPanelToggle';
 import ControlPanelContent from './ControlPanelContent';
 
-const ControlPanel = () => {
+const ControlPanel = React.memo(() => {
     const [isOpen, setIsOpen] = useState(false);
     const { data: session } = useSession();
 
@@ -17,6 +17,6 @@ const ControlPanel = () => {
             <ControlPanelToggle isOpen={isOpen} setIsOpen={setIsOpen} />
         </div>
     );
-};
+});
 
 export default ControlPanel;

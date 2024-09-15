@@ -9,6 +9,7 @@ export const useTaskState = (task: Task) => {
     const [isDraggingOver, setIsDraggingOver] = useState(false);
     const [isDropped, setIsDropped] = useState(false);
     const [deletingTasks, setDeletingTasks] = useState<Set<string>>(new Set());
+    const [showDetails, setShowDetails] = useState(false);
 
     const cardRef = useRef<HTMLDivElement>(null);
     const taskNameRef = useRef<HTMLInputElement>(null);
@@ -41,5 +42,7 @@ export const useTaskState = (task: Task) => {
         startSizeRef,
         deletingTasks,
         setDeletingTasks,
+        showDetails,
+        setShowDetails,
     };
 };

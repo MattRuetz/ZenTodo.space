@@ -3,10 +3,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import {
     setSubtaskDrawerOpen,
     setSubtaskDrawerParentId,
-} from '../store/uiSlice';
-import { RootState } from '@/store/store';
+} from '../../store/uiSlice';
 import { Task } from '@/types';
 import { Tooltip } from 'react-tooltip';
+import { AppDispatch, RootState } from '@/store/store';
 
 export interface SubtaskProgressesProps {
     task: Task;
@@ -14,7 +14,7 @@ export interface SubtaskProgressesProps {
 
 const SubtaskProgresses: React.FC<SubtaskProgressesProps> = React.memo(
     ({ task }) => {
-        const dispatch = useDispatch();
+        const dispatch = useDispatch<AppDispatch>();
 
         const isSubtaskDrawerOpen = useSelector(
             (state: RootState) => state.ui.isSubtaskDrawerOpen

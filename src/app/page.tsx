@@ -1,7 +1,7 @@
 // src/app/page.tsx
 import ControlPanel from '@/components/ControlPanel';
-import Space from '@/components/Space';
-import SuperSpace from '@/components/SuperSpace';
+import Space from '@/components/Space/Space';
+import SuperSpace from '@/components/SuperSpace/SuperSpace';
 
 export default function Home() {
     return (

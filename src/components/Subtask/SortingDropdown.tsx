@@ -10,18 +10,19 @@ import {
     FaSignal,
     FaPizzaSlice,
 } from 'react-icons/fa';
-import { FaCakeCandles } from 'react-icons/fa6';
 import { useDispatch, useSelector } from 'react-redux';
-
 type SortOption = 'custom' | 'name' | 'progress' | 'created' | 'lastEdited';
 
 interface SortingDropdownProps {}
 
-const SortingDropdown: React.FC<SortingDropdownProps> = ({}) => {
+const SortingDropdown: React.FC<SortingDropdownProps> = React.memo(() => {
     const dispatch = useDispatch();
-    const [isOpen, setIsOpen] = useState(false);
+
+    // Imported selectors
     const sortOption = useSelector((state: RootState) => state.ui.sortOption);
     const isReversed = useSelector((state: RootState) => state.ui.isReversed);
+
+    const [isOpen, setIsOpen] = useState(false);
 
     const handleSortChange = (option: SortOption) => {
         setIsOpen(false);
@@ -122,6 +123,6 @@ const SortingDropdown: React.FC<SortingDropdownProps> = ({}) => {
             )}
         </div>
     );
-};
+});
 
 export default SortingDropdown;
