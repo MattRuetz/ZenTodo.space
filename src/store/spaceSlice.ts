@@ -45,6 +45,27 @@ export const createSpace = createAsyncThunk(
     }
 );
 
+export const updateSpace = createAsyncThunk(
+    'spaces/updateSpace',
+    async (spaceData: Partial<SpaceData>, { rejectWithValue }) => {
+        try {
+            const response = await fetch(`/api/spaces/${spaceData._id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(spaceData),
+            });
+            if (!response.ok) {
+                throw new Error('Failed to update space');
+            }
+            return await response.json();
+        } catch (error) {
+            return rejectWithValue((error as Error).message);
+        }
+    }
+);
+
 export const updateSpaceMaxZIndex = createAsyncThunk(
     'spaces/updateSpaceMaxZIndex',
     async ({ spaceId, maxZIndex }: { spaceId: string; maxZIndex: number }) => {
@@ -101,6 +122,23 @@ export const updateSpaceSelectedEmojis = createAsyncThunk(
         console.log('updateSpaceSelectedEmojis', data);
 
         return data;
+    }
+);
+
+export const deleteSpace = createAsyncThunk(
+    'spaces/deleteSpace',
+    async (spaceId: string, { rejectWithValue }) => {
+        try {
+            const response = await fetch(`/api/spaces/${spaceId}`, {
+                method: 'DELETE',
+            });
+            if (!response.ok) {
+                throw new Error('Failed to delete space');
+            }
+            return spaceId;
+        } catch (error) {
+            return rejectWithValue((error as Error).message);
+        }
     }
 );
 
@@ -180,6 +218,26 @@ const spaceSlice = createSlice({
                     'Failed to update space selectedEmojis:',
                     action.payload
                 );
+            })
+            .addCase(updateSpace.fulfilled, (state, action) => {
+                const space = state.spaces.find(
+                    (s) => s._id === action.payload._id
+                );
+                if (space) {
+                    Object.assign(space, action.payload);
+                }
+            })
+            .addCase(deleteSpace.fulfilled, (state, action) => {
+                const deletedSpaceId = action.payload;
+                state.spaces = state.spaces.filter(
+                    (space) => space._id !== deletedSpaceId
+                );
+                if (
+                    state.currentSpace &&
+                    state.currentSpace._id === deletedSpaceId
+                ) {
+                    state.currentSpace = null;
+                }
             });
     },
 });

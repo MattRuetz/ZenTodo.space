@@ -21,8 +21,8 @@ const EmojiDropdown: React.FC<EmojiDropdownProps> = ({
     };
 
     return (
-        <div className="emoji-tag cursor-pointer p-1 bg-base-100 hover:bg-slate-800 transition-colors duration-200 rounded-lg">
-            <div className="emoji-tag-icon text-xl" onClick={toggleDropdown}>
+        <div className="emoji-tag cursor-pointer p-1 transition-colors duration-200 rounded-lg">
+            <div className="emoji-tag-icon" onClick={toggleDropdown}>
                 {taskEmoji}
             </div>
             <div className="emoji-dropdown-menu absolute top-8 left-0 z-20">

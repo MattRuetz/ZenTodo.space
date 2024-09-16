@@ -7,6 +7,7 @@ interface ISpace extends Document {
     color: string;
     uderId: mongoose.Schema.Types.ObjectId;
     maxZIndex: number;
+    emoji: string;
     selectedEmojis: string[];
 }
 
@@ -19,6 +20,7 @@ const SpaceSchema = new mongoose.Schema({
         required: true,
     },
     maxZIndex: { type: Number, default: 1 },
+    emoji: { type: String, default: '' },
     selectedEmojis: { type: [String], default: [] },
 });
 

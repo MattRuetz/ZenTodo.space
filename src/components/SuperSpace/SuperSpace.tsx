@@ -10,6 +10,9 @@ import ControlPanel from './ControlPanel';
 import Preloader from './Preloader';
 import { useSession } from 'next-auth/react';
 import { Tooltip } from 'react-tooltip';
+import { generateRandomDarkColor } from '@/app/utils/utils';
+import { toast } from 'react-toastify';
+import SpaceCard from './SpaceCard';
 
 const SuperSpace = React.memo(() => {
     const dispatch = useDispatch<AppDispatch>();
@@ -38,11 +41,25 @@ const SuperSpace = React.memo(() => {
     }, [sessionStatus, status, dispatch]);
 
     const addSpace = () => {
+        if (spaces.length >= 9) {
+            toast.error('You can only create up to 9 spaces.', {
+                position: 'top-right',
+                autoClose: 3000,
+                hideProgressBar: true,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: 'dark',
+            });
+            return;
+        }
         const newSpace = {
             name: `Space ${spaces.length + 1}`,
-            color: '#' + Math.floor(Math.random() * 16777215).toString(16),
+            color: generateRandomDarkColor(),
             maxZIndex: 1,
             selectedEmojis: [],
+            emoji: '',
         };
         dispatch(createSpace(newSpace));
     };
@@ -56,31 +73,40 @@ const SuperSpace = React.memo(() => {
     }
 
     return (
-        <div className="relative w-full h-full">
+        <div className="relative w-full h-full bg-gradient-to-b from-slate-900 to-slate-800">
             {isZoomedOut ? (
-                <div className="grid grid-cols-3 gap-4 p-4">
-                    {spaces.map((space: SpaceData) => (
-                        <div
-                            key={space._id}
-                            className="space bg-white rounded-lg shadow-md p-4 cursor-pointer"
-                            style={{ backgroundColor: space.color }}
-                            onClick={() => {
-                                dispatch(setCurrentSpace(space));
-                                setIsZoomedOut(false);
-                            }}
-                        >
-                            <h2 className="text-xl font-bold mb-2">
-                                {space.name}
-                            </h2>
-                        </div>
-                    ))}
-                    <div
-                        className="space bg-gray-100 rounded-lg shadow-md p-4 cursor-pointer flex items-center justify-center"
-                        onClick={addSpace}
-                    >
-                        <span className="text-4xl">+</span>
+                <>
+                    <h4 className="text-xl text-white text-center pt-4 pb-2 font-bold">
+                        Spaces: {spaces.length} / 9
+                    </h4>
+
+                    <div className="grid grid-cols-3 gap-8 p-4 h-[calc(100%-50px)]">
+                        {spaces.map((space: SpaceData) => (
+                            <SpaceCard
+                                key={space._id}
+                                space={space}
+                                onClick={() => {
+                                    dispatch(setCurrentSpace(space));
+                                    setIsZoomedOut(false);
+                                }}
+                            />
+                        ))}
+                        {spaces.length < 9 && (
+                            <div
+                                className={`space bg-slate-300 hover:bg-slate-400 transition-colors duration-300 border-4 border-sky-900 rounded-lg shadow-md p-4 cursor-pointer flex items-center justify-center min-h-[150px] max-h-[300px] ${
+                                    spaces.length >= 9
+                                        ? 'opacity-50 cursor-not-allowed'
+                                        : ''
+                                }`}
+                                onClick={
+                                    spaces.length < 9 ? addSpace : undefined
+                                }
+                            >
+                                <span className="text-4xl text-sky-900">+</span>
+                            </div>
+                        )}
                     </div>
-                </div>
+                </>
             ) : (
                 (currentSpace || !session) && (
                     <>
@@ -97,7 +123,16 @@ const SuperSpace = React.memo(() => {
                     <button
                         data-tooltip-id={`go-to-super-space-tooltip`}
                         onClick={toggleZoom}
-                        className="absolute bottom-4 right-4 bg-blue-500 text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl"
+                        className="absolute bg-sky-600 hover:bg-sky-400 text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl"
+                        style={
+                            isZoomedOut
+                                ? { left: '20px', top: '10px' }
+                                : {
+                                      right: '20px',
+                                      bottom: '20px',
+                                      zIndex: 100000,
+                                  }
+                        }
                     >
                         {isZoomedOut ? '↩' : '↪'}
                     </button>
@@ -110,7 +145,16 @@ const SuperSpace = React.memo(() => {
                         }}
                         place="left"
                     >
-                        Go to Super Space
+                        {isZoomedOut ? (
+                            <>
+                                Return to{' '}
+                                <em>
+                                    <strong>{currentSpace?.name}</strong>
+                                </em>
+                            </>
+                        ) : (
+                            'Go to Super Space'
+                        )}
                     </Tooltip>
                 </>
             )}

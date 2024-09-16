@@ -165,13 +165,14 @@ const SubtaskDrawer = React.memo(
                 <div
                     ref={ref}
                     data-drawer-parent-id={parentTask?._id}
-                    className={`subtask-drawer fixed top-0 right-0 h-full shadow-md transform w-[400px] border-l-2 border-dashed bg-base-300 ${
+                    className={`subtask-drawer fixed top-0 right-0 h-full shadow-md transform w-[400px] border-l-2 bg-base-300 opacity-90 ${
                         isOpen ? '' : 'translate-x-full'
                     } transition-transform duration-300 ease-in-out subtask-drawer-items ${
                         isTaskCardOver
-                            ? 'border-slate-500'
+                            ? 'border-blue-700 filter brightness-125'
                             : 'border-transparent'
                     }`}
+                    style={isTaskCardOver ? { zIndex: 1 } : { zIndex: 9999 }}
                 >
                     <SimplicityModal
                         isOpen={isSimplicityModalOpen}
@@ -197,7 +198,7 @@ const SubtaskDrawer = React.memo(
                                 {grandparentTask && (
                                     <>
                                         <p
-                                            className="p-2 hover:text-white hover:bg-sky-800 rounded-md cursor-pointer w-full max-w-32 break-words overflow-wrap-anywhere"
+                                            className="p-2 shadow-sm shadow-slate-950 hover:text-white bg-gradient-to-r from-sky-800 to-sky-900 hover:from-sky-600 hover:to-sky-700 rounded-md cursor-pointer w-full max-w-32 break-words overflow-wrap-anywhere"
                                             onClick={() =>
                                                 handleSwitchParentTask(
                                                     grandparentTask as Task

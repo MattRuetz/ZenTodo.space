@@ -13,7 +13,7 @@ const ControlPanel = React.memo(() => {
     if (!session) return null;
 
     return (
-        <div>
+        <div style={{ zIndex: 1000 }}>
             <ControlPanelContent isOpen={isOpen} />
             <ControlPanelToggle isOpen={isOpen} setIsOpen={setIsOpen} />
         </div>

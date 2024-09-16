@@ -18,12 +18,18 @@ const ControlPanelToggle: React.FC<ControlPanelToggleProps> = React.memo(
         return (
             <div>
                 <button
-                    className="fixed top-4 left-4 z-20 btn btn-circle"
+                    className={`fixed top-4 left-4 z-20 btn btn-circle ${
+                        isOpen ? 'bg-sky-950' : ''
+                    }`}
+                    style={{ zIndex: 10000 }}
                     onClick={() => setIsOpen(!isOpen)}
                 >
                     {isOpen ? '×' : '☰'}
                 </button>
-                <div className="absolute top-6 left-20 btn btn-circle btn-sm text-lg flex items-center justify-center">
+                <div
+                    className="absolute top-6 left-20 btn btn-circle btn-sm text-lg flex items-center justify-center"
+                    style={{ zIndex: 10000 }}
+                >
                     <EmojiFilter />
                 </div>
             </div>
