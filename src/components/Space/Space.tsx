@@ -17,6 +17,7 @@ import { setSubtaskDrawerOpen } from '@/store/uiSlice';
 import { TaskProgress, Task } from '@/types';
 import { selectTasksForSpace } from '@/store/selectors';
 import { createSelector } from '@reduxjs/toolkit';
+
 // Memoized selectors
 
 interface SpaceProps {
@@ -48,6 +49,10 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId, onLoaded }) => {
     const [formPosition, setFormPosition] = useState({ x: 0, y: 0 });
     const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
     const [maxZIndex, setMaxZIndex] = useState(currentSpace?.maxZIndex || 1);
+
+    const [normalizedZs, setNormalizedZs] = useState(true);
+    const normalizeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
     const [resetTasks, setResetTasks] = useState<Task[]>([]);
     const [canCreateTask, setCanCreateTask] = useState(true);
 
@@ -59,53 +64,66 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId, onLoaded }) => {
 
     const COOLDOWN_TIME = 500; // ms
 
+    const normalizeZIndexValues = useCallback(() => {
+        if (normalizedZs) return;
+        setResetTasks([]);
+
+        const sortedTasks = [...tasks].sort((a, b) => a.zIndex - b.zIndex);
+        let newMaxZIndex = 0;
+
+        const updatedTasks = sortedTasks.map((task, index) => {
+            newMaxZIndex = index + 1;
+            return { ...task, zIndex: newMaxZIndex };
+        });
+
+        console.log('updatedTasks', updatedTasks);
+
+        updatedTasks.forEach((task) => {
+            dispatch(
+                updateTask({
+                    _id: task._id as string,
+                    zIndex: task.zIndex as number,
+                })
+            );
+        });
+
+        setResetTasks(updatedTasks);
+
+        setMaxZIndex(newMaxZIndex);
+        dispatch(updateSpaceMaxZIndex({ spaceId, maxZIndex: newMaxZIndex }));
+        setNormalizedZs(true);
+    }, [tasks, spaceId, dispatch, normalizedZs]);
+
     useEffect(() => {
-        if (spaceId && initialLoadComplete.current) {
-            dispatch(fetchSpaceMaxZIndex(spaceId));
-            dispatch(fetchTasks(spaceId)).then(() => {
-                if (tasks.length > 0 && taskStatus === 'succeeded') {
-                    const sortedTasks = [...tasks].sort(
-                        (a, b) => a.zIndex - b.zIndex
-                    );
-                    let newMaxZIndex = 0;
-
-                    const updatedTasks = sortedTasks.map((task, index) => {
-                        newMaxZIndex = index + 1;
-                        return { ...task, zIndex: newMaxZIndex };
-                    });
-
-                    // Update all tasks with new zIndex values
-                    updatedTasks.forEach((task) => {
-                        dispatch(
-                            updateTask({
-                                _id: task._id as string,
-                                zIndex: task.zIndex as number,
-                            })
-                        );
-                    });
-
-                    // Update space maxZIndex
-                    // local state
-                    setMaxZIndex(newMaxZIndex);
-                    // dispatch
-                    dispatch(
-                        updateSpaceMaxZIndex({
-                            spaceId,
-                            maxZIndex: newMaxZIndex,
-                        })
-                    );
-                }
-            });
-            initialLoadComplete.current = false;
+        if (!normalizedZs) {
+            if (normalizeTimeoutRef.current) {
+                clearTimeout(normalizeTimeoutRef.current);
+            }
+            normalizeTimeoutRef.current = setTimeout(
+                normalizeZIndexValues,
+                3000
+            );
         }
-    }, [spaceId, dispatch, tasks, taskStatus]);
+
+        return () => {
+            if (normalizeTimeoutRef.current) {
+                clearTimeout(normalizeTimeoutRef.current);
+            }
+        };
+    }, [normalizedZs, normalizeZIndexValues]);
 
     const getNewZIndex = useCallback(() => {
         const newZIndex = maxZIndex + 1;
         setMaxZIndex(newZIndex);
+        setNormalizedZs(false);
         dispatch(updateSpaceMaxZIndex({ spaceId, maxZIndex: newZIndex }));
         return newZIndex;
     }, [maxZIndex, spaceId, dispatch]);
+
+    useEffect(() => {
+        dispatch(fetchSpaceMaxZIndex(spaceId));
+        dispatch(fetchTasks(spaceId));
+    }, [spaceId, dispatch]);
 
     const handleCloseDrawer = () => dispatch(setSubtaskDrawerOpen(false));
 
@@ -242,7 +260,7 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId, onLoaded }) => {
             )}
             {session ? (
                 <>
-                    {(resetTasks.length > 0 ? resetTasks : tasks)
+                    {tasks
                         .filter(
                             (task) =>
                                 selectedEmojis.length === 0 ||

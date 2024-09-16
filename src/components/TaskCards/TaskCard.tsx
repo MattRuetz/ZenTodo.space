@@ -331,6 +331,10 @@ const TaskCard = React.memo(
             ]
         );
 
+        useEffect(() => {
+            setLocalTask((prevTask) => ({ ...prevTask, zIndex: task.zIndex }));
+        }, [task.zIndex]);
+
         return (
             <Draggable
                 defaultPosition={{ x: task.x, y: task.y }}
