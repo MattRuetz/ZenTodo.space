@@ -78,6 +78,32 @@ export const fetchSpaceMaxZIndex = createAsyncThunk(
     }
 );
 
+export const updateSpaceSelectedEmojis = createAsyncThunk(
+    'spaces/updateSelectedEmojis',
+    async (
+        {
+            spaceId,
+            selectedEmojis,
+        }: { spaceId: string; selectedEmojis: string[] },
+        { getState, dispatch }
+    ) => {
+        const response = await fetch(`/api/spaces/${spaceId}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ selectedEmojis }),
+        });
+        if (!response.ok) {
+            throw new Error('Failed to update space selectedEmojis');
+        }
+        const data = await response.json();
+        console.log('updateSpaceSelectedEmojis', data);
+
+        return data;
+    }
+);
+
 const spaceSlice = createSlice({
     name: 'spaces',
     initialState,
@@ -132,9 +158,31 @@ const spaceSlice = createSlice({
                 ) {
                     state.currentSpace.maxZIndex = action.payload;
                 }
+            })
+            .addCase(updateSpaceSelectedEmojis.fulfilled, (state, action) => {
+                console.log('PAYLOAD', action.payload);
+                const space = state.spaces.find(
+                    (space) => space._id === action.payload._id
+                );
+                if (space) {
+                    space.selectedEmojis = action.payload.selectedEmojis;
+                }
+                if (
+                    state.currentSpace &&
+                    state.currentSpace._id === action.payload._id
+                ) {
+                    state.currentSpace.selectedEmojis =
+                        action.payload.selectedEmojis;
+                }
+            })
+            .addCase(updateSpaceSelectedEmojis.rejected, (state, action) => {
+                console.error(
+                    'Failed to update space selectedEmojis:',
+                    action.payload
+                );
             });
     },
 });
 
-export const { setCurrentSpace } = spaceSlice.actions;
+export const { setCurrentSpace, setInitialSpace } = spaceSlice.actions;
 export default spaceSlice.reducer;

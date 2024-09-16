@@ -29,6 +29,7 @@ export interface SpaceData {
     name: string;
     color: string;
     maxZIndex: number;
+    selectedEmojis: string[];
 }
 
 export type SortOption =

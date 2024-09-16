@@ -6,11 +6,17 @@ import { Task } from '@/types';
 export const selectTasksForSpace = createSelector(
     [
         (state: RootState) => state.tasks.tasks,
+        (state: RootState) => state.spaces.currentSpace,
         (state: RootState, spaceId: string) => spaceId,
     ],
-    (tasks, spaceId) => {
+    (tasks, currentSpace, spaceId) => {
+        const selectedEmojis = currentSpace?.selectedEmojis || [];
         const tasksInSpace = tasks.filter(
-            (task) => task.space === spaceId && !task.parentTask
+            (task) =>
+                task.space === spaceId &&
+                !task.parentTask &&
+                (selectedEmojis.length === 0 ||
+                    selectedEmojis.includes(task.emoji || ''))
         );
         return tasksInSpace.map((task) => ({
             ...task,

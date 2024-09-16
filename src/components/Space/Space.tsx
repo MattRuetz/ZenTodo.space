@@ -16,6 +16,7 @@ import {
 import { setSubtaskDrawerOpen } from '@/store/uiSlice';
 import { TaskProgress, Task } from '@/types';
 import { selectTasksForSpace } from '@/store/selectors';
+import { EmojiFilter } from './EmojiFilter';
 
 // Memoized selectors
 
@@ -33,6 +34,9 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId, onLoaded }) => {
     const taskStatus = useSelector((state: RootState) => state.tasks.status);
     const currentSpace = useSelector(
         (state: RootState) => state.spaces.currentSpace
+    );
+    const selectedEmojis = useSelector(
+        (state: RootState) => state.spaces.currentSpace?.selectedEmojis || []
     );
     const isDrawerOpen = useSelector(
         (state: RootState) => state.ui.isSubtaskDrawerOpen
@@ -248,8 +252,13 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId, onLoaded }) => {
             )}
             {session ? (
                 <>
-                    {(resetTasks.length > 0 ? resetTasks : tasks).map(
-                        (task) => (
+                    {(resetTasks.length > 0 ? resetTasks : tasks)
+                        .filter(
+                            (task) =>
+                                selectedEmojis.length === 0 ||
+                                selectedEmojis.includes(task.emoji || '')
+                        )
+                        .map((task) => (
                             <TaskCard
                                 key={task._id}
                                 task={task as Task}
@@ -257,8 +266,7 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId, onLoaded }) => {
                                 onDragStop={handleDragStop}
                                 getNewZIndex={getNewZIndex}
                             />
-                        )
-                    )}
+                        ))}
                 </>
             ) : (
                 showSignUpForm && (

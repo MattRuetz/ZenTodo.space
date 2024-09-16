@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import ControlPanelToggle from './ControlPanelToggle';
 import ControlPanelContent from './ControlPanelContent';
+import { EmojiFilter } from '../Space/EmojiFilter';
 
 const ControlPanel = React.memo(() => {
     const [isOpen, setIsOpen] = useState(false);
