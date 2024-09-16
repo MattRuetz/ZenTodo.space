@@ -1,13 +1,11 @@
 // src/components/TaskCardToolBar.tsx
 import React from 'react';
-import { FaClock } from 'react-icons/fa';
 import { Task, TaskProgress } from '@/types';
 import SubtaskProgresses from './SubtaskProgresses';
 import { ProgressDropdown } from './ProgressDropdown';
 import { Icon } from '../Icon';
-import { Tooltip } from 'react-tooltip';
 
-export interface TaskCardToolBarProps {
+export interface TaskCardBottomBarProps {
     task: Task;
     progress: TaskProgress;
     onProgressChange: (progress: TaskProgress) => void;
@@ -15,10 +13,10 @@ export interface TaskCardToolBarProps {
     isResizing: boolean;
 }
 
-const TaskCardToolBar: React.FC<TaskCardToolBarProps> = React.memo(
+const TaskCardBottomBar: React.FC<TaskCardBottomBarProps> = React.memo(
     ({ task, progress, onProgressChange, handleResizeStart, isResizing }) => {
         return (
-            <div className="task-card-toolbar flex flex-row justify-between w-full gap-2 py-2">
+            <div className="task-card-bottom-bar flex flex-row justify-between w-full gap-2 py-2">
                 <div className="flex flex-row gap-2 items-center max-w-7/12">
                     <ProgressDropdown
                         progress={progress}
@@ -47,4 +45,4 @@ const TaskCardToolBar: React.FC<TaskCardToolBarProps> = React.memo(
     }
 );
 
-export default TaskCardToolBar;
+export default TaskCardBottomBar;

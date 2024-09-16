@@ -5,7 +5,10 @@ export const useTaskState = (task: Task) => {
     const [localTask, setLocalTask] = useState(task);
     const [isHovering, setIsHovering] = useState(false);
     const [isFocused, setIsFocused] = useState(false);
-    const [cardSize, setCardSize] = useState({ width: 240, height: 200 });
+    const [cardSize, setCardSize] = useState({
+        width: task.width || 270,
+        height: task.height || 250,
+    });
     const [isDragging, setIsDragging] = useState(false);
     const [isDraggingOver, setIsDraggingOver] = useState(false);
     const [isDropped, setIsDropped] = useState(false);

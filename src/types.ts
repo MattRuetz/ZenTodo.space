@@ -12,6 +12,8 @@ export interface Task {
     taskDescription: string;
     x: number;
     y: number;
+    width: number;
+    height: number;
     progress: TaskProgress;
     space: string;
     zIndex: number;

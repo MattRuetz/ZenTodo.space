@@ -18,7 +18,7 @@ import {
     setSubtaskDrawerParentId,
 } from '../../store/uiSlice';
 import { AppDispatch, RootState } from '../../store/store';
-import TaskCardToolBar from './TaskCardToolBar';
+import TaskCardToolBar from './TaskCardBottomBar';
 import { Task, TaskProgress } from '@/types';
 import DraggableArea from './DraggableArea';
 import { useThrottle } from '@/hooks/useThrottle';
@@ -34,6 +34,7 @@ import { FaInfoCircle } from 'react-icons/fa';
 import { useDateString, useDateTimeString } from '@/hooks/useDateString';
 import { TaskDetails } from '../TaskDetails';
 import { useAddSubtask } from '@/hooks/useAddSubtask';
+import TaskCardBottomBar from './TaskCardBottomBar';
 
 interface TaskCardProps {
     task: Task;
@@ -226,15 +227,15 @@ const TaskCard = React.memo(
         );
 
         // Force re-render every animation frame
-        const [, forceUpdate] = useState({});
-        useEffect(() => {
-            const animate = () => {
-                forceUpdate({});
-                requestAnimationFrame(animate);
-            };
-            const animationId = requestAnimationFrame(animate);
-            return () => cancelAnimationFrame(animationId);
-        }, []);
+        // const [, forceUpdate] = useState({});
+        // useEffect(() => {
+        //     const animate = () => {
+        //         forceUpdate({});
+        //         requestAnimationFrame(animate);
+        //     };
+        //     const animationId = requestAnimationFrame(animate);
+        //     return () => cancelAnimationFrame(animationId);
+        // }, []);
 
         const throttledSetCardSize = useThrottle(setCardSize, 50);
 
@@ -280,6 +281,7 @@ const TaskCard = React.memo(
             maxWidth: 500,
             minHeight: 230,
             maxHeight: 500,
+            taskId: task._id ?? '',
         });
 
         const handleSetDueDate = (date: Date | undefined) => {
@@ -309,8 +311,8 @@ const TaskCard = React.memo(
             () => ({
                 opacity,
                 zIndex: localTask.zIndex,
-                width: `${cardSize.width}px`,
-                height: `${cardSize.height}px`,
+                width: `${task.width || cardSize.width}px`,
+                height: `${task.height || cardSize.height}px`,
                 position: 'absolute',
                 transition: 'border-color 0.3s ease',
                 minWidth: '270px',
@@ -322,10 +324,10 @@ const TaskCard = React.memo(
             [
                 opacity,
                 localTask.zIndex,
+                task.width,
+                task.height,
                 cardSize.width,
                 cardSize.height,
-                task.x,
-                task.y,
             ]
         );
 
@@ -334,8 +336,12 @@ const TaskCard = React.memo(
                 defaultPosition={{ x: task.x, y: task.y }}
                 bounds="parent"
                 handle=".draggable-area"
-                onStart={handleDragStart}
-                onStop={handleDragStop}
+                onStart={(e, data) => {
+                    handleDragStart(e, data);
+                }}
+                onStop={(e, data) => {
+                    handleDragStop(e, data);
+                }}
             >
                 <div
                     ref={cardRef}
@@ -418,7 +424,7 @@ const TaskCard = React.memo(
                                     }}
                                     maxLength={500}
                                 />
-                                <TaskCardToolBar
+                                <TaskCardBottomBar
                                     task={task}
                                     progress={localTask.progress}
                                     onProgressChange={handleProgressChange}

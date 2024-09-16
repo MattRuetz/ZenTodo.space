@@ -1,4 +1,7 @@
+import { AppDispatch } from '@/store/store';
+import { updateTask } from '@/store/tasksSlice';
 import { useState, useCallback, useEffect } from 'react';
+import { useDispatch } from 'react-redux';
 
 interface UseResizeHandleProps {
     cardRef: React.RefObject<HTMLDivElement>;
@@ -7,6 +10,7 @@ interface UseResizeHandleProps {
     maxWidth: number;
     minHeight: number;
     maxHeight: number;
+    taskId: string;
 }
 
 export const useResizeHandle = ({
@@ -16,7 +20,9 @@ export const useResizeHandle = ({
     maxWidth,
     minHeight,
     maxHeight,
+    taskId,
 }: UseResizeHandleProps) => {
+    const dispatch = useDispatch<AppDispatch>();
     const [isResizing, setIsResizing] = useState(false);
     const [startPos, setStartPos] = useState({ x: 0, y: 0 });
     const [startSize, setStartSize] = useState({ width: 0, height: 0 });
@@ -74,8 +80,17 @@ export const useResizeHandle = ({
     );
 
     const handleResizeEnd = useCallback(() => {
+        if (taskId) {
+            dispatch(
+                updateTask({
+                    _id: taskId,
+                    width: cardRef.current?.offsetWidth || 0,
+                    height: cardRef.current?.offsetHeight || 0,
+                })
+            );
+        }
         setIsResizing(false);
-    }, []);
+    }, [taskId, cardRef.current?.offsetWidth, cardRef.current?.offsetHeight]);
 
     useEffect(() => {
         if (isResizing) {

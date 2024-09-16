@@ -6,6 +6,8 @@ interface ITask extends Document {
     _id: string;
     x: number;
     y: number;
+    width: number;
+    height: number;
     taskName: string;
     taskDescription: string;
     progress: TaskProgress;
@@ -26,6 +28,8 @@ const TaskSchema = new mongoose.Schema({
     taskDescription: { type: String, required: false },
     x: { type: Number, required: true },
     y: { type: Number, required: true },
+    width: { type: Number, required: true, default: 250 },
+    height: { type: Number, required: true, default: 230 },
     zIndex: { type: Number, required: true, default: 1 },
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     space: {

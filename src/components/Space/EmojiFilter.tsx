@@ -84,13 +84,13 @@ export const EmojiFilter: React.FC = () => {
                 ref={buttonRef}
                 data-tooltip-id="emoji-filter-tooltip"
                 onClick={() => {
-                    // if (availableEmojis.length > 0) {
-                    setIsOpen(!isOpen);
-                    // }
+                    if (availableEmojis.length > 0) {
+                        setIsOpen(!isOpen);
+                    }
                 }}
                 className={`flex items-center justify-center w-8 h-8 bg-base-200 hover:bg-base-300 rounded-full transition-colors duration-200 ${
                     selectedEmojis.length > 0
-                        ? 'bg-yellow-600 text-black hover:bg-yellow-400'
+                        ? 'bg-primary text-primary-content hover:bg-primary-focus'
                         : ''
                 }`}
             >
@@ -98,17 +98,7 @@ export const EmojiFilter: React.FC = () => {
             </button>
             <Tooltip id="emoji-filter-tooltip">
                 <div className="bg-transparent font-normal text-sm text-white text-left">
-                    {selectedEmojis.length > 0 ? (
-                        <div className="flex gap-1">
-                            {selectedEmojis.map((emoji, index) => (
-                                <span key={index} className="text-lg">
-                                    {emoji}
-                                </span>
-                            ))}
-                        </div>
-                    ) : (
-                        <p>Filter by emoji</p>
-                    )}
+                    <p>Filter by emoji</p>
                 </div>
             </Tooltip>
 
