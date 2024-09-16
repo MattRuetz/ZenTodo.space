@@ -5,7 +5,6 @@ import { useSelector, useDispatch } from 'react-redux';
 import { FaFilter, FaX } from 'react-icons/fa6';
 import { AppDispatch, RootState } from '@/store/store';
 import { updateSpaceSelectedEmojis } from '@/store/spaceSlice';
-import { Task } from '@/types';
 import { fetchTasks } from '@/store/tasksSlice';
 
 export const EmojiFilter: React.FC = () => {
@@ -21,12 +20,6 @@ export const EmojiFilter: React.FC = () => {
     const buttonRef = useRef<HTMLButtonElement>(null);
 
     const tasks = useSelector((state: RootState) => state.tasks.tasks);
-
-    useEffect(() => {
-        if (spaceId) {
-            dispatch(fetchTasks(spaceId));
-        }
-    }, [spaceId, dispatch]);
 
     useEffect(() => {
         if (tasks.length > 0) {
