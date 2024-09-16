@@ -351,7 +351,7 @@ const TaskCard = React.memo(
                     <>
                         <div className="flex flex-col h-full">
                             <DraggableArea
-                                className="flex flex-col h-full p-4 pb-0"
+                                className="flex flex-col h-full p-4 pt-2 pb-0"
                                 onDelete={() => handleDelete(task._id ?? '')}
                                 onDetails={handleShowDetails}
                                 onSetDueDate={handleSetDueDate}

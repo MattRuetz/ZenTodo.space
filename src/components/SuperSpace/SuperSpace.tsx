@@ -42,6 +42,7 @@ const SuperSpace = React.memo(() => {
             name: `Space ${spaces.length + 1}`,
             color: '#' + Math.floor(Math.random() * 16777215).toString(16),
             maxZIndex: 1,
+            selectedEmojis: [],
         };
         dispatch(createSpace(newSpace));
     };

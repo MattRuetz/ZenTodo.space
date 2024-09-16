@@ -16,14 +16,18 @@ import {
 import { setSubtaskDrawerOpen } from '@/store/uiSlice';
 import { TaskProgress, Task } from '@/types';
 import { selectTasksForSpace } from '@/store/selectors';
-import { EmojiFilter } from './EmojiFilter';
-
+import { createSelector } from '@reduxjs/toolkit';
 // Memoized selectors
 
 interface SpaceProps {
     spaceId: string;
     onLoaded: () => void;
 }
+
+export const selectSelectedEmojis = createSelector(
+    (state: RootState) => state.spaces.currentSpace,
+    (currentSpace) => currentSpace?.selectedEmojis || []
+);
 
 const Space: React.FC<SpaceProps> = React.memo(({ spaceId, onLoaded }) => {
     const dispatch = useDispatch<AppDispatch>();
@@ -35,9 +39,7 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId, onLoaded }) => {
     const currentSpace = useSelector(
         (state: RootState) => state.spaces.currentSpace
     );
-    const selectedEmojis = useSelector(
-        (state: RootState) => state.spaces.currentSpace?.selectedEmojis || []
-    );
+    const selectedEmojis = useSelector(selectSelectedEmojis);
     const isDrawerOpen = useSelector(
         (state: RootState) => state.ui.isSubtaskDrawerOpen
     );
@@ -51,11 +53,52 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId, onLoaded }) => {
 
     const isDraggingRef = useRef(false);
     const cursorEffectRef = useRef<HTMLDivElement>(null);
-    const initialLoadComplete = useRef(false);
+    const initialLoadComplete = useRef(true);
     const subtaskDrawerRef = useRef<HTMLDivElement>(null);
     const spaceRef = useRef<HTMLDivElement>(null);
 
     const COOLDOWN_TIME = 500; // ms
+
+    useEffect(() => {
+        if (spaceId && initialLoadComplete.current) {
+            dispatch(fetchSpaceMaxZIndex(spaceId));
+            dispatch(fetchTasks(spaceId)).then(() => {
+                if (tasks.length > 0 && taskStatus === 'succeeded') {
+                    const sortedTasks = [...tasks].sort(
+                        (a, b) => a.zIndex - b.zIndex
+                    );
+                    let newMaxZIndex = 0;
+
+                    const updatedTasks = sortedTasks.map((task, index) => {
+                        newMaxZIndex = index + 1;
+                        return { ...task, zIndex: newMaxZIndex };
+                    });
+
+                    // Update all tasks with new zIndex values
+                    updatedTasks.forEach((task) => {
+                        dispatch(
+                            updateTask({
+                                _id: task._id as string,
+                                zIndex: task.zIndex as number,
+                            })
+                        );
+                    });
+
+                    // Update space maxZIndex
+                    // local state
+                    setMaxZIndex(newMaxZIndex);
+                    // dispatch
+                    dispatch(
+                        updateSpaceMaxZIndex({
+                            spaceId,
+                            maxZIndex: newMaxZIndex,
+                        })
+                    );
+                }
+            });
+            initialLoadComplete.current = false;
+        }
+    }, [spaceId, dispatch, tasks, taskStatus]);
 
     const getNewZIndex = useCallback(() => {
         const newZIndex = maxZIndex + 1;
@@ -91,90 +134,6 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId, onLoaded }) => {
         }),
         []
     );
-
-    useEffect(() => {
-        const loadTasksAndUpdateMaxZIndex = async () => {
-            if (taskStatus === 'idle' && !initialLoadComplete.current) {
-                try {
-                    await dispatch(fetchTasks(spaceId));
-                    const fetchMaxZIndexAction = await dispatch(
-                        fetchSpaceMaxZIndex(spaceId)
-                    );
-
-                    if (
-                        fetchSpaceMaxZIndex.fulfilled.match(
-                            fetchMaxZIndexAction
-                        )
-                    ) {
-                        const fetchedMaxZIndex = fetchMaxZIndexAction.payload;
-                        setMaxZIndex(fetchedMaxZIndex);
-
-                        // Calculate the actual max zIndex from tasks
-                        const actualMaxZIndex = tasks.reduce(
-                            (max, task) => Math.max(max, task.zIndex),
-                            0
-                        );
-
-                        // Update the maxZIndex on the server if it's different
-                        if (actualMaxZIndex) {
-                            await dispatch(
-                                updateSpaceMaxZIndex({
-                                    spaceId,
-                                    maxZIndex: actualMaxZIndex,
-                                })
-                            );
-                            setMaxZIndex(actualMaxZIndex);
-                        }
-                    }
-
-                    initialLoadComplete.current = true;
-                    onLoaded();
-                } catch (error) {
-                    console.error(
-                        'Error loading tasks or updating maxZIndex:',
-                        error
-                    );
-                }
-            }
-        };
-
-        loadTasksAndUpdateMaxZIndex();
-    }, [dispatch, spaceId, taskStatus, tasks, onLoaded]);
-
-    useEffect(() => {
-        if (tasks.length > 0 && initialLoadComplete.current) {
-            const updatedTasks = [...tasks]
-                .sort((a, b) => a.zIndex - b.zIndex)
-                .map((task, index) => ({ ...task, zIndex: index + 1 }));
-
-            setResetTasks(updatedTasks);
-
-            // Fetch maxZIndex from the server
-            dispatch(fetchSpaceMaxZIndex(spaceId))
-                .then((action) => {
-                    if (fetchSpaceMaxZIndex.fulfilled.match(action)) {
-                        setMaxZIndex(action.payload);
-                    }
-                })
-                .catch((error) =>
-                    console.error('Error fetching maxZIndex:', error)
-                );
-
-            // Reset the flag so this doesn't run again
-            initialLoadComplete.current = false;
-        }
-    }, [tasks, spaceId, dispatch]);
-
-    useEffect(() => {
-        if (resetTasks.length > 0) {
-            resetTasks.forEach((task) => {
-                if (task._id) {
-                    dispatch(updateTask({ ...task, _id: task._id }));
-                }
-            });
-            setResetTasks([]);
-        }
-    }, [resetTasks, dispatch]);
 
     useEffect(() => {
         const handleMouseMove = (e: MouseEvent) => {
