@@ -195,6 +195,30 @@ export const deleteTask = createAsyncThunk(
     }
 );
 
+export const deleteTasksInSpace = createAsyncThunk(
+    'tasks/deleteTasksInSpace',
+    async (spaceId: string, { rejectWithValue }) => {
+        try {
+            const response = await fetch(
+                `/api/tasks/space?spaceId=${spaceId}`,
+                {
+                    method: 'DELETE',
+                }
+            );
+            if (!response.ok) {
+                throw new Error('Failed to delete tasks in space');
+            }
+            const data = await response.json();
+            console.log(
+                `Deleted ${data.deletedCount} tasks in space ${spaceId}`
+            );
+            return spaceId;
+        } catch (error) {
+            return rejectWithValue((error as Error).message);
+        }
+    }
+);
+
 export const convertSubtaskToTask = createAsyncThunk(
     'tasks/convertSubtaskToTask',
     async (
@@ -601,6 +625,20 @@ export const tasksSlice = createSlice({
 
                 // Update state with the new map values
                 state.tasks = Array.from(existingTasksMap.values());
+            })
+            .addCase(deleteTasksInSpace.pending, (state) => {
+                state.status = 'loading';
+            })
+            .addCase(deleteTasksInSpace.fulfilled, (state, action) => {
+                state.status = 'succeeded';
+                const deletedSpaceId = action.payload;
+                state.tasks = state.tasks.filter(
+                    (task) => task.space !== deletedSpaceId
+                );
+            })
+            .addCase(deleteTasksInSpace.rejected, (state, action) => {
+                state.status = 'failed';
+                state.error = action.error.message || null;
             });
     },
 });

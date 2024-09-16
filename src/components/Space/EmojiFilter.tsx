@@ -24,7 +24,9 @@ export const EmojiFilter: React.FC = () => {
 
     useEffect(() => {
         if (tasks.length > 0) {
-            const nonChildCards = tasks.filter((task) => !task.parentTask);
+            const nonChildCards = tasks.filter(
+                (task) => !task.parentTask && task.space === spaceId
+            );
             const uniqueEmojis = Array.from(
                 new Set(nonChildCards.map((task) => task.emoji).filter(Boolean))
             );
@@ -82,9 +84,9 @@ export const EmojiFilter: React.FC = () => {
                 ref={buttonRef}
                 data-tooltip-id="emoji-filter-tooltip"
                 onClick={() => {
-                    if (availableEmojis.length > 0) {
-                        setIsOpen(!isOpen);
-                    }
+                    // if (availableEmojis.length > 0) {
+                    setIsOpen(!isOpen);
+                    // }
                 }}
                 className={`flex items-center justify-center w-8 h-8 bg-base-200 hover:bg-base-300 rounded-full transition-colors duration-200 ${
                     selectedEmojis.length > 0

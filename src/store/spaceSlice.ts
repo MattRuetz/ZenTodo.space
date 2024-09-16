@@ -1,6 +1,7 @@
 // src/store/spaceSlice.ts
 import { SpaceData } from '@/types';
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { deleteTasksInSpace } from './tasksSlice';
 
 interface SpaceState {
     spaces: SpaceData[];
@@ -127,7 +128,7 @@ export const updateSpaceSelectedEmojis = createAsyncThunk(
 
 export const deleteSpace = createAsyncThunk(
     'spaces/deleteSpace',
-    async (spaceId: string, { rejectWithValue }) => {
+    async (spaceId: string, { dispatch, rejectWithValue }) => {
         try {
             const response = await fetch(`/api/spaces/${spaceId}`, {
                 method: 'DELETE',
@@ -135,6 +136,7 @@ export const deleteSpace = createAsyncThunk(
             if (!response.ok) {
                 throw new Error('Failed to delete space');
             }
+            await dispatch(deleteTasksInSpace(spaceId)).unwrap();
             return spaceId;
         } catch (error) {
             return rejectWithValue((error as Error).message);
