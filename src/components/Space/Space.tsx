@@ -129,7 +129,16 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId, onLoaded }) => {
                     }
                 }
 
-                return { x: offset.x - 150, y: offset.y - 150 }; // Drop outside drawer, convert to task
+                const spaceRect = spaceRef.current?.getBoundingClientRect();
+                if (spaceRect) {
+                    const { x: safeX, y: safeY } = calculateSafePosition(
+                        offset.x - spaceRect.left,
+                        offset.y - spaceRect.top
+                    );
+                    return { x: safeX, y: safeY };
+                }
+
+                return undefined;
             },
         }),
         []
@@ -153,6 +162,19 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId, onLoaded }) => {
         }
     }, [cursorPosition]);
 
+    const calculateSafePosition = (x: number, y: number) => {
+        const spaceRect = spaceRef.current?.getBoundingClientRect();
+        if (!spaceRect) return { x, y };
+
+        const taskWidth = 270; // Minimum width of a task card
+        const taskHeight = 250; // Minimum height of a task card
+
+        const safeX = Math.min(Math.max(x, 0), spaceRect.width - taskWidth);
+        const safeY = Math.min(Math.max(y, 0), spaceRect.height - taskHeight);
+
+        return { x: safeX, y: safeY };
+    };
+
     const handleSpaceClick = useCallback(
         (e: React.MouseEvent<HTMLDivElement>) => {
             if (e.target !== e.currentTarget || isDraggingRef.current) return;
@@ -161,21 +183,30 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId, onLoaded }) => {
                 setFormPosition({ x: e.clientX, y: e.clientY });
                 setShowSignUpForm(true);
             } else if (canCreateTask) {
-                const newTask: Omit<Task, '_id'> = {
-                    taskName: '',
-                    taskDescription: '',
-                    x: e.clientX,
-                    y: e.clientY,
-                    progress: 'Not Started' as TaskProgress,
-                    space: spaceId,
-                    zIndex: getNewZIndex(),
-                    subtasks: [],
-                    parentTask: undefined,
-                    ancestors: [],
-                };
-                dispatch(addTask(newTask));
-                setCanCreateTask(false);
-                setTimeout(() => setCanCreateTask(true), COOLDOWN_TIME);
+                const spaceRect = spaceRef.current?.getBoundingClientRect();
+                if (spaceRect) {
+                    const { x: safeX, y: safeY } = calculateSafePosition(
+                        e.clientX - spaceRect.left,
+                        e.clientY - spaceRect.top
+                    );
+                    const newTask: Omit<Task, '_id'> = {
+                        taskName: '',
+                        taskDescription: '',
+                        x: safeX,
+                        y: safeY,
+                        progress: 'Not Started' as TaskProgress,
+                        space: spaceId,
+                        zIndex: getNewZIndex(),
+                        subtasks: [],
+                        parentTask: undefined,
+                        ancestors: [],
+                        width: 270,
+                        height: 250,
+                    };
+                    dispatch(addTask(newTask));
+                    setCanCreateTask(false);
+                    setTimeout(() => setCanCreateTask(true), COOLDOWN_TIME);
+                }
             }
         },
         [session, canCreateTask, spaceId, getNewZIndex, dispatch]

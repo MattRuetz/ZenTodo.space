@@ -261,6 +261,8 @@ export const convertSubtaskToTask = createAsyncThunk(
             parentTask: null, // Remove the parentTask reference
             x: dropPosition.x,
             y: dropPosition.y,
+            width: 270,
+            height: 250,
             ancestors: [],
         };
 
