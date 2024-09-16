@@ -6,6 +6,7 @@ export const useTaskState = (task: Task) => {
     const [isHovering, setIsHovering] = useState(false);
     const [isFocused, setIsFocused] = useState(false);
     const [cardSize, setCardSize] = useState({ width: 240, height: 200 });
+    const [isDragging, setIsDragging] = useState(false);
     const [isDraggingOver, setIsDraggingOver] = useState(false);
     const [isDropped, setIsDropped] = useState(false);
     const [deletingTasks, setDeletingTasks] = useState<Set<string>>(new Set());
@@ -34,6 +35,8 @@ export const useTaskState = (task: Task) => {
         setCardSize,
         setIsDraggingOver,
         setIsDropped,
+        setIsDragging,
+        isDragging,
         cardRef,
         taskNameRef,
         taskDescriptionRef,

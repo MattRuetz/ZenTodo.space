@@ -6,7 +6,7 @@ import { authOptions } from '../../auth/[...nextauth]/route';
 import { ObjectId } from 'mongodb';
 import mongoose from 'mongoose';
 
-const MAX_RETRIES = 5;
+const MAX_RETRIES = 10;
 const INITIAL_BACKOFF = 100; // ms
 
 export async function PUT(req: NextRequest) {

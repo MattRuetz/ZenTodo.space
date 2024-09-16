@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '../store/store';
 import { setGlobalDragging, setDraggingCardId } from '../store/uiSlice';
@@ -23,6 +23,8 @@ interface UseDragHandlersProps {
     resizingRef: React.MutableRefObject<boolean>;
     startPosRef: React.MutableRefObject<{ x: number; y: number }>;
     startSizeRef: React.MutableRefObject<{ width: number; height: number }>;
+    isDragging: boolean;
+    setIsDragging: (isDragging: boolean) => void;
 }
 
 export const useDragHandlers = ({
@@ -40,30 +42,54 @@ export const useDragHandlers = ({
     resizingRef,
     startPosRef,
     startSizeRef,
+    isDragging,
+    setIsDragging,
 }: UseDragHandlersProps) => {
     const dispatch = useDispatch<AppDispatch>();
 
     const handleDragStart = useCallback(
         (e: DraggableEvent, data: DraggableData) => {
-            const newZIndex = getNewZIndex();
-            setLocalTask((prevTask) => ({
-                ...prevTask,
-                zIndex: newZIndex,
-            }));
-            const spaceId = task.space; // Assuming spaceId is a property of task
-            dispatch(updateSpaceMaxZIndex({ spaceId, maxZIndex: newZIndex }));
+            let dragTimer: NodeJS.Timeout;
 
-            console.log('drag start');
+            const startDragging = () => {
+                const newZIndex = getNewZIndex();
+                setLocalTask((prevTask) => ({
+                    ...prevTask,
+                    zIndex: newZIndex,
+                }));
 
-            dispatch(setGlobalDragging(true));
-            dispatch(setDraggingCardId(task._id ?? ''));
-            onDragStart();
+                console.log('drag start');
+
+                dispatch(setGlobalDragging(true));
+                dispatch(setDraggingCardId(task._id ?? ''));
+                onDragStart();
+                setIsDragging(true);
+            };
+
+            dragTimer = setTimeout(startDragging, 200);
+
+            const cancelDrag = () => {
+                clearTimeout(dragTimer);
+            };
+            document.addEventListener('mouseup', cancelDrag, { once: true });
+
+            return cancelDrag;
         },
-        [getNewZIndex, onDragStart, dispatch, task._id, setLocalTask]
+        [
+            getNewZIndex,
+            onDragStart,
+            dispatch,
+            task._id,
+            setLocalTask,
+            task.space,
+        ]
     );
 
     const handleDragStop = useCallback(
         (e: DraggableEvent, data: DraggableData) => {
+            if (!isDragging) return;
+            setIsDragging(false);
+
             setLocalTask((prevTask) => {
                 const newTaskData = {
                     x: data.x,
@@ -75,6 +101,9 @@ export const useDragHandlers = ({
                 debouncedUpdate(newTaskData);
                 return { ...prevTask, ...newTaskData };
             });
+            const spaceId = task.space;
+            const newZIndex = getNewZIndex();
+            dispatch(updateSpaceMaxZIndex({ spaceId, maxZIndex: newZIndex }));
             dispatch(setGlobalDragging(false));
             dispatch(setDraggingCardId(null));
             onDragStop();
@@ -120,6 +149,7 @@ export const useDragHandlers = ({
                     task,
                     droppedOnCard.getAttribute('data-task-id') ?? ''
                 );
+                return;
             }
         },
         [

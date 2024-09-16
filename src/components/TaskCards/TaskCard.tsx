@@ -76,6 +76,8 @@ const TaskCard = React.memo(
             resizingRef,
             startPosRef,
             startSizeRef,
+            isDragging,
+            setIsDragging,
         } = useTaskState(task);
 
         const updateTaskInStore = useCallback(
@@ -147,6 +149,8 @@ const TaskCard = React.memo(
             handleInputBlur,
             handleMouseDown,
         } = useDragHandlers({
+            isDragging,
+            setIsDragging,
             task,
             localTask,
             setLocalTask,
