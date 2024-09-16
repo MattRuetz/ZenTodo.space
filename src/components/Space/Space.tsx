@@ -49,25 +49,16 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId, onLoaded }) => {
     const [formPosition, setFormPosition] = useState({ x: 0, y: 0 });
     const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
     const [maxZIndex, setMaxZIndex] = useState(currentSpace?.maxZIndex || 1);
-
-    const [normalizedZs, setNormalizedZs] = useState(true);
-    const normalizeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-    const [resetTasks, setResetTasks] = useState<Task[]>([]);
     const [canCreateTask, setCanCreateTask] = useState(true);
 
     const isDraggingRef = useRef(false);
     const cursorEffectRef = useRef<HTMLDivElement>(null);
-    const initialLoadComplete = useRef(true);
     const subtaskDrawerRef = useRef<HTMLDivElement>(null);
     const spaceRef = useRef<HTMLDivElement>(null);
 
     const COOLDOWN_TIME = 500; // ms
 
     const normalizeZIndexValues = useCallback(() => {
-        if (normalizedZs) return;
-        setResetTasks([]);
-
         const sortedTasks = [...tasks].sort((a, b) => a.zIndex - b.zIndex);
         let newMaxZIndex = 0;
 
@@ -87,35 +78,25 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId, onLoaded }) => {
             );
         });
 
-        setResetTasks(updatedTasks);
-
         setMaxZIndex(newMaxZIndex);
         dispatch(updateSpaceMaxZIndex({ spaceId, maxZIndex: newMaxZIndex }));
-        setNormalizedZs(true);
-    }, [tasks, spaceId, dispatch, normalizedZs]);
+    }, [tasks, spaceId, dispatch]);
 
     useEffect(() => {
-        if (!normalizedZs) {
-            if (normalizeTimeoutRef.current) {
-                clearTimeout(normalizeTimeoutRef.current);
-            }
-            normalizeTimeoutRef.current = setTimeout(
-                normalizeZIndexValues,
-                3000
-            );
-        }
+        const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+            normalizeZIndexValues();
+        };
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
 
         return () => {
-            if (normalizeTimeoutRef.current) {
-                clearTimeout(normalizeTimeoutRef.current);
-            }
+            window.removeEventListener('beforeunload', handleBeforeUnload);
         };
-    }, [normalizedZs, normalizeZIndexValues]);
+    }, [normalizeZIndexValues]);
 
     const getNewZIndex = useCallback(() => {
         const newZIndex = maxZIndex + 1;
         setMaxZIndex(newZIndex);
-        setNormalizedZs(false);
         dispatch(updateSpaceMaxZIndex({ spaceId, maxZIndex: newZIndex }));
         return newZIndex;
     }, [maxZIndex, spaceId, dispatch]);

@@ -79,6 +79,9 @@ const TaskCard = React.memo(
             startSizeRef,
             isDragging,
             setIsDragging,
+            allowDropRef,
+            setAllowDrop,
+            allowDrop,
         } = useTaskState(task);
 
         const updateTaskInStore = useCallback(
@@ -168,6 +171,9 @@ const TaskCard = React.memo(
             resizingRef,
             startPosRef,
             startSizeRef,
+            allowDropRef,
+            setAllowDrop,
+            allowDrop,
         });
 
         const { handleAddSubtask } = useAddSubtask({ task, position: 'start' });
@@ -352,7 +358,7 @@ const TaskCard = React.memo(
                     className={`task-card absolute bg-base-300 shadow cursor-move flex flex-col space-y-2 rounded-xl transition-all duration-200 border-2  ${
                         isDraggingOver
                             ? 'filter brightness-110 border-blue-900'
-                            : isDropped
+                            : isDropped && allowDrop
                             ? 'filter brightness-150 border-green-500'
                             : 'border-base-300'
                     } ${isResizing ? 'select-none' : ''}`}

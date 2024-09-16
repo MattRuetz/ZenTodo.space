@@ -25,6 +25,9 @@ interface UseDragHandlersProps {
     startSizeRef: React.MutableRefObject<{ width: number; height: number }>;
     isDragging: boolean;
     setIsDragging: (isDragging: boolean) => void;
+    allowDropRef: React.MutableRefObject<boolean>;
+    allowDrop: boolean;
+    setAllowDrop: (allowDrop: boolean) => void;
 }
 
 export const useDragHandlers = ({
@@ -44,6 +47,9 @@ export const useDragHandlers = ({
     startSizeRef,
     isDragging,
     setIsDragging,
+    allowDropRef,
+    allowDrop,
+    setAllowDrop,
 }: UseDragHandlersProps) => {
     const dispatch = useDispatch<AppDispatch>();
 
@@ -51,22 +57,23 @@ export const useDragHandlers = ({
         (e: DraggableEvent, data: DraggableData) => {
             let dragTimer: NodeJS.Timeout;
 
-            const startDragging = () => {
-                const newZIndex = getNewZIndex();
-                setLocalTask((prevTask) => ({
-                    ...prevTask,
-                    zIndex: newZIndex,
-                }));
+            const newZIndex = getNewZIndex();
+            setLocalTask((prevTask) => ({
+                ...prevTask,
+                zIndex: newZIndex,
+            }));
 
-                console.log('drag start');
+            console.log('drag start');
 
-                dispatch(setGlobalDragging(true));
-                dispatch(setDraggingCardId(task._id ?? ''));
-                onDragStart();
-                setIsDragging(true);
-            };
+            dispatch(setGlobalDragging(true));
+            dispatch(setDraggingCardId(task._id ?? ''));
+            onDragStart();
+            setIsDragging(true);
 
-            dragTimer = setTimeout(startDragging, 200);
+            dragTimer = setTimeout(() => {
+                allowDropRef.current = true;
+                setAllowDrop(true);
+            }, 200);
 
             const cancelDrag = () => {
                 clearTimeout(dragTimer);
@@ -82,12 +89,23 @@ export const useDragHandlers = ({
             task._id,
             setLocalTask,
             task.space,
+            setIsDragging,
+            allowDropRef,
+            setAllowDrop,
         ]
     );
 
     const handleDragStop = useCallback(
         (e: DraggableEvent, data: DraggableData) => {
             if (!isDragging) return;
+            if (!allowDropRef.current) {
+                setIsDragging(false);
+                dispatch(setGlobalDragging(false));
+                dispatch(setDraggingCardId(null));
+                return;
+            }
+            allowDropRef.current = false;
+            setAllowDrop(false);
             setIsDragging(false);
 
             setLocalTask((prevTask) => {
@@ -159,6 +177,9 @@ export const useDragHandlers = ({
             task._id,
             setLocalTask,
             pushChildTask,
+            isDragging,
+            allowDropRef,
+            setAllowDrop,
         ]
     );
 
