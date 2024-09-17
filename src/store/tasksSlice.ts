@@ -48,6 +48,53 @@ export const addTask = createAsyncThunk(
     }
 );
 
+export const addNewSubtask = createAsyncThunk(
+    'tasks/addNewSubtask',
+    async (
+        {
+            subtask,
+            parentId,
+            position,
+        }: { subtask: Omit<Task, '_id'>; parentId?: string; position: string },
+        { rejectWithValue }
+    ) => {
+        try {
+            const response = await fetch('/api/tasks/subtask', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    taskName: subtask.taskName,
+                    taskDescription: subtask.taskDescription,
+                    x: subtask.x,
+                    y: subtask.y,
+                    progress: subtask.progress,
+                    space: subtask.space,
+                    zIndex: 0,
+                    parentTask: parentId || subtask.parentTask,
+                    subtasks: [],
+                    ancestors: subtask.ancestors,
+                    position: position,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to add new subtask');
+            }
+
+            const data = await response.json();
+            return {
+                newSubtask: data.newSubtask,
+                updatedParentTask: data.updatedParentTask,
+            };
+        } catch (error) {
+            if (error instanceof Error) {
+                return rejectWithValue(error.message);
+            }
+            return rejectWithValue('An unknown error occurred');
+        }
+    }
+);
+
 export const updateTask = createAsyncThunk(
     'tasks/updateTask',
     async (
@@ -148,53 +195,6 @@ export const convertSubtaskToTaskAsync = createAsyncThunk(
 
             const data = await response.json();
             return data;
-        } catch (error) {
-            if (error instanceof Error) {
-                return rejectWithValue(error.message);
-            }
-            return rejectWithValue('An unknown error occurred');
-        }
-    }
-);
-
-export const addNewSubtask = createAsyncThunk(
-    'tasks/addNewSubtask',
-    async (
-        {
-            subtask,
-            parentId,
-            position,
-        }: { subtask: Omit<Task, '_id'>; parentId?: string; position: string },
-        { rejectWithValue }
-    ) => {
-        try {
-            const response = await fetch('/api/tasks/subtask', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    taskName: subtask.taskName,
-                    taskDescription: subtask.taskDescription,
-                    x: subtask.x,
-                    y: subtask.y,
-                    progress: subtask.progress,
-                    space: subtask.space,
-                    zIndex: 0, // Set the zIndex here
-                    parentTask: parentId || subtask.parentTask,
-                    subtasks: [],
-                    ancestors: subtask.ancestors,
-                    position: position,
-                }),
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to add new subtask');
-            }
-
-            const data = await response.json();
-            return {
-                newSubtask: data.newSubtask,
-                updatedParentTask: data.updatedParentTask,
-            };
         } catch (error) {
             if (error instanceof Error) {
                 return rejectWithValue(error.message);
