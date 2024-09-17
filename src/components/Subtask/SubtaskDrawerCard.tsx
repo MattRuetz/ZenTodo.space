@@ -61,12 +61,6 @@ const SubtaskDrawerCard = React.memo(
                         dropResult.x !== undefined &&
                         dropResult.y !== undefined
                     ) {
-                        // dispatch(
-                        //     convertSubtaskToTask({
-                        //         subtask: { ...item },
-                        //         dropPosition: dropResult,
-                        //     })
-                        // );
                         handleConvertSubtaskToTask({ ...item }, dropResult);
                     }
                 },
@@ -96,19 +90,9 @@ const SubtaskDrawerCard = React.memo(
                     (draggedSubtask.ancestors &&
                         draggedSubtask.ancestors.length > 1);
 
-                console.log('targetSubtask', targetSubtask);
-                console.log('draggedSubtask', draggedSubtask);
-
                 if (draggedSubtask._id === targetSubtask._id) {
                     return;
                 } else if (!isAlreadyParent) {
-                    // Dropped on another subtask -- convert to sub-subtask
-                    // dispatch(
-                    //     convertTaskToSubtask({
-                    //         childTask: draggedSubtask,
-                    //         parentTaskId: targetSubtask._id as string,
-                    //     })
-                    // );
                     handleConvertTaskToSubtask(
                         draggedSubtask,
                         targetSubtask._id as string
