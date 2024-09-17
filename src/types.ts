@@ -24,7 +24,7 @@ export interface Task {
     ancestors?: string[];
     dueDate?: Date;
     emoji?: string;
-    // isTemp?: boolean;
+    isTemp?: boolean;
 }
 
 export interface SpaceData {

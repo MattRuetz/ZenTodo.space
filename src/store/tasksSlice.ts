@@ -377,145 +377,115 @@ export const moveTaskToSpace = createAsyncThunk(
     }
 );
 
-// // This is an optimistic update to allow for duplicate task creation without waiting for the server response
-// export const duplicateTaskWithTempIds = (task: Task, parentTempId?: string): { duplicatedTasks: Task[] } => {
-//     const tempId = generateTempId();
-//     const duplicatedTask: Task = {
-//       ...task,
-//       _id: tempId,
-//       taskName: `(Copy) ${task.taskName}`,
-//       isTemp: true,
-//       parentTask: parentTempId,
-//       subtasks: [],
-//       ancestors: parentTempId ? [...task.ancestors || [], parentTempId] : [],
-//     };
-
-//     let duplicatedTasks = [duplicatedTask];
-
-//     if (task.subtasks && task.subtasks.length > 0) {
-//       for (const subtask of task.subtasks) {
-//         // Ensure subtask is a Task object
-//         const subtaskObject = typeof subtask === 'string' ? null : subtask;
-//         if (!subtaskObject) continue; // Skip if subtask is not loaded
-
-//         const { duplicatedTasks: subDuplicatedTasks } = duplicateTaskWithTempIds(subtaskObject as Task, tempId);
-//         duplicatedTask.subtasks.push(...subDuplicatedTasks.map((t) => t._id));
-//         duplicatedTasks = [...duplicatedTasks, ...subDuplicatedTasks];
-//       }
-//     }
-
-//     return { duplicatedTasks };
-//   };
-
-//   // Async thunk to duplicate tasks in the backend
-// export const duplicateTasksAsync = createAsyncThunk(
-//     'tasks/duplicateTasksAsync',
-//     async (tasksToDuplicate: Task[], { rejectWithValue }) => {
-//       try {
-//         const response = await fetch('/api/tasks/duplicate', {
-//           method: 'POST',
-//           headers: { 'Content-Type': 'application/json' },
-//           body: JSON.stringify({ tasks: tasksToDuplicate }),
-//         });
-//         if (!response.ok) {
-//           throw new Error('Failed to duplicate tasks');
-//         }
-//         const data = await response.json();
-//         return data.tasks; // The duplicated tasks with real IDs
-//       } catch (error) {
-//         return rejectWithValue(error.message);
-//       }
-//     }
-//   );
-
-export const duplicateTask = createAsyncThunk(
-    'tasks/duplicateTask',
-    async (task: Task) => {
-        const duplicate = async (
-            taskToCopy: Task,
-            parentId?: string,
-            ancestors: string[] = []
-        ): Promise<Task[]> => {
-            const duplicatedTask = {
-                ...taskToCopy,
-                x: taskToCopy.x + 50,
-                y: taskToCopy.y + 50,
-                taskName: `(Copy) ${taskToCopy.taskName}`,
-                space: taskToCopy.space,
-                _id: undefined,
-                parentTask: parentId || taskToCopy.parentTask,
-                ancestors:
-                    ancestors.length > 0
-                        ? [...ancestors]
-                        : taskToCopy.ancestors, // Use the passed ancestors array if it exists, otherwise use the task's ancestors
-                subtasks: [] as Task[], // Initialize with an empty array
-            };
-
-            console.log('duplicatedTask', duplicatedTask);
-
-            const response = await fetch('/api/tasks', {
+// Async thunk to duplicate tasks in the backend
+export const duplicateTasksAsync = createAsyncThunk(
+    'tasks/duplicateTasksAsync',
+    async (tasksToDuplicate: Task[], { rejectWithValue }) => {
+        try {
+            const response = await fetch('/api/tasks/duplicate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(duplicatedTask),
+                body: JSON.stringify({ tasks: tasksToDuplicate }),
             });
+            if (!response.ok) {
+                throw new Error('Failed to duplicate tasks');
+            }
             const data = await response.json();
-            const newTask = data.task;
-
-            let allDuplicatedTasks = [newTask];
-
-            // Recursively duplicate subtasks
-            for (const subtask of taskToCopy.subtasks) {
-                // Ensure subtask is a Task object
-                const subtaskObject =
-                    typeof subtask === 'string'
-                        ? await fetch(`/api/tasks/${subtask}`).then((res) =>
-                              res.json()
-                          )
-                        : subtask;
-
-                const duplicatedSubtasks = await duplicate(
-                    subtaskObject as Task,
-                    newTask._id, // Pass the new parent ID
-                    [...newTask.ancestors, newTask._id] // Pass updated ancestors array
-                );
-                allDuplicatedTasks =
-                    allDuplicatedTasks.concat(duplicatedSubtasks);
-
-                // Update the subtasks array of the new parent task
-                newTask.subtasks.push(duplicatedSubtasks[0]._id);
-            }
-            // If this is the top-level task, update it with the new subtask IDs
-            if (!parentId) {
-                const updateResponse = await fetch(`/api/tasks/`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        subtasks: newTask.subtasks,
-                        ancestors: newTask.ancestors,
-                        _id: newTask._id,
-                    }),
-                });
-                if (!updateResponse.ok) {
-                    console.error(
-                        'Error updating task:',
-                        await updateResponse.text()
-                    );
-                    throw new Error(
-                        `HTTP error! status: ${updateResponse.status}`
-                    );
-                }
-                const updatedData = await updateResponse.json();
-                allDuplicatedTasks[0] = updatedData.task;
-            }
-
-            return allDuplicatedTasks;
-        };
-
-        const result = await duplicate(task);
-        console.log('Duplicate task result:', result);
-        return result;
+            return data.tasks; // The duplicated tasks with real IDs
+        } catch (error) {
+            return rejectWithValue(error.message);
+        }
     }
 );
+
+// export const duplicateTask = createAsyncThunk(
+//     'tasks/duplicateTask',
+//     async (task: Task) => {
+//         const duplicate = async (
+//             taskToCopy: Task,
+//             parentId?: string,
+//             ancestors: string[] = []
+//         ): Promise<Task[]> => {
+//             const duplicatedTask = {
+//                 ...taskToCopy,
+//                 x: taskToCopy.x + 50,
+//                 y: taskToCopy.y + 50,
+//                 taskName: `(Copy) ${taskToCopy.taskName}`,
+//                 space: taskToCopy.space,
+//                 _id: undefined,
+//                 parentTask: parentId || taskToCopy.parentTask,
+//                 ancestors:
+//                     ancestors.length > 0
+//                         ? [...ancestors]
+//                         : taskToCopy.ancestors, // Use the passed ancestors array if it exists, otherwise use the task's ancestors
+//                 subtasks: [] as Task[], // Initialize with an empty array
+//             };
+
+//             console.log('duplicatedTask', duplicatedTask);
+
+//             const response = await fetch('/api/tasks', {
+//                 method: 'POST',
+//                 headers: { 'Content-Type': 'application/json' },
+//                 body: JSON.stringify(duplicatedTask),
+//             });
+//             const data = await response.json();
+//             const newTask = data.task;
+
+//             let allDuplicatedTasks = [newTask];
+
+//             // Recursively duplicate subtasks
+//             for (const subtask of taskToCopy.subtasks) {
+//                 // Ensure subtask is a Task object
+//                 const subtaskObject =
+//                     typeof subtask === 'string'
+//                         ? await fetch(`/api/tasks/${subtask}`).then((res) =>
+//                               res.json()
+//                           )
+//                         : subtask;
+
+//                 const duplicatedSubtasks = await duplicate(
+//                     subtaskObject as Task,
+//                     newTask._id, // Pass the new parent ID
+//                     [...newTask.ancestors, newTask._id] // Pass updated ancestors array
+//                 );
+//                 allDuplicatedTasks =
+//                     allDuplicatedTasks.concat(duplicatedSubtasks);
+
+//                 // Update the subtasks array of the new parent task
+//                 newTask.subtasks.push(duplicatedSubtasks[0]._id);
+//             }
+//             // If this is the top-level task, update it with the new subtask IDs
+//             if (!parentId) {
+//                 const updateResponse = await fetch(`/api/tasks/`, {
+//                     method: 'PUT',
+//                     headers: { 'Content-Type': 'application/json' },
+//                     body: JSON.stringify({
+//                         subtasks: newTask.subtasks,
+//                         ancestors: newTask.ancestors,
+//                         _id: newTask._id,
+//                     }),
+//                 });
+//                 if (!updateResponse.ok) {
+//                     console.error(
+//                         'Error updating task:',
+//                         await updateResponse.text()
+//                     );
+//                     throw new Error(
+//                         `HTTP error! status: ${updateResponse.status}`
+//                     );
+//                 }
+//                 const updatedData = await updateResponse.json();
+//                 allDuplicatedTasks[0] = updatedData.task;
+//             }
+
+//             return allDuplicatedTasks;
+//         };
+
+//         const result = await duplicate(task);
+//         console.log('Duplicate task result:', result);
+//         return result;
+//     }
+// );
 
 export const tasksSlice = createSlice({
     name: 'tasks',
@@ -524,6 +494,17 @@ export const tasksSlice = createSlice({
         hideNewChildTask: (state, action: PayloadAction<string>) => {
             state.tasks = state.tasks.filter(
                 (task) => task._id !== action.payload
+            );
+        },
+        // Optimistic duplication of tasks
+        duplicateTasksOptimistic: (state, action: PayloadAction<Task[]>) => {
+            state.tasks.push(...action.payload);
+        },
+        // Rollback duplication if backend call fails
+        rollbackDuplicateTasks: (state, action: PayloadAction<string[]>) => {
+            const tempIds = action.payload;
+            state.tasks = state.tasks.filter(
+                (task) => !tempIds.includes(task._id)
             );
         },
     },
@@ -671,23 +652,69 @@ export const tasksSlice = createSlice({
                     state.tasks[index] = action.payload;
                 }
             })
-            .addCase(duplicateTask.fulfilled, (state, action) => {
-                // Create a map of existing tasks for quick lookup
-                const existingTasksMap = new Map(
-                    state.tasks.map((task) => [task._id, task])
-                );
+            // .addCase(duplicateTask.fulfilled, (state, action) => {
+            //     // Create a map of existing tasks for quick lookup
+            //     const existingTasksMap = new Map(
+            //         state.tasks.map((task) => [task._id, task])
+            //     );
 
-                // Add or update tasks from the action payload
-                action.payload.forEach((newTask) => {
-                    if (newTask._id) {
-                        existingTasksMap.set(newTask._id, newTask);
-                    } else {
-                        state.tasks.push(newTask);
+            //     // Add or update tasks from the action payload
+            //     action.payload.forEach((newTask) => {
+            //         if (newTask._id) {
+            //             existingTasksMap.set(newTask._id, newTask);
+            //         } else {
+            //             state.tasks.push(newTask);
+            //         }
+            //     });
+
+            //     // Update state with the new map values
+            //     state.tasks = Array.from(existingTasksMap.values());
+            // })
+            .addCase(duplicateTasksAsync.fulfilled, (state, action) => {
+                const duplicatedTasks = action.payload;
+
+                // Create a mapping from old temp IDs to new real IDs
+                const idMapping: { [tempId: string]: string } = {};
+                for (const realTask of duplicatedTasks) {
+                    const tempTask = state.tasks.find(
+                        (task) =>
+                            task.isTemp && task.taskName === realTask.taskName
+                    );
+                    if (tempTask) {
+                        idMapping[tempTask._id as string] = realTask._id;
                     }
-                });
+                }
 
-                // Update state with the new map values
-                state.tasks = Array.from(existingTasksMap.values());
+                // Replace temporary IDs with real IDs in tasks and their relationships
+                for (const task of state.tasks) {
+                    if (task.isTemp) {
+                        if (idMapping[task._id as string]) {
+                            task._id = idMapping[task._id as string];
+                        }
+                        if (
+                            task.parentTask &&
+                            idMapping[task.parentTask as string]
+                        ) {
+                            task.parentTask = idMapping[task.parentTask];
+                        }
+                        task.subtasks = task.subtasks.map(
+                            (subId) => idMapping[subId] || subId
+                        );
+                        task.ancestors = task.ancestors?.map(
+                            (ancestorId) =>
+                                idMapping[ancestorId as string] || ancestorId
+                        );
+                        delete task.isTemp;
+                    }
+                }
+            })
+            .addCase(duplicateTasksAsync.rejected, (state, action) => {
+                // Rollback optimistic updates
+                const tempIds = state.tasks
+                    .filter((task) => task.isTemp)
+                    .map((task) => task._id);
+                state.tasks = state.tasks.filter((task) => !task.isTemp);
+                state.error = action.payload as string;
             })
             .addCase(deleteTasksInSpace.pending, (state) => {
                 state.status = 'loading';
@@ -709,6 +736,10 @@ export const tasksSlice = createSlice({
 export const selectSubtasksByParentId = (state: RootState, parentId: string) =>
     state.tasks.tasks.filter((task) => task.parentTask === parentId);
 
-export const { hideNewChildTask } = tasksSlice.actions;
+export const {
+    hideNewChildTask,
+    duplicateTasksOptimistic,
+    rollbackDuplicateTasks,
+} = tasksSlice.actions;
 
 export default tasksSlice.reducer;

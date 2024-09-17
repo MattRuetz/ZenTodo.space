@@ -10,10 +10,11 @@ import { DueDateIndicator } from '../TaskCards/DueDateIndicator';
 import { useAddSubtask } from '@/hooks/useAddSubtask';
 import { useDeleteTask } from '@/hooks/useDeleteTask';
 import EmojiDropdown from '../EmojiDropdown';
-import { duplicateTask, updateTask } from '@/store/tasksSlice';
+import { updateTask } from '@/store/tasksSlice';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/store/store';
 import { toast } from 'react-toastify';
+import { useDuplicateTask } from '@/hooks/useDuplicateTask';
 
 interface SubtaskTopBarProps {
     subtask: any;
@@ -34,6 +35,8 @@ export const SubtaskTopBar = ({
 
     const menuRef = useRef<HTMLDivElement>(null);
     const datePickerRef = useRef<HTMLDivElement>(null);
+
+    const { duplicateTask } = useDuplicateTask();
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -83,7 +86,7 @@ export const SubtaskTopBar = ({
     };
 
     const handleDuplicateTask = () => {
-        dispatch(duplicateTask(subtask));
+        duplicateTask(subtask);
         toast.success('Task duplicated successfully');
     };
 
