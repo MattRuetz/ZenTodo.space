@@ -40,9 +40,13 @@ export async function PUT(req: NextRequest) {
                 subtaskIdString,
                 parentTaskIdString,
                 oldParentTaskIdString,
+                x,
+                y,
             } = requestBody;
             const subtaskId = new ObjectId(subtaskIdString);
-            const parentTaskId = new ObjectId(parentTaskIdString);
+            const parentTaskId = parentTaskIdString
+                ? new ObjectId(parentTaskIdString)
+                : null;
             const oldParentTaskId = oldParentTaskIdString
                 ? new ObjectId(oldParentTaskIdString)
                 : null;
@@ -52,17 +56,19 @@ export async function PUT(req: NextRequest) {
 
             try {
                 const [parentTask, subtask, oldParentTask] = await Promise.all([
-                    Task.findById(parentTaskId).session(mongoSession),
+                    parentTaskId
+                        ? Task.findById(parentTaskId).session(mongoSession)
+                        : null,
                     Task.findById(subtaskId).session(mongoSession),
                     oldParentTaskId
                         ? Task.findById(oldParentTaskId).session(mongoSession)
                         : null,
                 ]);
 
-                if (!parentTask || !subtask) {
+                if (!subtask) {
                     await mongoSession.abortTransaction();
                     return NextResponse.json(
-                        { error: 'Task not found' },
+                        { error: 'Subtask not found' },
                         { status: 404 }
                     );
                 }
@@ -75,18 +81,27 @@ export async function PUT(req: NextRequest) {
                     await oldParentTask.save({ session: mongoSession });
                 }
 
-                // Update NEW parent task
-                if (!parentTask.subtasks.includes(subtaskId)) {
-                    parentTask.subtasks.push(subtaskId);
+                // Update NEW parent task if it exists
+                if (parentTask) {
+                    if (!parentTask.subtasks.includes(subtaskId)) {
+                        parentTask.subtasks.push(subtaskId);
+                    }
+                    await parentTask.save({ session: mongoSession });
                 }
 
-                // Update subtask and its descendants
-                const newAncestors = [
-                    ...(parentTask.ancestors || []),
-                    parentTaskId,
-                ];
+                // Update subtask
                 subtask.parentTask = parentTaskId;
-                subtask.ancestors = newAncestors;
+                subtask.ancestors = parentTaskId
+                    ? [...(parentTask?.ancestors || []), parentTaskId]
+                    : [];
+
+                // If converting to top-level task, update x and y
+                if (!parentTaskId && x !== undefined && y !== undefined) {
+                    subtask.x = x;
+                    subtask.y = y;
+                }
+
+                await subtask.save({ session: mongoSession });
 
                 // Update all descendants of the subtask
                 const descendants = await Task.find({
@@ -94,12 +109,16 @@ export async function PUT(req: NextRequest) {
                 }).session(mongoSession);
 
                 for (const descendant of descendants) {
-                    const updatedAncestors = [
-                        ...newAncestors,
-                        ...descendant.ancestors.slice(
-                            descendant.ancestors.indexOf(subtaskId)
-                        ),
-                    ];
+                    const updatedAncestors = parentTaskId
+                        ? [
+                              ...subtask.ancestors,
+                              ...descendant.ancestors.slice(
+                                  descendant.ancestors.indexOf(subtaskId)
+                              ),
+                          ]
+                        : descendant.ancestors.slice(
+                              descendant.ancestors.indexOf(subtaskId)
+                          );
                     await Task.findByIdAndUpdate(
                         descendant._id,
                         { $set: { ancestors: updatedAncestors } },
@@ -107,18 +126,11 @@ export async function PUT(req: NextRequest) {
                     );
                 }
 
-                // Save the changes to parent task and subtask
-                await Promise.all([
-                    // (already saved old parent task)
-                    parentTask.save({ session: mongoSession }),
-                    subtask.save({ session: mongoSession }),
-                ]);
-
                 await mongoSession.commitTransaction();
 
                 return NextResponse.json({
                     updatedOldParentTask: oldParentTask?.toObject(),
-                    updatedNewParentTask: parentTask.toObject(),
+                    updatedNewParentTask: parentTask?.toObject(),
                     updatedSubtask: subtask.toObject(),
                     descendantsUpdated: descendants.length,
                 });

@@ -3,21 +3,14 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import { createSelector } from '@reduxjs/toolkit';
 import { AppDispatch, RootState } from '../../store/store';
-import {
-    convertSubtaskToTask,
-    convertTaskToSubtask,
-    updateTask,
-} from '@/store/tasksSlice';
+import { convertTaskToSubtask, updateTask } from '@/store/tasksSlice';
 import { Task, TaskProgress } from '@/types';
-import { ProgressDropdown } from '../TaskCards/ProgressDropdown';
-import { FaTrash } from 'react-icons/fa';
-import { useDeleteTask } from '@/hooks/useDeleteTask';
-import SubtaskProgresses from '../TaskCards/SubtaskProgresses';
 import { useDrag, useDrop } from 'react-dnd';
 import { store } from '@/store/store';
 import { setSimplicityModalOpen } from '@/store/uiSlice';
 import { SubtaskTopBar } from './SubtaskTopBar';
 import { SubtaskBottomBar } from './SubtaskBottomBar';
+import { useChangeHierarchy } from '@/hooks/useChangeHierarchy';
 
 interface SubtaskDrawerCardProps {
     subtask: Task;
@@ -32,6 +25,23 @@ const SubtaskDrawerCard = React.memo(
         const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
         const currentTaskNameRef = useRef(subtask.taskName);
         const ref = useRef<HTMLLIElement>(null);
+
+        const { convertTaskToSubtask, convertSubtaskToTask } =
+            useChangeHierarchy();
+
+        const handleConvertTaskToSubtask = (
+            task: Task,
+            parentTaskId: string
+        ) => {
+            convertTaskToSubtask(task, parentTaskId);
+        };
+
+        const handleConvertSubtaskToTask = (
+            subtask: Task,
+            dropPosition: { x: number; y: number } | undefined
+        ) => {
+            convertSubtaskToTask(subtask, dropPosition);
+        };
 
         const [{ isDragging }, drag] = useDrag(
             () => ({
@@ -51,12 +61,13 @@ const SubtaskDrawerCard = React.memo(
                         dropResult.x !== undefined &&
                         dropResult.y !== undefined
                     ) {
-                        dispatch(
-                            convertSubtaskToTask({
-                                subtask: { ...item },
-                                dropPosition: dropResult,
-                            })
-                        );
+                        // dispatch(
+                        //     convertSubtaskToTask({
+                        //         subtask: { ...item },
+                        //         dropPosition: dropResult,
+                        //     })
+                        // );
+                        handleConvertSubtaskToTask({ ...item }, dropResult);
                     }
                 },
                 collect: (monitor) => ({
@@ -91,11 +102,16 @@ const SubtaskDrawerCard = React.memo(
                 if (draggedSubtask._id === targetSubtask._id) {
                     return;
                 } else if (!isAlreadyParent) {
-                    dispatch(
-                        convertTaskToSubtask({
-                            childTask: draggedSubtask,
-                            parentTaskId: targetSubtask._id as string,
-                        })
+                    // Dropped on another subtask -- convert to sub-subtask
+                    // dispatch(
+                    //     convertTaskToSubtask({
+                    //         childTask: draggedSubtask,
+                    //         parentTaskId: targetSubtask._id as string,
+                    //     })
+                    // );
+                    handleConvertTaskToSubtask(
+                        draggedSubtask,
+                        targetSubtask._id as string
                     );
                     setLocalSubtask((prevSubtask) => ({
                         ...prevSubtask,

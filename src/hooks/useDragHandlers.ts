@@ -63,7 +63,7 @@ export const useDragHandlers = ({
                 zIndex: newZIndex,
             }));
 
-            console.log('drag start');
+            // console.log('drag start');
 
             dispatch(setGlobalDragging(true));
             dispatch(setDraggingCardId(task._id ?? ''));
@@ -115,7 +115,7 @@ export const useDragHandlers = ({
                     zIndex: prevTask.zIndex,
                 };
 
-                console.log('drag stop');
+                // console.log('drag stop');
                 debouncedUpdate(newTaskData);
                 return { ...prevTask, ...newTaskData };
             });
@@ -202,7 +202,6 @@ export const useDragHandlers = ({
             setIsFocused(false);
             const fieldName = e.target.name;
             const fieldValue = e.target.value;
-            console.log('fieldName', fieldName);
 
             setLocalTask((prevTask) => {
                 const newTaskData = { [fieldName]: fieldValue };

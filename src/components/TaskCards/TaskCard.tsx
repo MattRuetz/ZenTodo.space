@@ -35,6 +35,7 @@ import { TaskDetails } from '../TaskDetails';
 import { useAddSubtask } from '@/hooks/useAddSubtask';
 import TaskCardBottomBar from './TaskCardBottomBar';
 import { useDuplicateTask } from '@/hooks/useDuplicateTask';
+import { useChangeHierarchy } from '@/hooks/useChangeHierarchy';
 
 interface TaskCardProps {
     task: Task;
@@ -57,6 +58,8 @@ const TaskCard = React.memo(
         const tasksState = useSelector((state: RootState) => state.tasks.tasks);
 
         const { duplicateTask } = useDuplicateTask();
+        const { convertTaskToSubtask, convertSubtaskToTask } =
+            useChangeHierarchy();
 
         const {
             localTask,
@@ -104,10 +107,12 @@ const TaskCard = React.memo(
         const pushChildTask = useCallback(
             async (childTask: Task, parentTaskId: string) => {
                 // Assume task is already in the database
-                dispatch(convertTaskToSubtask({ childTask, parentTaskId }));
-                dispatch(hideNewChildTask(childTask._id ?? ''));
+                // dispatch(convertTaskToSubtask({ childTask, parentTaskId }));
+
+                convertTaskToSubtask(childTask, parentTaskId);
+                // dispatch(hideNewChildTask(childTask._id ?? ''));
             },
-            [dispatch]
+            [convertTaskToSubtask]
         );
 
         const updateCardSize = useCallback(() => {

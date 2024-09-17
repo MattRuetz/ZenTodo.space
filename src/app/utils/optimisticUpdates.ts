@@ -3,30 +3,44 @@ import { generateTempId } from '@/app/utils/utils';
 import { RootState } from '@/store/store';
 
 // This returns a map of task w/ taskId and all its descendants with their DB ids as keys
+// export const fetchTaskAndDescendantsFromState = (
+//     taskId: string,
+//     tasksState: Task[]
+// ): Map<string, Task> => {
+//     const taskMap = new Map<string, Task>();
+
+//     const fetchTask = (id: string) => {
+//         if (taskMap.has(id)) return taskMap.get(id);
+//         const task = tasksState.find((task: Task) => task._id === id);
+
+//         if (task) {
+//             taskMap.set(id, task);
+//         } else return;
+
+//         if (task.subtasks && task.subtasks.length > 0) {
+//             for (const subtaskId of task.subtasks) {
+//                 fetchTask(subtaskId as unknown as string);
+//             }
+//         }
+
+//         return task;
+//     };
+
+//     fetchTask(taskId);
+//     return taskMap;
+// };
+
 export const fetchAllTasksFromState = (
-    taskId: string,
     tasksState: Task[]
 ): Map<string, Task> => {
     const taskMap = new Map<string, Task>();
 
-    const fetchTask = (id: string) => {
-        if (taskMap.has(id)) return taskMap.get(id);
-        const task = tasksState.find((task: Task) => task._id === id);
-
-        if (task) {
-            taskMap.set(id, task);
-        } else return;
-
-        if (task.subtasks && task.subtasks.length > 0) {
-            for (const subtaskId of task.subtasks) {
-                fetchTask(subtaskId as unknown as string);
-            }
+    for (const task of tasksState) {
+        if (task._id) {
+            taskMap.set(task._id, task);
         }
+    }
 
-        return task;
-    };
-
-    fetchTask(taskId);
     return taskMap;
 };
 
@@ -76,6 +90,5 @@ export const duplicateTaskWithTempIds = (
         }
     }
 
-    console.log('duplicatedTasks', duplicatedTasks);
     return { duplicatedTasks };
 };

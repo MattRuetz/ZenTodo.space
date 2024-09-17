@@ -2,9 +2,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { Task } from '../types';
 import { RootState } from './store';
-import { fetchSpaceMaxZIndex } from './spaceSlice';
-import { updateSpaceMaxZIndex } from './spaceSlice';
-import { generateTempId } from '@/app/utils/utils';
 
 interface TasksState {
     tasks: Task[];
@@ -57,7 +54,7 @@ export const updateTask = createAsyncThunk(
         partialTask: Partial<Task> & { _id: string },
         { rejectWithValue }
     ) => {
-        console.log('partialTask', partialTask);
+        console.log('partialTask in updateTask', partialTask);
         try {
             const response = await fetch('/api/tasks', {
                 method: 'PUT',
@@ -80,38 +77,77 @@ export const updateTask = createAsyncThunk(
     }
 );
 
-export const convertTaskToSubtask = createAsyncThunk(
-    'tasks/convertTaskToSubtask',
+export const convertTaskToSubtaskAsync = createAsyncThunk(
+    'tasks/convertTaskToSubtaskAsync',
     async (
-        { childTask, parentTaskId }: { childTask: Task; parentTaskId: string },
-        { getState, rejectWithValue }
+        {
+            childTask,
+            parentTaskId,
+            oldParentTaskId,
+        }: {
+            childTask: Task;
+            parentTaskId: string;
+            oldParentTaskId: string | null;
+        },
+        { rejectWithValue }
     ) => {
         try {
-            const state = getState() as RootState;
-            const oldParentTask = state.tasks.tasks.find(
-                (task) => task._id === childTask.parentTask
-            );
-
             const response = await fetch('/api/tasks/hierarchy', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     subtaskIdString: childTask._id,
                     parentTaskIdString: parentTaskId,
-                    oldParentTaskIdString: oldParentTask?._id,
+                    oldParentTaskIdString: oldParentTaskId,
                 }),
             });
 
             if (!response.ok) {
-                throw new Error('Failed to update task hierarchy');
+                throw new Error('Failed to convert task to subtask');
             }
 
             const data = await response.json();
-            return {
-                updatedOldParentTask: data.updatedOldParentTask,
-                updatedNewParentTask: data.updatedNewParentTask,
-                updatedSubtask: data.updatedSubtask,
-            };
+            return data;
+        } catch (error) {
+            if (error instanceof Error) {
+                return rejectWithValue(error.message);
+            }
+            return rejectWithValue('An unknown error occurred');
+        }
+    }
+);
+
+export const convertSubtaskToTaskAsync = createAsyncThunk(
+    'tasks/convertSubtaskToTaskAsync',
+    async (
+        {
+            subtask,
+            dropPosition,
+        }: {
+            subtask: Task;
+            dropPosition: { x: number; y: number } | undefined;
+        },
+        { rejectWithValue }
+    ) => {
+        try {
+            const response = await fetch('/api/tasks/hierarchy', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    subtaskIdString: subtask._id,
+                    parentTaskIdString: null,
+                    oldParentTaskIdString: subtask.parentTask,
+                    x: dropPosition?.x,
+                    y: dropPosition?.y,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to convert subtask to task');
+            }
+
+            const data = await response.json();
+            return data;
         } catch (error) {
             if (error instanceof Error) {
                 return rejectWithValue(error.message);
@@ -221,98 +257,6 @@ export const deleteTasksInSpace = createAsyncThunk(
     }
 );
 
-export const convertSubtaskToTask = createAsyncThunk(
-    'tasks/convertSubtaskToTask',
-    async (
-        {
-            subtask,
-            dropPosition,
-        }: {
-            subtask: Task;
-            dropPosition: { x: number; y: number } | undefined;
-        },
-        { getState, dispatch }
-    ) => {
-        // If dropPosition is undefined, it means the subtask was dropped on an invalid target
-        if (!dropPosition) {
-            return null;
-        }
-
-        const state = getState() as RootState;
-        const parentTask = state.tasks.tasks.find(
-            (task) => task._id === subtask.parentTask
-        );
-
-        if (!parentTask) {
-            throw new Error('Parent task not found');
-        }
-
-        // Remove subtask from parent
-        const updatedParentTask = {
-            ...parentTask,
-            subtasks: parentTask.subtasks.filter(
-                (subId) => subId.toString() !== subtask._id
-            ),
-        };
-
-        const newZIndex = await dispatch(fetchSpaceMaxZIndex(parentTask.space));
-        const newTask = {
-            ...subtask,
-            zIndex: newZIndex.payload as number,
-            progress: subtask.progress,
-            parentTask: null, // Remove the parentTask reference
-            x: dropPosition.x,
-            y: dropPosition.y,
-            width: 270,
-            height: 250,
-            ancestors: [],
-        };
-
-        // Update tasks in the database
-        const updatedParentTaskResult = await dispatch(
-            updateTask(updatedParentTask as Partial<Task> & { _id: string })
-        );
-        const newTaskResult = await dispatch(
-            updateTask(newTask as unknown as Partial<Task> & { _id: string })
-        );
-
-        // Update ancestors of all descendants
-        const updateDescendants = async (taskId: string) => {
-            const descendants = state.tasks.tasks.filter((task) =>
-                task.ancestors?.includes(taskId)
-            );
-
-            for (const descendant of descendants) {
-                const updatedAncestors = descendant.ancestors?.filter(
-                    (ancestorId) => ancestorId !== parentTask._id
-                );
-                await dispatch(
-                    updateTask({
-                        _id: descendant._id,
-                        ancestors: updatedAncestors,
-                    } as Partial<Task> & { _id: string })
-                );
-            }
-        };
-
-        await updateDescendants(subtask._id as string);
-
-        // Dispatch action to update space max zIndex
-        await dispatch(
-            updateSpaceMaxZIndex({
-                spaceId: parentTask.space,
-                maxZIndex: newZIndex.payload as number,
-            })
-        );
-
-        // Return the updated tasks from the database
-        return {
-            updatedParentTask: updatedParentTaskResult.payload as Task,
-            newTask: newTaskResult.payload as Task,
-        };
-    }
-);
-
 export const moveSubtaskWithinLevel = createAsyncThunk(
     'tasks/moveSubtaskWithinLevel',
     async (
@@ -399,7 +343,6 @@ export const moveTaskToSpace = createAsyncThunk(
     }
 );
 
-// Async thunk to duplicate tasks in the backend
 export const duplicateTasksAsync = createAsyncThunk(
     'tasks/duplicateTasksAsync',
     async (tasksToDuplicate: Task[], { rejectWithValue }) => {
@@ -436,12 +379,63 @@ export const tasksSlice = createSlice({
         duplicateTasksOptimistic: (state, action: PayloadAction<Task[]>) => {
             state.tasks.push(...action.payload);
         },
-        // Rollback duplication if backend call fails
-        rollbackDuplicateTasks: (state, action: PayloadAction<string[]>) => {
-            const tempIds = action.payload;
-            state.tasks = state.tasks.filter(
-                (task) => !tempIds.includes(task._id as string)
+        convertTaskToSubtaskOptimistic: (
+            state,
+            action: PayloadAction<{
+                updatedTask: Task;
+                updatedParentTask: Task;
+                updatedGrandparentTask?: Task;
+            }>
+        ) => {
+            const { updatedTask, updatedParentTask, updatedGrandparentTask } =
+                action.payload;
+            const taskIndex = state.tasks.findIndex(
+                (task) => task._id === updatedTask._id
             );
+            const parentTaskIndex = state.tasks.findIndex(
+                (task) => task._id === updatedParentTask._id
+            );
+            const grandparentTaskIndex = state.tasks.findIndex(
+                (task) => task._id === updatedGrandparentTask?._id
+            );
+            if (taskIndex !== -1 && parentTaskIndex !== -1) {
+                state.tasks[taskIndex] = updatedTask;
+                state.tasks[parentTaskIndex] = updatedParentTask;
+            }
+            if (grandparentTaskIndex !== -1 && updatedGrandparentTask) {
+                state.tasks[grandparentTaskIndex] = updatedGrandparentTask;
+            }
+        },
+        convertSubtaskToTaskOptimistic: (
+            state,
+            action: PayloadAction<{
+                updatedSubtask: Task;
+                updatedParentTask: Task;
+                updatedGrandparentTask?: Task;
+            }>
+        ) => {
+            const {
+                updatedSubtask,
+                updatedParentTask,
+                updatedGrandparentTask,
+            } = action.payload;
+            const subtaskIndex = state.tasks.findIndex(
+                (task) => task._id === updatedSubtask._id
+            );
+            const parentTaskIndex = state.tasks.findIndex(
+                (task) => task._id === updatedParentTask._id
+            );
+            const grandparentTaskIndex = state.tasks.findIndex(
+                (task) => task._id === updatedGrandparentTask?._id
+            );
+
+            if (subtaskIndex !== -1 && parentTaskIndex !== -1) {
+                state.tasks[subtaskIndex] = updatedSubtask;
+                state.tasks[parentTaskIndex] = updatedParentTask;
+            }
+            if (grandparentTaskIndex !== -1 && updatedGrandparentTask) {
+                state.tasks[grandparentTaskIndex] = updatedGrandparentTask;
+            }
         },
     },
     extraReducers: (builder) => {
@@ -486,14 +480,74 @@ export const tasksSlice = createSlice({
                     );
                 }
             })
-            .addCase(convertTaskToSubtask.fulfilled, (state, action) => {
+            .addCase(convertTaskToSubtaskAsync.fulfilled, (state, action) => {
                 const {
                     updatedOldParentTask,
                     updatedNewParentTask,
                     updatedSubtask,
+                    descendantsUpdated,
                 } = action.payload;
 
-                // Update the old parent task
+                const oldParentIndex = state.tasks.findIndex(
+                    (task) => task._id === updatedOldParentTask?._id
+                );
+                const newParentIndex = state.tasks.findIndex(
+                    (task) => task._id === updatedNewParentTask._id
+                );
+                const subtaskIndex = state.tasks.findIndex(
+                    (task) => task._id === updatedSubtask._id
+                );
+
+                if (oldParentIndex !== -1 && updatedOldParentTask) {
+                    state.tasks[oldParentIndex] = updatedOldParentTask;
+                }
+                if (newParentIndex !== -1) {
+                    state.tasks[newParentIndex] = updatedNewParentTask;
+                }
+                if (subtaskIndex !== -1) {
+                    state.tasks[subtaskIndex] = {
+                        ...updatedSubtask,
+                        isTemp: false,
+                    };
+                }
+
+                // Update ancestors of all descendants
+                state.tasks = state.tasks.map((task) => {
+                    if (task.ancestors?.includes(updatedSubtask._id)) {
+                        return {
+                            ...task,
+                            ancestors: [
+                                ...updatedSubtask.ancestors,
+                                updatedSubtask._id,
+                                ...task.ancestors.slice(
+                                    task.ancestors.indexOf(updatedSubtask._id) +
+                                        1
+                                ),
+                            ],
+                        };
+                    }
+                    return task;
+                });
+            })
+            .addCase(convertTaskToSubtaskAsync.rejected, (state, action) => {
+                // Rollback optimistic updates
+                state.tasks = state.tasks.map((task) => ({
+                    ...task,
+                    isTemp: false,
+                }));
+                state.error =
+                    action.error.message ||
+                    'An error occurred during task conversion';
+            })
+            .addCase(convertSubtaskToTaskAsync.fulfilled, (state, action) => {
+                const {
+                    updatedOldParentTask,
+                    updatedNewParentTask,
+                    updatedSubtask,
+                    descendantsUpdated,
+                } = action.payload;
+
+                // Update old parent task if it exists
                 if (updatedOldParentTask) {
                     const oldParentIndex = state.tasks.findIndex(
                         (task) => task._id === updatedOldParentTask._id
@@ -503,24 +557,48 @@ export const tasksSlice = createSlice({
                     }
                 }
 
-                // Update the new parent task
-                const newParentIndex = state.tasks.findIndex(
-                    (task) => task._id === updatedNewParentTask._id
-                );
-                if (newParentIndex !== -1) {
-                    state.tasks[newParentIndex] = updatedNewParentTask;
+                // Update new parent task if it exists (should be null in this case)
+                if (updatedNewParentTask) {
+                    const newParentIndex = state.tasks.findIndex(
+                        (task) => task._id === updatedNewParentTask._id
+                    );
+                    if (newParentIndex !== -1) {
+                        state.tasks[newParentIndex] = updatedNewParentTask;
+                    }
                 }
 
-                // Update or add the subtask
+                // Update the converted subtask
                 const subtaskIndex = state.tasks.findIndex(
                     (task) => task._id === updatedSubtask._id
                 );
                 if (subtaskIndex !== -1) {
-                    state.tasks[subtaskIndex] = updatedSubtask;
-                } else {
-                    // Since UI filters out new subtasks that are already in the parent, we need to add it here
-                    state.tasks.push(updatedSubtask);
+                    state.tasks[subtaskIndex] = {
+                        ...updatedSubtask,
+                        isTemp: false,
+                    };
                 }
+
+                // Update ancestors of all descendants
+                // This is not directly provided by the API, so we'll update based on the updatedSubtask
+                state.tasks = state.tasks.map((task) => {
+                    if (task.ancestors?.includes(updatedSubtask._id)) {
+                        return {
+                            ...task,
+                            ancestors: task.ancestors.filter(
+                                (id) => id !== updatedOldParentTask?._id
+                            ),
+                        };
+                    }
+                    return task;
+                });
+            })
+            .addCase(convertSubtaskToTaskAsync.rejected, (state, action) => {
+                // Rollback optimistic updates
+                state.tasks = state.tasks.map((task) => ({
+                    ...task,
+                    isTemp: false,
+                }));
+                state.error = action.payload as string;
             })
             .addCase(addNewSubtask.fulfilled, (state, action) => {
                 const { newSubtask, updatedParentTask } = action.payload;
@@ -533,32 +611,6 @@ export const tasksSlice = createSlice({
                 );
                 if (parentIndex !== -1) {
                     state.tasks[parentIndex] = updatedParentTask;
-                }
-            })
-            .addCase(convertSubtaskToTask.fulfilled, (state, action) => {
-                if (!action.payload) {
-                    // The conversion didn't happen, so we don't need to update the state
-                    return;
-                }
-
-                const { updatedParentTask, newTask } = action.payload;
-
-                // Update the parent task in the state
-                const parentIndex = state.tasks.findIndex(
-                    (task) => task._id === updatedParentTask._id
-                );
-                if (parentIndex !== -1) {
-                    state.tasks[parentIndex] = updatedParentTask;
-                }
-
-                // Update the converted task in the state
-                const taskIndex = state.tasks.findIndex(
-                    (task) => task._id === newTask._id
-                );
-                if (taskIndex !== -1) {
-                    state.tasks[taskIndex] = newTask;
-                } else {
-                    state.tasks.push(newTask);
                 }
             })
             .addCase(moveSubtaskWithinLevel.fulfilled, (state, action) => {
@@ -636,8 +688,8 @@ export const tasksSlice = createSlice({
             })
             .addCase(duplicateTasksAsync.rejected, (state, action) => {
                 // Rollback optimistic updates
-                // state.tasks = state.tasks.filter((task) => !task.isTemp);
-                // state.error = action.payload as string;
+                state.tasks = state.tasks.filter((task) => !task.isTemp);
+                state.error = action.payload as string;
             })
             .addCase(deleteTasksInSpace.pending, (state) => {
                 state.status = 'loading';
@@ -662,7 +714,8 @@ export const selectSubtasksByParentId = (state: RootState, parentId: string) =>
 export const {
     hideNewChildTask,
     duplicateTasksOptimistic,
-    rollbackDuplicateTasks,
+    convertTaskToSubtaskOptimistic,
+    convertSubtaskToTaskOptimistic,
 } = tasksSlice.actions;
 
 export default tasksSlice.reducer;

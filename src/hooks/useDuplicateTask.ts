@@ -2,14 +2,13 @@ import { useDispatch } from 'react-redux';
 import {
     duplicateTasksOptimistic,
     duplicateTasksAsync,
-    rollbackDuplicateTasks,
 } from '../store/tasksSlice';
 import { Task } from '../types';
 import {
     duplicateTaskWithTempIds,
     fetchAllTasksFromState,
 } from '@/app/utils/optimisticUpdates';
-import { AppDispatch, RootState } from '@/store/store';
+import { AppDispatch } from '@/store/store';
 
 export const useDuplicateTask = () => {
     const dispatch = useDispatch<AppDispatch>();
@@ -20,7 +19,7 @@ export const useDuplicateTask = () => {
             console.error('Task ID is undefined');
             return;
         }
-        const taskMap = await fetchAllTasksFromState(task._id, tasksState);
+        const taskMap: Map<string, Task> = fetchAllTasksFromState(tasksState);
 
         // Generate duplicated tasks with temporary IDs
         const { duplicatedTasks } = duplicateTaskWithTempIds(task, taskMap);
@@ -37,9 +36,7 @@ export const useDuplicateTask = () => {
             await dispatch(duplicateTasksAsync(tasksToDuplicate)).unwrap();
             // Success: IDs are updated in the fulfilled case
         } catch (error) {
-            // Error: rollback optimistic updates
-            const tempIds = duplicatedTasks.map((t) => t._id as string);
-            dispatch(rollbackDuplicateTasks(tempIds));
+            // Error: rollback optimistic updates -- handled in the .rejected case in taskSlice extra reducers
             console.error('Failed to duplicate tasks:', error);
         }
     };
