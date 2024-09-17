@@ -10,7 +10,6 @@ import {
     hideNewChildTask,
     convertTaskToSubtask,
     moveTaskToSpace,
-    duplicateTask,
     addNewSubtask,
 } from '../../store/tasksSlice';
 import {
@@ -35,6 +34,7 @@ import { useDateString, useDateTimeString } from '@/hooks/useDateString';
 import { TaskDetails } from '../TaskDetails';
 import { useAddSubtask } from '@/hooks/useAddSubtask';
 import TaskCardBottomBar from './TaskCardBottomBar';
+import { useDuplicateTask } from '@/hooks/useDuplicateTask';
 
 interface TaskCardProps {
     task: Task;
@@ -53,6 +53,8 @@ const TaskCard = React.memo(
         const draggingCardId = useSelector(
             (state: RootState) => state.ui.draggingCardId
         );
+
+        const { duplicateTask } = useDuplicateTask();
 
         const {
             localTask,
@@ -305,8 +307,7 @@ const TaskCard = React.memo(
         };
 
         const handleDuplicateTask = () => {
-            dispatch(duplicateTask(task));
-            toast.success('Task duplicated successfully');
+            duplicateTask(task);
         };
 
         const handleShowDetails = () => {
