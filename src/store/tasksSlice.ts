@@ -437,6 +437,28 @@ export const tasksSlice = createSlice({
                 state.tasks[grandparentTaskIndex] = updatedGrandparentTask;
             }
         },
+        moveSubtaskWithinLevelOptimistic: (
+            state,
+            action: PayloadAction<{
+                updatedParentTask: Task;
+                updatedSubtask: Task;
+            }>
+        ) => {
+            const { updatedParentTask, updatedSubtask } = action.payload;
+            const parentIndex = state.tasks.findIndex(
+                (task) => task._id === updatedParentTask._id
+            );
+            const subtaskIndex = state.tasks.findIndex(
+                (task) => task._id === updatedSubtask._id
+            );
+
+            if (parentIndex !== -1) {
+                state.tasks[parentIndex] = updatedParentTask;
+            }
+            if (subtaskIndex !== -1) {
+                state.tasks[subtaskIndex] = updatedSubtask;
+            }
+        },
     },
     extraReducers: (builder) => {
         builder
@@ -613,6 +635,25 @@ export const tasksSlice = createSlice({
                     state.tasks[parentIndex] = updatedParentTask;
                 }
             })
+            // .addCase(moveSubtaskWithinLevel.fulfilled, (state, action) => {
+            //     const { updatedParent, movedSubtask } = action.payload;
+
+            //     // Update the parent task
+            //     const parentIndex = state.tasks.findIndex(
+            //         (task) => task._id === updatedParent._id
+            //     );
+            //     if (parentIndex !== -1) {
+            //         state.tasks[parentIndex] = updatedParent;
+            //     }
+
+            //     // Update the moved subtask
+            //     const subtaskIndex = state.tasks.findIndex(
+            //         (task) => task._id === movedSubtask._id
+            //     );
+            //     if (subtaskIndex !== -1) {
+            //         state.tasks[subtaskIndex] = movedSubtask;
+            //     }
+            // })
             .addCase(moveSubtaskWithinLevel.fulfilled, (state, action) => {
                 const { updatedParent, movedSubtask } = action.payload;
 
@@ -621,7 +662,10 @@ export const tasksSlice = createSlice({
                     (task) => task._id === updatedParent._id
                 );
                 if (parentIndex !== -1) {
-                    state.tasks[parentIndex] = updatedParent;
+                    state.tasks[parentIndex] = {
+                        ...updatedParent,
+                        isTemp: false,
+                    };
                 }
 
                 // Update the moved subtask
@@ -629,8 +673,19 @@ export const tasksSlice = createSlice({
                     (task) => task._id === movedSubtask._id
                 );
                 if (subtaskIndex !== -1) {
-                    state.tasks[subtaskIndex] = movedSubtask;
+                    state.tasks[subtaskIndex] = {
+                        ...movedSubtask,
+                        isTemp: false,
+                    };
                 }
+            })
+            .addCase(moveSubtaskWithinLevel.rejected, (state, action) => {
+                // Rollback optimistic updates
+                state.tasks = state.tasks.map((task) => ({
+                    ...task,
+                    isTemp: false,
+                }));
+                state.error = action.payload as string;
             })
             .addCase(moveTaskToSpace.fulfilled, (state, action) => {
                 const index = state.tasks.findIndex(
@@ -716,6 +771,7 @@ export const {
     duplicateTasksOptimistic,
     convertTaskToSubtaskOptimistic,
     convertSubtaskToTaskOptimistic,
+    moveSubtaskWithinLevelOptimistic,
 } = tasksSlice.actions;
 
 export default tasksSlice.reducer;

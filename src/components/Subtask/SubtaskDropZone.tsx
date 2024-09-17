@@ -1,9 +1,10 @@
 import { AppDispatch, RootState } from '@/store/store';
-import { addNewSubtask, moveSubtaskWithinLevel } from '@/store/tasksSlice';
+import { addNewSubtask } from '@/store/tasksSlice';
 import { Task, TaskProgress } from '@/types';
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useDrop } from 'react-dnd';
+import { useMoveSubtask } from '@/hooks/useMoveSubtask';
 
 interface SubtaskDropZoneProps {
     position: string;
@@ -25,17 +26,20 @@ const SubtaskDropZone = React.memo(
         const timeoutRef = useRef<NodeJS.Timeout | null>(null);
         const dropRef = useRef<HTMLLIElement>(null);
 
+        const { moveSubtask } = useMoveSubtask();
+
         const handleDrop = useCallback(
             (item: Task) => {
                 console.log('global option', sortOption);
                 if (parentTask && parentTask._id && sortOption === 'custom') {
-                    dispatch(
-                        moveSubtaskWithinLevel({
-                            subtaskId: item._id as string,
-                            parentId: parentTask._id,
-                            newPosition: position,
-                        })
-                    );
+                    // dispatch(
+                    //     moveSubtaskWithinLevel({
+                    //         subtaskId: item._id as string,
+                    //         parentId: parentTask._id,
+                    //         newPosition: position,
+                    //     })
+                    // );
+                    moveSubtask(item._id as string, parentTask._id, position);
                 } else {
                     alert('Custom sorting is not enabled.');
                 }
