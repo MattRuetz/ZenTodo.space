@@ -279,11 +279,11 @@ export const convertSubtaskToTask = createAsyncThunk(
         // Update ancestors of all descendants
         const updateDescendants = async (taskId: string) => {
             const descendants = state.tasks.tasks.filter((task) =>
-                task.ancestors.includes(taskId)
+                task.ancestors?.includes(taskId)
             );
 
             for (const descendant of descendants) {
-                const updatedAncestors = descendant.ancestors.filter(
+                const updatedAncestors = descendant.ancestors?.filter(
                     (ancestorId) => ancestorId !== parentTask._id
                 );
                 await dispatch(
@@ -295,7 +295,7 @@ export const convertSubtaskToTask = createAsyncThunk(
             }
         };
 
-        await updateDescendants(subtask._id);
+        await updateDescendants(subtask._id as string);
 
         // Dispatch action to update space max zIndex
         await dispatch(
@@ -415,7 +415,10 @@ export const duplicateTasksAsync = createAsyncThunk(
             const data = await response.json();
             return data.tasks; // The duplicated tasks with real IDs
         } catch (error) {
-            return rejectWithValue(error.message);
+            if (error instanceof Error) {
+                return rejectWithValue(error.message);
+            }
+            return rejectWithValue('An unknown error occurred');
         }
     }
 );
@@ -437,7 +440,7 @@ export const tasksSlice = createSlice({
         rollbackDuplicateTasks: (state, action: PayloadAction<string[]>) => {
             const tempIds = action.payload;
             state.tasks = state.tasks.filter(
-                (task) => !tempIds.includes(task._id)
+                (task) => !tempIds.includes(task._id as string)
             );
         },
     },
@@ -628,13 +631,14 @@ export const tasksSlice = createSlice({
                         }
 
                         // Update ancestors if they're in the mapping
-                        updatedTask.ancestors = task.ancestors.map(
+                        updatedTask.ancestors = task.ancestors?.map(
                             (ancestorId) => idMapping[ancestorId] || ancestorId
                         );
 
                         // Update subtasks if they're in the mapping
                         updatedTask.subtasks = task.subtasks.map(
-                            (subtaskId) => idMapping[subtaskId] || subtaskId
+                            (subtaskId) =>
+                                idMapping[subtaskId as string] || subtaskId
                         );
 
                         return updatedTask;
@@ -643,7 +647,7 @@ export const tasksSlice = createSlice({
                 // Add the new tasks to the state
                 state.tasks = [
                     ...state.tasks,
-                    ...duplicatedTasks.map((task) => ({
+                    ...duplicatedTasks.map((task: Task) => ({
                         ...task,
                         isTemp: false, // Ensure isTemp is set to false for the new tasks
                     })),
