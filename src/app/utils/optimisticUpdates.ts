@@ -1,29 +1,32 @@
 import { Task } from '@/types';
 import { generateTempId } from '@/app/utils/utils';
+import { RootState } from '@/store/store';
 
 // This returns a map of task w/ taskId and all its descendants with their DB ids as keys
-export const fetchAllTasks = async (
-    taskId: string
-): Promise<Map<string, Task>> => {
+export const fetchAllTasksFromState = (
+    taskId: string,
+    tasksState: Task[]
+): Map<string, Task> => {
     const taskMap = new Map<string, Task>();
 
-    const fetchTask = async (id: string) => {
+    const fetchTask = (id: string) => {
         if (taskMap.has(id)) return taskMap.get(id);
+        const task = tasksState.find((task: Task) => task._id === id);
 
-        const response = await fetch(`/api/tasks/${id}`);
-        const task: Task = await response.json();
-        taskMap.set(id, task);
+        if (task) {
+            taskMap.set(id, task);
+        } else return;
 
         if (task.subtasks && task.subtasks.length > 0) {
             for (const subtaskId of task.subtasks) {
-                await fetchTask(subtaskId as string);
+                fetchTask(subtaskId as unknown as string);
             }
         }
 
         return task;
     };
 
-    await fetchTask(taskId);
+    fetchTask(taskId);
     return taskMap;
 };
 
@@ -73,5 +76,6 @@ export const duplicateTaskWithTempIds = (
         }
     }
 
+    console.log('duplicatedTasks', duplicatedTasks);
     return { duplicatedTasks };
 };

@@ -54,6 +54,8 @@ const TaskCard = React.memo(
             (state: RootState) => state.ui.draggingCardId
         );
 
+        const tasksState = useSelector((state: RootState) => state.tasks.tasks);
+
         const { duplicateTask } = useDuplicateTask();
 
         const {
@@ -307,7 +309,7 @@ const TaskCard = React.memo(
         };
 
         const handleDuplicateTask = () => {
-            duplicateTask(task);
+            duplicateTask(task, tasksState);
         };
 
         const handleShowDetails = () => {

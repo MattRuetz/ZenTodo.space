@@ -599,8 +599,6 @@ export const tasksSlice = createSlice({
                     }
                 }
 
-                console.log(idMapping);
-
                 // Update existing tasks' references
                 state.tasks = state.tasks
                     .filter((task) => !task.isTemp)
@@ -620,7 +618,8 @@ export const tasksSlice = createSlice({
                         // Update subtasks if they're in the mapping
                         updatedTask.subtasks = task.subtasks.map(
                             (subtaskId) =>
-                                idMapping[subtaskId as string] || subtaskId
+                                idMapping[subtaskId as unknown as string] ||
+                                subtaskId
                         );
 
                         return updatedTask;
@@ -637,11 +636,8 @@ export const tasksSlice = createSlice({
             })
             .addCase(duplicateTasksAsync.rejected, (state, action) => {
                 // Rollback optimistic updates
-                const tempIds = state.tasks
-                    .filter((task) => task.isTemp)
-                    .map((task) => task._id);
-                state.tasks = state.tasks.filter((task) => !task.isTemp);
-                state.error = action.payload as string;
+                // state.tasks = state.tasks.filter((task) => !task.isTemp);
+                // state.error = action.payload as string;
             })
             .addCase(deleteTasksInSpace.pending, (state) => {
                 state.status = 'loading';
