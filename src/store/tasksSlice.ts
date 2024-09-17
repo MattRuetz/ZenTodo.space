@@ -588,24 +588,6 @@ export const tasksSlice = createSlice({
                     state.tasks[index] = action.payload;
                 }
             })
-            // .addCase(duplicateTask.fulfilled, (state, action) => {
-            //     // Create a map of existing tasks for quick lookup
-            //     const existingTasksMap = new Map(
-            //         state.tasks.map((task) => [task._id, task])
-            //     );
-
-            //     // Add or update tasks from the action payload
-            //     action.payload.forEach((newTask) => {
-            //         if (newTask._id) {
-            //             existingTasksMap.set(newTask._id, newTask);
-            //         } else {
-            //             state.tasks.push(newTask);
-            //         }
-            //     });
-
-            //     // Update state with the new map values
-            //     state.tasks = Array.from(existingTasksMap.values());
-            // })
             .addCase(duplicateTasksAsync.fulfilled, (state, action) => {
                 const duplicatedTasks = action.payload;
 

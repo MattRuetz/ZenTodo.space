@@ -308,7 +308,6 @@ const TaskCard = React.memo(
 
         const handleDuplicateTask = () => {
             duplicateTask(task);
-            // toast.success('Task duplicated successfully');
         };
 
         const handleShowDetails = () => {

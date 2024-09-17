@@ -1,7 +1,7 @@
 import { Task } from '@/types';
 import { generateTempId } from '@/app/utils/utils';
 
-// This returns a map of all tasks with their DB ids as keys
+// This returns a map of task w/ taskId and all its descendants with their DB ids as keys
 export const fetchAllTasks = async (
     taskId: string
 ): Promise<Map<string, Task>> => {
@@ -53,7 +53,6 @@ export const duplicateTaskWithTempIds = (
 
     if (task.subtasks && task.subtasks.length > 0) {
         for (const subtaskId of task.subtasks) {
-            console.log('subtaskId', subtaskId);
             let subtaskObject: Task | undefined;
 
             if (typeof subtaskId === 'string') {
@@ -62,8 +61,6 @@ export const duplicateTaskWithTempIds = (
                 subtaskObject = subtaskId;
             }
             if (!subtaskObject) continue; // Skip if subtask is not loaded
-
-            // GOOD SO FAR - duplicating tree with temp ids properly
 
             const { duplicatedTasks: subDuplicatedTasks } =
                 duplicateTaskWithTempIds(subtaskObject, taskMap, tempId, [
