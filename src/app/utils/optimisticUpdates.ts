@@ -1,6 +1,7 @@
 import { Task } from '@/types';
 import { generateTempId } from '@/app/utils/utils';
 
+// This returns a map of all tasks with their DB ids as keys
 export const fetchAllTasks = async (
     taskId: string
 ): Promise<Map<string, Task>> => {
@@ -26,8 +27,8 @@ export const fetchAllTasks = async (
     return taskMap;
 };
 
-// This is an optimistic update to allow for duplicate task creation without waiting for the server response
-
+// This is an optimistic update to allow for duplicate
+// task creation without waiting for the server response
 export const duplicateTaskWithTempIds = (
     task: Task,
     taskMap: Map<string, Task>,
@@ -57,7 +58,6 @@ export const duplicateTaskWithTempIds = (
 
             if (typeof subtaskId === 'string') {
                 subtaskObject = taskMap.get(subtaskId);
-                console.log('subtaskObject', subtaskObject);
             } else if (typeof subtaskId === 'object') {
                 subtaskObject = subtaskId;
             }

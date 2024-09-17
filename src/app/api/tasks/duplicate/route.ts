@@ -11,8 +11,6 @@ export async function POST(req: NextRequest) {
         const body = await req.json();
         const tasks = body.tasks;
 
-        console.log('tasksInPOST', tasks);
-
         if (!tasks || !Array.isArray(tasks)) {
             return NextResponse.json(
                 { error: 'Invalid tasks data' },
@@ -24,11 +22,9 @@ export async function POST(req: NextRequest) {
         const duplicatedTasks: any[] = [];
 
         const generateNewObjectId = (tempId: string) => {
-            console.log('Generating ObjectId for tempId:', tempId);
             if (!tempIdToObjectIdMap.has(tempId)) {
                 tempIdToObjectIdMap.set(tempId, new mongoose.Types.ObjectId());
             }
-            console.log('Generated ObjectId:', tempIdToObjectIdMap.get(tempId));
             return tempIdToObjectIdMap.get(tempId);
         };
 
@@ -40,6 +36,7 @@ export async function POST(req: NextRequest) {
             const newTaskId = generateNewObjectId(taskData._id);
             const newTask = new Task({
                 ...taskData,
+                originalTempId: taskData._id,
                 x: taskData.x,
                 y: taskData.y,
                 zIndex: taskData.zIndex + 3,

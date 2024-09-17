@@ -398,95 +398,6 @@ export const duplicateTasksAsync = createAsyncThunk(
     }
 );
 
-// export const duplicateTask = createAsyncThunk(
-//     'tasks/duplicateTask',
-//     async (task: Task) => {
-//         const duplicate = async (
-//             taskToCopy: Task,
-//             parentId?: string,
-//             ancestors: string[] = []
-//         ): Promise<Task[]> => {
-//             const duplicatedTask = {
-//                 ...taskToCopy,
-//                 x: taskToCopy.x + 50,
-//                 y: taskToCopy.y + 50,
-//                 taskName: `(Copy) ${taskToCopy.taskName}`,
-//                 space: taskToCopy.space,
-//                 _id: undefined,
-//                 parentTask: parentId || taskToCopy.parentTask,
-//                 ancestors:
-//                     ancestors.length > 0
-//                         ? [...ancestors]
-//                         : taskToCopy.ancestors, // Use the passed ancestors array if it exists, otherwise use the task's ancestors
-//                 subtasks: [] as Task[], // Initialize with an empty array
-//             };
-
-//             console.log('duplicatedTask', duplicatedTask);
-
-//             const response = await fetch('/api/tasks', {
-//                 method: 'POST',
-//                 headers: { 'Content-Type': 'application/json' },
-//                 body: JSON.stringify(duplicatedTask),
-//             });
-//             const data = await response.json();
-//             const newTask = data.task;
-
-//             let allDuplicatedTasks = [newTask];
-
-//             // Recursively duplicate subtasks
-//             for (const subtask of taskToCopy.subtasks) {
-//                 // Ensure subtask is a Task object
-//                 const subtaskObject =
-//                     typeof subtask === 'string'
-//                         ? await fetch(`/api/tasks/${subtask}`).then((res) =>
-//                               res.json()
-//                           )
-//                         : subtask;
-
-//                 const duplicatedSubtasks = await duplicate(
-//                     subtaskObject as Task,
-//                     newTask._id, // Pass the new parent ID
-//                     [...newTask.ancestors, newTask._id] // Pass updated ancestors array
-//                 );
-//                 allDuplicatedTasks =
-//                     allDuplicatedTasks.concat(duplicatedSubtasks);
-
-//                 // Update the subtasks array of the new parent task
-//                 newTask.subtasks.push(duplicatedSubtasks[0]._id);
-//             }
-//             // If this is the top-level task, update it with the new subtask IDs
-//             if (!parentId) {
-//                 const updateResponse = await fetch(`/api/tasks/`, {
-//                     method: 'PUT',
-//                     headers: { 'Content-Type': 'application/json' },
-//                     body: JSON.stringify({
-//                         subtasks: newTask.subtasks,
-//                         ancestors: newTask.ancestors,
-//                         _id: newTask._id,
-//                     }),
-//                 });
-//                 if (!updateResponse.ok) {
-//                     console.error(
-//                         'Error updating task:',
-//                         await updateResponse.text()
-//                     );
-//                     throw new Error(
-//                         `HTTP error! status: ${updateResponse.status}`
-//                     );
-//                 }
-//                 const updatedData = await updateResponse.json();
-//                 allDuplicatedTasks[0] = updatedData.task;
-//             }
-
-//             return allDuplicatedTasks;
-//         };
-
-//         const result = await duplicate(task);
-//         console.log('Duplicate task result:', result);
-//         return result;
-//     }
-// );
-
 export const tasksSlice = createSlice({
     name: 'tasks',
     initialState,
@@ -676,37 +587,45 @@ export const tasksSlice = createSlice({
                 // Create a mapping from old temp IDs to new real IDs
                 const idMapping: { [tempId: string]: string } = {};
                 for (const realTask of duplicatedTasks) {
-                    const tempTask = state.tasks.find(
-                        (task) =>
-                            task.isTemp && task.taskName === realTask.taskName
-                    );
-                    if (tempTask) {
-                        idMapping[tempTask._id as string] = realTask._id;
+                    if (realTask.originalTempId) {
+                        idMapping[realTask.originalTempId] = realTask._id;
                     }
                 }
 
-                // Replace temporary IDs with real IDs in tasks and their relationships
-                for (const task of state.tasks) {
-                    if (task.isTemp) {
-                        if (idMapping[task._id as string]) {
-                            task._id = idMapping[task._id as string];
+                console.log(idMapping);
+
+                // Update existing tasks' references
+                state.tasks = state.tasks
+                    .filter((task) => !task.isTemp)
+                    .map((task) => {
+                        const updatedTask = { ...task };
+
+                        // Update parentTask if it's in the mapping
+                        if (task.parentTask && idMapping[task.parentTask]) {
+                            updatedTask.parentTask = idMapping[task.parentTask];
                         }
-                        if (
-                            task.parentTask &&
-                            idMapping[task.parentTask as string]
-                        ) {
-                            task.parentTask = idMapping[task.parentTask];
-                        }
-                        task.subtasks = task.subtasks.map(
-                            (subId) => idMapping[subId] || subId
+
+                        // Update ancestors if they're in the mapping
+                        updatedTask.ancestors = task.ancestors.map(
+                            (ancestorId) => idMapping[ancestorId] || ancestorId
                         );
-                        task.ancestors = task.ancestors?.map(
-                            (ancestorId) =>
-                                idMapping[ancestorId as string] || ancestorId
+
+                        // Update subtasks if they're in the mapping
+                        updatedTask.subtasks = task.subtasks.map(
+                            (subtaskId) => idMapping[subtaskId] || subtaskId
                         );
-                        delete task.isTemp;
-                    }
-                }
+
+                        return updatedTask;
+                    });
+
+                // Add the new tasks to the state
+                state.tasks = [
+                    ...state.tasks,
+                    ...duplicatedTasks.map((task) => ({
+                        ...task,
+                        isTemp: false, // Ensure isTemp is set to false for the new tasks
+                    })),
+                ];
             })
             .addCase(duplicateTasksAsync.rejected, (state, action) => {
                 // Rollback optimistic updates
