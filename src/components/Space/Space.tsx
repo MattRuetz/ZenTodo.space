@@ -17,6 +17,7 @@ import { setSubtaskDrawerOpen } from '@/store/uiSlice';
 import { TaskProgress, Task } from '@/types';
 import { selectTasksForSpace } from '@/store/selectors';
 import { createSelector } from '@reduxjs/toolkit';
+import { useClearEmojis } from '@/hooks/useClearEmojis';
 
 // Memoized selectors
 
@@ -44,6 +45,8 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId, onLoaded }) => {
     const isDrawerOpen = useSelector(
         (state: RootState) => state.ui.isSubtaskDrawerOpen
     );
+
+    const { clearEmojis } = useClearEmojis(spaceId);
 
     const [showSignUpForm, setShowSignUpForm] = useState(false);
     const [formPosition, setFormPosition] = useState({ x: 0, y: 0 });
@@ -97,7 +100,6 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId, onLoaded }) => {
     const getNewZIndex = useCallback(() => {
         const newZIndex = maxZIndex + 1;
         setMaxZIndex(newZIndex);
-        dispatch(updateSpaceMaxZIndex({ spaceId, maxZIndex: newZIndex }));
         return newZIndex;
     }, [maxZIndex, spaceId, dispatch]);
 
@@ -182,6 +184,7 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId, onLoaded }) => {
                 setFormPosition({ x: e.clientX, y: e.clientY });
                 setShowSignUpForm(true);
             } else if (canCreateTask) {
+                clearEmojis();
                 const spaceRect = spaceRef.current?.getBoundingClientRect();
                 if (spaceRect) {
                     const { x: safeX, y: safeY } = calculateSafePosition(

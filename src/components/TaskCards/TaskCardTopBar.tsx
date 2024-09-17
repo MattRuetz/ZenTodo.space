@@ -32,6 +32,7 @@ interface TaskCardTopBarProps {
     onDetails: () => void;
     onSetDueDate: (date: Date | undefined) => void;
     onAddSubtask: () => void;
+    onSetEmoji: (emoji: string) => void;
     onMoveTask: (spaceId: string) => void;
     onCreateSpaceAndMoveTask: () => void;
     onDuplicateTask: () => void;
@@ -45,6 +46,7 @@ const TaskCardTopBar: React.FC<TaskCardTopBarProps> = React.memo(
         onDetails,
         onSetDueDate,
         onAddSubtask,
+        onSetEmoji,
         onMoveTask,
         onCreateSpaceAndMoveTask,
         onDuplicateTask,
@@ -106,7 +108,9 @@ const TaskCardTopBar: React.FC<TaskCardTopBarProps> = React.memo(
         };
 
         const handleSetTaskEmoji = (emoji: string) => {
+            console.log('emoji', emoji);
             if (task._id) {
+                onSetEmoji(emoji);
                 dispatch(updateTask({ _id: task._id, emoji: emoji }));
             }
         };
@@ -115,11 +119,12 @@ const TaskCardTopBar: React.FC<TaskCardTopBarProps> = React.memo(
             <div
                 className={`flex flex-row gap-4 drag-handle cursor-move items-center ${className}`}
             >
-                <EmojiDropdown
-                    taskEmoji={task.emoji || <FaTag />}
-                    setTaskEmoji={handleSetTaskEmoji}
-                />
-
+                <div className="text-xl">
+                    <EmojiDropdown
+                        taskEmoji={task.emoji || <FaTag />}
+                        setTaskEmoji={handleSetTaskEmoji}
+                    />
+                </div>
                 <div className="justify-center w-full">
                     <div
                         className="mb-1 w-full bg-sky-950"

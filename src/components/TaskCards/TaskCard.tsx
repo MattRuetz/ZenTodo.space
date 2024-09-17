@@ -313,6 +313,10 @@ const TaskCard = React.memo(
             setShowDetails(true);
         };
 
+        const handleSetEmoji = (emoji: string) => {
+            setLocalTask((prevTask) => ({ ...prevTask, emoji }));
+        };
+
         const cardStyle: React.CSSProperties = useMemo(
             () => ({
                 opacity,
@@ -397,6 +401,7 @@ const TaskCard = React.memo(
                                     }
                                     onDetails={handleShowDetails}
                                     onSetDueDate={handleSetDueDate}
+                                    onSetEmoji={handleSetEmoji}
                                     onAddSubtask={handleAddSubtask}
                                     onMoveTask={handleMoveTask}
                                     onCreateSpaceAndMoveTask={

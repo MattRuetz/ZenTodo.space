@@ -15,6 +15,7 @@ export const useFadeOutEffect = (
         const shouldFadeOut =
             !isHovering &&
             !isFocused &&
+            !task.emoji &&
             !task.taskName &&
             !task.taskDescription;
 
@@ -57,6 +58,7 @@ export const useFadeOutEffect = (
         isFocused,
         task.taskName,
         task.taskDescription,
+        task.emoji,
         task._id,
         onDelete,
     ]);

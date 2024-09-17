@@ -13,6 +13,10 @@ import { Tooltip } from 'react-tooltip';
 import { generateRandomDarkColor } from '@/app/utils/utils';
 import { toast } from 'react-toastify';
 import SpaceCard from './SpaceCard';
+import {
+    setSubtaskDrawerOpen,
+    setSubtaskDrawerParentId,
+} from '@/store/uiSlice';
 
 const SuperSpace = React.memo(() => {
     const dispatch = useDispatch<AppDispatch>();
@@ -66,6 +70,8 @@ const SuperSpace = React.memo(() => {
 
     const toggleZoom = () => {
         setIsZoomedOut(!isZoomedOut);
+        dispatch(setSubtaskDrawerParentId(null));
+        dispatch(setSubtaskDrawerOpen(false));
     };
 
     if (isLoading) {

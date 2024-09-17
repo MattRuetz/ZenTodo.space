@@ -33,6 +33,8 @@ export const useAddSubtask = ({ task, position }: UseAddSubtaskProps) => {
                 : [parentTask?._id as string],
             dueDate: undefined,
             emoji: '',
+            width: 100,
+            height: 100,
         };
 
         dispatch(

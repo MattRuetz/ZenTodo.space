@@ -3,6 +3,9 @@
 import React from 'react';
 import { useSession } from 'next-auth/react';
 import { EmojiFilter } from '../Space/EmojiFilter';
+import { useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '@/store/store';
+import { useClearEmojis } from '@/hooks/useClearEmojis';
 
 interface ControlPanelToggleProps {
     isOpen: boolean;
@@ -14,6 +17,12 @@ const ControlPanelToggle: React.FC<ControlPanelToggleProps> = React.memo(
         const { data: session } = useSession();
 
         if (!session) return null;
+
+        const spaceId = useSelector(
+            (state: RootState) => state.spaces.currentSpace?._id
+        );
+
+        const { clearEmojis } = useClearEmojis(spaceId ?? '');
 
         return (
             <div>
@@ -30,7 +39,10 @@ const ControlPanelToggle: React.FC<ControlPanelToggleProps> = React.memo(
                     className="absolute top-6 left-20 btn btn-circle btn-sm text-lg flex items-center justify-center"
                     style={{ zIndex: 10000 }}
                 >
-                    <EmojiFilter />
+                    <EmojiFilter
+                        clearSelectedEmojis={clearEmojis}
+                        spaceId={spaceId ?? ''}
+                    />
                 </div>
             </div>
         );

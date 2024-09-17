@@ -90,6 +90,9 @@ const SubtaskDropZone = React.memo(
                 ancestors: parentTask?.ancestors
                     ? [...parentTask.ancestors, parentTask._id as string]
                     : [parentTask?._id as string],
+                width: 100,
+                height: 100,
+                emoji: '',
             };
 
             dispatch(

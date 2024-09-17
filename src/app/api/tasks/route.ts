@@ -67,7 +67,10 @@ export async function POST(req: NextRequest) {
         const savedTask = await newTask.save();
 
         // Update the space's maxZIndex
-        await Space.findByIdAndUpdate(space, { maxZIndex: newZIndex });
+        if (space) {
+            console.log('space', space);
+            await Space.findByIdAndUpdate(space, { maxZIndex: newZIndex });
+        }
 
         return NextResponse.json({ task: savedTask }, { status: 201 });
     } catch (error) {

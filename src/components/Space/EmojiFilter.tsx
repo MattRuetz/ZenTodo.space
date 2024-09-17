@@ -8,11 +8,16 @@ import { updateSpaceSelectedEmojis } from '@/store/spaceSlice';
 import { fetchTasks } from '@/store/tasksSlice';
 import { Tooltip } from 'react-tooltip';
 
-export const EmojiFilter: React.FC = () => {
+interface EmojiFilterProps {
+    clearSelectedEmojis: () => void;
+    spaceId: string;
+}
+
+export const EmojiFilter: React.FC<EmojiFilterProps> = ({
+    clearSelectedEmojis,
+    spaceId,
+}) => {
     const dispatch = useDispatch<AppDispatch>();
-    const spaceId = useSelector(
-        (state: RootState) => state.spaces.currentSpace?._id
-    );
     const selectedEmojis = useSelector(
         (state: RootState) => state.spaces.currentSpace?.selectedEmojis || []
     );
@@ -44,17 +49,6 @@ export const EmojiFilter: React.FC = () => {
                 updateSpaceSelectedEmojis({
                     spaceId,
                     selectedEmojis: newSelectedEmojis,
-                })
-            );
-        }
-    };
-
-    const clearSelectedEmojis = () => {
-        if (spaceId) {
-            dispatch(
-                updateSpaceSelectedEmojis({
-                    spaceId,
-                    selectedEmojis: [],
                 })
             );
         }
@@ -98,7 +92,9 @@ export const EmojiFilter: React.FC = () => {
             </button>
             <Tooltip id="emoji-filter-tooltip">
                 <div className="bg-transparent font-normal text-sm text-white text-left">
-                    <p>Filter by emoji</p>
+                    {availableEmojis.length === 0
+                        ? 'No emojis in this space'
+                        : 'Filter by emoji'}
                 </div>
             </Tooltip>
 
