@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Task from '@/models/Task';
-import mongoose from 'mongoose';
 import { getUserId } from '@/hooks/useGetUserId';
+import mongoose from 'mongoose';
 
 export async function POST(req: NextRequest) {
     try {
@@ -28,12 +28,12 @@ export async function POST(req: NextRequest) {
             return tempIdToObjectIdMap.get(tempId);
         };
 
-        const duplicateTask = async (
-            taskData: any,
-            parentId?: mongoose.Types.ObjectId,
-            ancestors: mongoose.Types.ObjectId[] = []
-        ): Promise<any> => {
+        const duplicateTask = async (taskData: any): Promise<any> => {
             const newTaskId = generateNewObjectId(taskData._id);
+            const parentId = taskData.parentTask
+                ? generateNewObjectId(taskData.parentTask)
+                : undefined;
+
             const newTask = new Task({
                 ...taskData,
                 originalTempId: taskData._id,
@@ -44,7 +44,9 @@ export async function POST(req: NextRequest) {
                 taskName: `${taskData.taskName}`,
                 user: userId,
                 parentTask: parentId,
-                ancestors: parentId ? [...ancestors, parentId] : [],
+                ancestors: taskData.ancestors.map((ancestorId: string) =>
+                    generateNewObjectId(ancestorId)
+                ),
                 subtasks: [], // Initialize with an empty array, we'll populate it later
             });
 
@@ -52,34 +54,21 @@ export async function POST(req: NextRequest) {
             duplicatedTasks.push(newTask);
 
             // Recursively duplicate subtasks
-            const duplicatedSubtasks = [];
             for (const subtask of taskData.subtasks) {
-                const subtaskObject =
-                    typeof subtask === 'string'
-                        ? await Task.findById(subtask)
-                        : subtask;
-                if (subtaskObject) {
-                    const duplicatedSubtask = await duplicateTask(
-                        subtaskObject,
-                        newTask._id,
-                        newTask.ancestors
-                    );
-                    duplicatedSubtasks.push(duplicatedSubtask._id);
-                }
+                const duplicatedSubtask = await duplicateTask(subtask);
+                newTask.subtasks.push(duplicatedSubtask._id);
             }
 
             // Update the newTask with the duplicated subtasks
-            if (duplicatedSubtasks.length > 0) {
-                newTask.subtasks = duplicatedSubtasks;
-                await newTask.save(); // Save the updated task with subtasks
+            if (newTask.subtasks.length > 0) {
+                await newTask.save();
             }
 
             return newTask;
         };
 
-        // Only process top-level tasks
-        const topLevelTasks = tasks.filter((task) => !task.parentTask);
-        for (const task of topLevelTasks) {
+        // Process all tasks
+        for (const task of tasks) {
             await duplicateTask(task);
         }
 

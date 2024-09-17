@@ -356,7 +356,10 @@ export const duplicateTasksAsync = createAsyncThunk(
                 throw new Error('Failed to duplicate tasks');
             }
             const data = await response.json();
-            return data.tasks; // The duplicated tasks with real IDs
+            return data.tasks.map((task: any) => ({
+                ...task,
+                originalTempId: task.originalTempId || task._id,
+            }));
         } catch (error) {
             if (error instanceof Error) {
                 return rejectWithValue(error.message);
@@ -635,25 +638,6 @@ export const tasksSlice = createSlice({
                     state.tasks[parentIndex] = updatedParentTask;
                 }
             })
-            // .addCase(moveSubtaskWithinLevel.fulfilled, (state, action) => {
-            //     const { updatedParent, movedSubtask } = action.payload;
-
-            //     // Update the parent task
-            //     const parentIndex = state.tasks.findIndex(
-            //         (task) => task._id === updatedParent._id
-            //     );
-            //     if (parentIndex !== -1) {
-            //         state.tasks[parentIndex] = updatedParent;
-            //     }
-
-            //     // Update the moved subtask
-            //     const subtaskIndex = state.tasks.findIndex(
-            //         (task) => task._id === movedSubtask._id
-            //     );
-            //     if (subtaskIndex !== -1) {
-            //         state.tasks[subtaskIndex] = movedSubtask;
-            //     }
-            // })
             .addCase(moveSubtaskWithinLevel.fulfilled, (state, action) => {
                 const { updatedParent, movedSubtask } = action.payload;
 
