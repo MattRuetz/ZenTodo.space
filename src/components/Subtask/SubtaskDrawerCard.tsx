@@ -97,11 +97,18 @@ const SubtaskDrawerCard = React.memo(
                             parentTaskId: targetSubtask._id as string,
                         })
                     );
+                    setLocalSubtask((prevSubtask) => ({
+                        ...prevSubtask,
+                        subtasks: [
+                            ...(prevSubtask.subtasks as Task[]),
+                            draggedSubtask as Task,
+                        ],
+                    }));
                 } else {
                     dispatch(setSimplicityModalOpen(true));
                 }
             },
-            [dispatch, subtask]
+            [dispatch, subtask, localSubtask]
         );
 
         const [{ isOver }, drop] = useDrop(

@@ -57,6 +57,7 @@ export const updateTask = createAsyncThunk(
         partialTask: Partial<Task> & { _id: string },
         { rejectWithValue }
     ) => {
+        console.log('partialTask', partialTask);
         try {
             const response = await fetch('/api/tasks', {
                 method: 'PUT',
@@ -274,6 +275,27 @@ export const convertSubtaskToTask = createAsyncThunk(
         const newTaskResult = await dispatch(
             updateTask(newTask as unknown as Partial<Task> & { _id: string })
         );
+
+        // Update ancestors of all descendants
+        const updateDescendants = async (taskId: string) => {
+            const descendants = state.tasks.tasks.filter((task) =>
+                task.ancestors.includes(taskId)
+            );
+
+            for (const descendant of descendants) {
+                const updatedAncestors = descendant.ancestors.filter(
+                    (ancestorId) => ancestorId !== parentTask._id
+                );
+                await dispatch(
+                    updateTask({
+                        _id: descendant._id,
+                        ancestors: updatedAncestors,
+                    } as Partial<Task> & { _id: string })
+                );
+            }
+        };
+
+        await updateDescendants(subtask._id);
 
         // Dispatch action to update space max zIndex
         await dispatch(
