@@ -56,7 +56,7 @@ export const duplicateTaskWithTempIds = (
                 ]);
 
             // Only add the first element of subDuplicatedTasks to the subtasks array
-            duplicatedTask.subtasks.push(subDuplicatedTasks[0]);
+            duplicatedTask.subtasks.push(subDuplicatedTasks[0]._id || '');
             duplicatedTasks = [...duplicatedTasks, ...subDuplicatedTasks];
         }
     }

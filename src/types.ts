@@ -17,7 +17,7 @@ export interface Task {
     progress: TaskProgress;
     space: string;
     zIndex: number;
-    subtasks: Task[];
+    subtasks: string[];
     parentTask?: string;
     createdAt?: Date;
     updatedAt?: Date;
