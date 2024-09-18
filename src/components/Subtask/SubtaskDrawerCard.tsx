@@ -19,10 +19,11 @@ interface SubtaskDrawerCardProps {
 const SubtaskDrawerCard = React.memo(
     ({ subtask, position }: SubtaskDrawerCardProps) => {
         const dispatch = useDispatch<AppDispatch>();
-        const [localSubtask, setLocalSubtask] = useState(subtask);
+
+        const [localSubtask, setLocalSubtask] = useState(subtask || {});
         const [isEditing, setIsEditing] = useState<string | null>(null);
         const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
-        const currentTaskNameRef = useRef(subtask.taskName);
+        const currentTaskNameRef = useRef(subtask?.taskName || '');
         const ref = useRef<HTMLLIElement>(null);
 
         const { convertTaskToSubtask, convertSubtaskToTask } =
@@ -170,7 +171,7 @@ const SubtaskDrawerCard = React.memo(
                 dispatch(updateTask({ _id: subtask._id, ...updatedFields }));
                 setLocalSubtask((prev) => ({ ...prev, progress: newProgress }));
             },
-            [dispatch, subtask._id]
+            [dispatch, subtask]
         );
 
         const handleSetDueDate = (date: Date | undefined) => {

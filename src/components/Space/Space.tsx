@@ -35,6 +35,7 @@ export const selectSelectedEmojis = createSelector(
 const Space: React.FC<SpaceProps> = React.memo(({ spaceId, onLoaded }) => {
     const dispatch = useDispatch<AppDispatch>();
     const { data: session, status: sessionStatus } = useSession();
+
     const tasks = useSelector((state: RootState) =>
         selectTasksForSpace(state, spaceId)
     );
@@ -75,8 +76,6 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId, onLoaded }) => {
             return { ...task, zIndex: newMaxZIndex };
         });
 
-        console.log('updatedTasks', updatedTasks);
-
         updatedTasks.forEach((task) => {
             dispatch(
                 updateTask({
@@ -111,7 +110,6 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId, onLoaded }) => {
     useEffect(() => {
         dispatch(fetchSpaceMaxZIndex(spaceId));
         dispatch(fetchTasks());
-        console.log('tasks', tasks);
     }, [spaceId, dispatch]);
 
     const handleCloseDrawer = () => dispatch(setSubtaskDrawerOpen(false));
@@ -251,6 +249,7 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId, onLoaded }) => {
                     {tasks
                         .filter(
                             (task) =>
+                                // !task.parentTask &&
                                 selectedEmojis.length === 0 ||
                                 selectedEmojis.includes(task.emoji || '')
                         )

@@ -18,6 +18,8 @@ export const selectTasksForSpace = createSelector(
                 (selectedEmojis.length === 0 ||
                     selectedEmojis.includes(task.emoji || ''))
         );
+
+        // return tasksInSpace;
         return tasksInSpace.map((task) => ({
             ...task,
             subtasks: tasks
@@ -45,14 +47,14 @@ export const selectSubtasks = createSelector(
 );
 
 // Selector to get tasks by their IDs
-// export const selectTasksByIds = createSelector(
-//     [
-//         (state: RootState) => state.tasks.tasks,
-//         (state: RootState, taskIds: string[]) => taskIds,
-//     ],
-//     (tasks, taskIds) => {
-//         return taskIds
-//             .map((id) => tasks.find((task) => task._id === id))
-//             .filter((task): task is Task => task !== undefined);
-//     }
-// );
+export const selectTasksByIds = createSelector(
+    [
+        (state: RootState) => state.tasks.tasks,
+        (state: RootState, taskIds: string[]) => taskIds,
+    ],
+    (tasks, taskIds) => {
+        return taskIds
+            .map((id) => tasks.find((task) => task._id === id))
+            .filter((task): task is Task => task !== undefined);
+    }
+);

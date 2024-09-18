@@ -7,7 +7,7 @@ import {
 import { Task } from '@/types';
 import { Tooltip } from 'react-tooltip';
 import { AppDispatch, RootState } from '@/store/store';
-import { selectSubtasks } from '@/store/selectors';
+import { selectTasksByIds } from '@/store/selectors';
 
 export interface SubtaskProgressesProps {
     task: Task;
@@ -18,9 +18,9 @@ const SubtaskProgresses: React.FC<SubtaskProgressesProps> = React.memo(
         const dispatch = useDispatch<AppDispatch>();
 
         const subtasks = useSelector((state: RootState) =>
-            selectSubtasks(state, task)
+            selectTasksByIds(state, task.subtasks)
         );
-
+        console.log('subtasks in SubtaskProgresses', subtasks);
         const isSubtaskDrawerOpen = useSelector(
             (state: RootState) => state.ui.isSubtaskDrawerOpen
         );
@@ -61,15 +61,15 @@ const SubtaskProgresses: React.FC<SubtaskProgressesProps> = React.memo(
             );
         }, [task.subtasks]);
 
-        const isVisible = Object.values(subtaskProgresses).some(
-            (count) => count > 0
-        );
+        // const isVisible = Object.values(subtaskProgresses).some(
+        //     (count) => count > 0
+        // );
 
         return (
             <div
                 data-tooltip-id={`${task._id}-subtask-progresses-tooltip`}
                 style={{
-                    visibility: isVisible ? 'visible' : 'hidden',
+                    visibility: subtasks.length > 0 ? 'visible' : 'hidden',
                 }}
                 className={`flex gap-1 ${
                     task.parentTask ? 'bg-base-300' : 'bg-base-100'
