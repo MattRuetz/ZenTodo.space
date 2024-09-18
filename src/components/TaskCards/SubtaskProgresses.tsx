@@ -20,7 +20,7 @@ const SubtaskProgresses: React.FC<SubtaskProgressesProps> = React.memo(
         const subtasks = useSelector((state: RootState) =>
             selectTasksByIds(state, task.subtasks)
         );
-        console.log('subtasks in SubtaskProgresses', subtasks);
+
         const isSubtaskDrawerOpen = useSelector(
             (state: RootState) => state.ui.isSubtaskDrawerOpen
         );

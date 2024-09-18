@@ -63,8 +63,6 @@ export const useDragHandlers = ({
                 zIndex: newZIndex,
             }));
 
-            // console.log('drag start');
-
             dispatch(setGlobalDragging(true));
             dispatch(setDraggingCardId(task._id ?? ''));
             onDragStart();
@@ -116,7 +114,6 @@ export const useDragHandlers = ({
                     zIndex: prevTask.zIndex,
                 };
 
-                // console.log('drag stop');
                 debouncedUpdate(newTaskData);
                 return { ...prevTask, ...newTaskData };
             });

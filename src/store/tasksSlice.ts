@@ -520,7 +520,6 @@ export const tasksSlice = createSlice({
             })
             .addCase(fetchTasks.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                console.log('action.payload', action.payload);
                 state.tasks = action.payload.tasks;
             })
             .addCase(fetchTasks.rejected, (state, action) => {
@@ -530,7 +529,6 @@ export const tasksSlice = createSlice({
             .addCase(addTaskAsync.fulfilled, (state, action) => {
                 const { newTask, originalTempId } = action.payload;
 
-                console.log('newTask', newTask);
                 const tempTask = state.tasks.find(
                     (task) => task.isTemp && task._id === originalTempId
                 );

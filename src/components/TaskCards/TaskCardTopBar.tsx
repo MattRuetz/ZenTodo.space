@@ -108,7 +108,6 @@ const TaskCardTopBar: React.FC<TaskCardTopBarProps> = React.memo(
         };
 
         const handleSetTaskEmoji = (emoji: string) => {
-            console.log('emoji', emoji);
             if (task._id) {
                 onSetEmoji(emoji);
                 dispatch(updateTask({ _id: task._id, emoji: emoji }));

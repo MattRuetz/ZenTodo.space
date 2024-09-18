@@ -32,7 +32,6 @@ const SortingDropdown: React.FC<SortingDropdownProps> = React.memo(() => {
             dispatch(setIsReversed(false));
         }
         dispatch(setSortOption(option));
-        console.log('global option', option);
     };
 
     const sortOptionString = {

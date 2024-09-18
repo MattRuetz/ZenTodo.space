@@ -50,28 +50,6 @@ const SubtaskDrawer = React.memo(
                 (state: RootState) => state.tasks.tasks
             );
 
-            // const subtaskObjects = useMemo(() => {
-            //     if (!parentTaskId) return [];
-
-            //     const getFullTaskData = (taskId: string): Task | undefined => {
-            //         const task = allTasks.find((t) => t._id === taskId);
-            //         if (!task) return undefined;
-
-            //         return {
-            //             ...task,
-            //             subtasks: task.subtasks
-            //                 .map((subtaskId) =>
-            //                     getFullTaskData(subtaskId as unknown as string)
-            //                 )
-            //                 .filter((t): t is Task => Boolean(t)),
-            //         };
-            //     };
-
-            //     const parentTask = getFullTaskData(parentTaskId);
-            //     console.log('parentTask', parentTask);
-            //     return parentTask ? parentTask.subtasks : [];
-            // }, [allTasks, parentTaskId]);
-
             const allSubtasksOfParent = useMemo(() => {
                 if (!parentTaskId) return [];
                 return allTasks.filter((t) => t.parentTask === parentTaskId);

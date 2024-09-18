@@ -301,6 +301,7 @@ const TaskCard = React.memo(
         };
 
         const handleDuplicateTask = () => {
+            console.log('task in handleDuplicateTask', task);
             duplicateTask(task, tasksState);
         };
 

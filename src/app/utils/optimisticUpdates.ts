@@ -39,13 +39,8 @@ export const duplicateTaskWithTempIds = (
 
     let duplicatedTasks = [duplicatedTask];
 
-    console.log('task.subtasks', task.subtasks);
-
     if (task.subtasks && task.subtasks.length > 0) {
         for (const subtaskId of task.subtasks) {
-            console.log('subtaskId', subtaskId);
-
-            // WHAT IS THIS HELL
             const subtaskObject = taskMap.get(subtaskId);
 
             if (!subtaskObject) continue; // Skip if subtask is not loaded

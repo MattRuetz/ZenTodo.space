@@ -69,7 +69,6 @@ export async function POST(req: NextRequest) {
 
         // Update the space's maxZIndex
         if (space) {
-            console.log('space', space);
             await Space.findByIdAndUpdate(space, { maxZIndex: newZIndex });
         }
 
