@@ -1,81 +1,95 @@
 import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState } from '@/store/store';
+import { AppDispatch, RootState, store } from '@/store/store';
 import {
     moveSubtaskWithinLevelOptimistic,
-    moveSubtaskWithinLevel,
+    moveSubtaskWithinLevelAsync,
 } from '@/store/tasksSlice';
 import { Task } from '@/types';
+import { useCallback, useRef } from 'react';
 
 export const useMoveSubtask = () => {
     const dispatch = useDispatch<AppDispatch>();
     const tasksState = useSelector((state: RootState) => state.tasks.tasks);
 
-    const moveSubtask = async (
-        subtaskId: string,
-        parentId: string,
-        newPosition: string
-    ) => {
-        const parentTask = tasksState.find((task) => task._id === parentId);
-        const subtask = tasksState.find((task) => task._id === subtaskId);
+    const moveSubtaskTemporary = useCallback(
+        (subtaskId: string, parentId: string, newPosition: string) => {
+            const parentTask = tasksState.find((task) => task._id === parentId);
+            if (!parentTask) {
+                console.error('Parent task not found');
+                return;
+            }
 
-        if (!parentTask || !subtask) {
-            console.error('Parent task or subtask not found');
-            return;
-        }
+            let newSubtasks = [...parentTask.subtasks];
+            const currentIndex = newSubtasks.findIndex(
+                (id) => id === subtaskId
+            );
 
-        let newSubtasks = [...parentTask.subtasks];
-        const currentIndex = newSubtasks.findIndex((id) => id === subtaskId);
+            if (currentIndex === -1) {
+                console.error('Subtask not found in parent task');
+                return;
+            }
 
-        if (currentIndex === -1) {
-            console.error('Subtask not found in parent task');
-            return;
-        }
+            newSubtasks.splice(currentIndex, 1);
 
-        newSubtasks.splice(currentIndex, 1);
-
-        if (newPosition === 'start') {
-            newSubtasks.unshift(subtaskId);
-        } else if (newPosition.startsWith('after_')) {
-            const afterId = newPosition.split('_')[1];
-            const afterIndex = newSubtasks.findIndex((id) => id === afterId);
-            if (afterIndex !== -1) {
-                newSubtasks.splice(afterIndex + 1, 0, subtaskId);
+            if (newPosition === 'start') {
+                newSubtasks.unshift(subtaskId);
+            } else if (newPosition.startsWith('after_')) {
+                const afterId = newPosition.split('_')[1];
+                const afterIndex = newSubtasks.findIndex(
+                    (id) => id === afterId
+                );
+                if (afterIndex !== -1) {
+                    newSubtasks.splice(afterIndex + 1, 0, subtaskId);
+                } else {
+                    newSubtasks.push(subtaskId);
+                }
             } else {
                 newSubtasks.push(subtaskId);
             }
-        } else {
-            newSubtasks.push(subtaskId);
-        }
 
-        const updatedParentTask: Task = {
-            ...parentTask,
-            subtasks: newSubtasks,
-            isTemp: true,
-        };
+            const updatedParentTask: Task = {
+                ...parentTask,
+                subtasks: newSubtasks,
+                isTemp: true,
+            };
 
-        const updatedSubtask: Task = {
-            ...subtask,
-            isTemp: true,
-        };
-        // Dispatch optimistic update
-        dispatch(
-            moveSubtaskWithinLevelOptimistic({
-                updatedParentTask,
-                updatedSubtask,
-            })
-        );
+            dispatch(
+                moveSubtaskWithinLevelOptimistic({
+                    updatedParentTask,
+                })
+            );
+        },
+        [tasksState, dispatch]
+    );
 
-        try {
-            // Attempt to move subtask in the backend
-            await dispatch(
-                moveSubtaskWithinLevel({ subtaskId, parentId, newPosition })
-            ).unwrap();
-            // Success: State is updated in the fulfilled case
-        } catch (error) {
-            // Error: rollback optimistic updates -- handled in the .rejected case in taskSlice extra reducers
-            console.error('Failed to move subtask:', error);
-        }
-    };
+    const commitSubtaskOrder = useCallback(
+        async (parentId: string) => {
+            const state = store.getState(); // Get the latest state
+            const parentTask = state.tasks.tasks.find(
+                (task: Task) => task._id === parentId
+            );
+            if (!parentTask) {
+                console.error('Parent task not found');
+                return;
+            }
 
-    return { moveSubtask };
+            console.log('parentTask', parentTask.subtasks);
+
+            try {
+                await dispatch(
+                    moveSubtaskWithinLevelAsync({
+                        subtaskId: '',
+                        parentId,
+                        newPosition: '',
+                        newOrder: parentTask.subtasks,
+                    })
+                ).unwrap();
+            } catch (error) {
+                console.error('Failed to commit subtask order:', error);
+            }
+        },
+        [dispatch] // Remove tasksState from dependencies
+    );
+
+    return { moveSubtaskTemporary, commitSubtaskOrder };
 };

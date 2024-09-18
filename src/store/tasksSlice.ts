@@ -290,75 +290,51 @@ export const deleteTasksInSpace = createAsyncThunk(
     }
 );
 
-export const moveSubtaskWithinLevel = createAsyncThunk(
+export const moveSubtaskWithinLevelAsync = createAsyncThunk(
     'tasks/moveSubtaskWithinLevel',
     async (
         {
             subtaskId,
             parentId,
             newPosition,
-        }: { subtaskId: string; parentId: string; newPosition: string },
-        { getState, rejectWithValue }
+            newOrder,
+        }: {
+            subtaskId: string;
+            parentId: string;
+            newPosition: string;
+            newOrder?: string[];
+        },
+        { rejectWithValue }
     ) => {
-        try {
-            const state = getState() as RootState;
-            const subtask = state.tasks.tasks.find(
-                (task) => task._id === subtaskId
-            );
-            const parent = state.tasks.tasks.find(
-                (task) => task._id === parentId
-            );
+        const MAX_RETRIES = 5;
+        const INITIAL_BACKOFF = 100; // ms
 
-            if (!subtask || !parent) {
-                throw new Error('Subtask or parent not found');
-            }
+        for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+            try {
+                const response = await fetch('/api/tasks/move-subtask', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        subtaskId,
+                        parentId,
+                        newPosition,
+                        newOrder,
+                    }),
+                });
 
-            if (subtask.parentTask !== parentId) {
-                throw new Error(
-                    'Subtask does not belong to the specified parent'
-                );
-            }
-
-            let newIndex;
-            if (newPosition === 'start') {
-                newIndex = 0;
-            } else if (newPosition.startsWith('after_')) {
-                const afterId = newPosition.split('_')[1];
-                const currentIndex = parent.subtasks.findIndex(
-                    (id) => id.toString() === subtaskId
-                );
-                const afterIndex = parent.subtasks.findIndex(
-                    (id) => id.toString() === afterId
-                );
-
-                if (currentIndex < afterIndex) {
-                    // Moving down
-                    newIndex = afterIndex;
-                } else {
-                    // Moving up
-                    newIndex = afterIndex + 1;
+                if (!response.ok) {
+                    throw new Error('Failed to move subtask');
                 }
-            } else {
-                newIndex = parent.subtasks.length - 1;
-            }
 
-            const response = await fetch('/api/tasks/move-subtask', {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ subtaskId, parentId, newIndex }),
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to move subtask');
+                const data = await response.json();
+                console.log('data', data);
+                return data;
+            } catch (error) {
+                if (error instanceof Error) {
+                    return rejectWithValue(error.message);
+                }
+                return rejectWithValue('An unknown error occurred');
             }
-
-            const data = await response.json();
-            return data;
-        } catch (error) {
-            if (error instanceof Error) {
-                return rejectWithValue(error.message);
-            }
-            return rejectWithValue('An unknown error occurred');
         }
     }
 );
@@ -520,26 +496,14 @@ export const tasksSlice = createSlice({
             state,
             action: PayloadAction<{
                 updatedParentTask: Task;
-                updatedSubtask: Task;
             }>
         ) => {
-            const { updatedParentTask, updatedSubtask } = action.payload;
-            console.log('updatedParentTask', updatedParentTask);
-            console.log('updatedSubtask', updatedSubtask);
+            const { updatedParentTask } = action.payload;
             const parentIndex = state.tasks.findIndex(
                 (task) => task._id === updatedParentTask._id
             );
-            const subtaskIndex = state.tasks.findIndex(
-                (task) => task._id === updatedSubtask._id
-            );
-
-            console.log('parentIndex', parentIndex);
-            console.log('subtaskIndex', subtaskIndex);
             if (parentIndex !== -1) {
                 state.tasks[parentIndex] = updatedParentTask;
-            }
-            if (subtaskIndex !== -1) {
-                state.tasks[subtaskIndex] = updatedSubtask;
             }
         },
     },
@@ -748,21 +712,8 @@ export const tasksSlice = createSlice({
                 }));
                 state.error = action.payload as string;
             })
-            // .addCase(addNewSubtask.fulfilled, (state, action) => {
-            //     const { newSubtask, updatedParentTask } = action.payload;
-
-            //     // Add the new subtask to the tasks array
-            //     state.tasks.push(newSubtask);
-            //     // Update the parent task
-            //     const parentIndex = state.tasks.findIndex(
-            //         (task) => task._id === updatedParentTask._id
-            //     );
-            //     if (parentIndex !== -1) {
-            //         state.tasks[parentIndex] = updatedParentTask;
-            //     }
-            // })
-            .addCase(moveSubtaskWithinLevel.fulfilled, (state, action) => {
-                const { updatedParent, movedSubtask } = action.payload;
+            .addCase(moveSubtaskWithinLevelAsync.fulfilled, (state, action) => {
+                const { updatedParent } = action.payload;
 
                 // Update the parent task
                 const parentIndex = state.tasks.findIndex(
@@ -774,19 +725,8 @@ export const tasksSlice = createSlice({
                         isTemp: false,
                     };
                 }
-
-                // Update the moved subtask
-                const subtaskIndex = state.tasks.findIndex(
-                    (task) => task._id === movedSubtask._id
-                );
-                if (subtaskIndex !== -1) {
-                    state.tasks[subtaskIndex] = {
-                        ...movedSubtask,
-                        isTemp: false,
-                    };
-                }
             })
-            .addCase(moveSubtaskWithinLevel.rejected, (state, action) => {
+            .addCase(moveSubtaskWithinLevelAsync.rejected, (state, action) => {
                 // Rollback optimistic updates
                 state.tasks = state.tasks.map((task) => ({
                     ...task,

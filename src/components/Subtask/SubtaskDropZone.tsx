@@ -1,8 +1,8 @@
 import { AppDispatch, RootState } from '@/store/store';
 import { Task, TaskProgress } from '@/types';
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useDrop } from 'react-dnd';
+import { useSelector } from 'react-redux';
+import { useDrop, useDragLayer } from 'react-dnd';
 import { useMoveSubtask } from '@/hooks/useMoveSubtask';
 import { useAddNewSubtask } from '@/hooks/useAddNewSubtask';
 
@@ -13,10 +13,8 @@ interface SubtaskDropZoneProps {
 
 const SubtaskDropZone = React.memo(
     ({ position, parentTask }: SubtaskDropZoneProps) => {
-        const dispatch = useDispatch<AppDispatch>();
-
         const { addNewSubtask } = useAddNewSubtask();
-
+        const { moveSubtaskTemporary, commitSubtaskOrder } = useMoveSubtask();
         const sortOption = useSelector(
             (state: RootState) => state.ui.sortOption
         );
@@ -24,62 +22,43 @@ const SubtaskDropZone = React.memo(
         const [hoverStatus, setHoverStatus] = useState('hiding');
         const [textOpacity, setTextOpacity] = useState(0);
 
-        const hoverRef = useRef<boolean>(false);
-        const timeoutRef = useRef<NodeJS.Timeout | null>(null);
         const dropRef = useRef<HTMLLIElement>(null);
 
-        const { moveSubtask } = useMoveSubtask();
-
-        const handleDrop = useCallback(
-            (item: Task) => {
-                console.log('global option', sortOption);
+        const handleHover = useCallback(
+            (item: Task, monitor: any) => {
                 if (parentTask && parentTask._id && sortOption === 'custom') {
-                    // dispatch(
-                    //     moveSubtaskWithinLevel({
-                    //         subtaskId: item._id as string,
-                    //         parentId: parentTask._id,
-                    //         newPosition: position,
-                    //     })
-                    // );
-                    moveSubtask(item._id as string, parentTask._id, position);
-                } else {
-                    alert('Custom sorting is not enabled.');
+                    moveSubtaskTemporary(
+                        item._id as string,
+                        parentTask._id,
+                        position
+                    );
                 }
             },
-            [dispatch, parentTask, position, sortOption]
+            [parentTask, position, sortOption, moveSubtaskTemporary]
         );
 
         const [{ isOver }, drop] = useDrop(
             () => ({
                 accept: 'SUBTASK',
-                drop: handleDrop,
+                hover: handleHover,
+                // drop: handleDrop,
                 collect: (monitor) => ({
                     isOver: !!monitor.isOver(),
                 }),
             }),
-            [handleDrop]
+            [handleHover]
         );
 
         drop(dropRef);
 
         const handleMouseEnter = () => {
-            hoverRef.current = true;
-            setHoverStatus('peaking');
-            timeoutRef.current = setTimeout(() => {
-                if (hoverRef.current) {
-                    setHoverStatus('prompting-to-add');
-                    setTextOpacity(1);
-                }
-            }, 400);
+            setHoverStatus('prompting-to-add');
+            setTextOpacity(1);
         };
 
         const handleMouseLeave = () => {
-            hoverRef.current = false;
             setHoverStatus('hiding');
             setTextOpacity(0);
-            if (timeoutRef.current) {
-                clearTimeout(timeoutRef.current);
-            }
         };
 
         const handleAddSubtask = () => {
@@ -107,14 +86,6 @@ const SubtaskDropZone = React.memo(
             });
         };
 
-        useEffect(() => {
-            return () => {
-                if (timeoutRef.current) {
-                    clearTimeout(timeoutRef.current);
-                }
-            };
-        }, []);
-
         return (
             <div
                 ref={dropRef as unknown as React.RefObject<HTMLDivElement>}
@@ -139,10 +110,8 @@ const SubtaskDropZone = React.memo(
                                 className={`w-full rounded-lg transition-all duration-300 ease-in-out cursor-pointer overflow-hidden ${
                                     hoverStatus === 'hiding'
                                         ? 'h-1 bg-base-300'
-                                        : hoverStatus === 'peaking'
-                                        ? 'h-2 bg-slate-800'
                                         : 'h-7 bg-sky-950'
-                                } ${isOver ? 'py-4 bg-sky-950' : ''}`}
+                                }`}
                             >
                                 <div
                                     className="h-full flex items-center justify-center bg-sky-950 rounded-full px-2 py-1 text-sm font-semibold"

@@ -2,74 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Task from '@/models/Task';
 import { getUserId } from '@/hooks/useGetUserId';
-import mongoose from 'mongoose';
-
-const MAX_RETRIES = 3;
-const RETRY_DELAY = 100; // milliseconds
-
-// async function moveSubtask(
-//     userId: string,
-//     subtaskId: string,
-//     parentId: string,
-//     newIndex: number,
-//     retryCount = 0
-// ): Promise<any> {
-//     try {
-//         const subtask = await Task.findOne({ _id: subtaskId, user: userId });
-//         if (!subtask) {
-//             return { error: 'Subtask not found', status: 404 };
-//         }
-
-//         const parent = await Task.findOne({ _id: parentId, user: userId });
-
-//         if (!parent) {
-//             return { error: 'Parent task not found', status: 404 };
-//         }
-
-//         if (subtask.parentTask.toString() !== parentId) {
-//             return {
-//                 error: 'Subtask does not belong to the specified parent',
-//                 status: 400,
-//             };
-//         }
-
-//         // Remove subtask from its current position
-//         parent.subtasks = parent.subtasks.filter(
-//             (id: mongoose.Types.ObjectId) => id.toString() !== subtaskId
-//         );
-
-//         // Add subtask to the new position
-//         parent.subtasks.splice(newIndex, 0, subtaskId);
-//         await parent.save();
-
-//         return {
-//             updatedParent: parent,
-//             movedSubtask: subtask,
-//         };
-//     } catch (error) {
-//         if (
-//             error instanceof mongoose.Error.VersionError &&
-//             retryCount < MAX_RETRIES
-//         ) {
-//             await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
-//             return moveSubtask(
-//                 userId,
-//                 subtaskId,
-//                 parentId,
-//                 newIndex,
-//                 retryCount + 1
-//             );
-//         }
-//         throw error;
-//     }
-// }
 
 export async function PUT(req: NextRequest) {
     try {
         await dbConnect();
         const userId = await getUserId(req);
         const body = await req.json();
-        const { subtaskId, parentId, newIndex } = body;
+        const { subtaskId, parentId, newPosition, newOrder } = body;
 
         const parentTask = await Task.findOne({ _id: parentId, user: userId });
         if (!parentTask) {
@@ -79,26 +18,41 @@ export async function PUT(req: NextRequest) {
             );
         }
 
-        const subtaskIndex = parentTask.subtasks.indexOf(subtaskId);
-        if (subtaskIndex === -1) {
-            return NextResponse.json(
-                { error: 'Subtask not found in parent task' },
-                { status: 404 }
-            );
-        }
+        if (newOrder) {
+            // Update the order based on the provided newOrder
+            parentTask.subtasks = newOrder;
+        } else {
+            // Existing logic for moving a single subtask
+            const subtaskIndex = parentTask.subtasks.indexOf(subtaskId);
+            if (subtaskIndex === -1) {
+                return NextResponse.json(
+                    { error: 'Subtask not found in parent task' },
+                    { status: 404 }
+                );
+            }
 
-        // Remove subtask from its current position
-        parentTask.subtasks.splice(subtaskIndex, 1);
-        // Insert subtask at the new position
-        parentTask.subtasks.splice(newIndex, 0, subtaskId);
+            // Remove subtask from its current position
+            parentTask.subtasks.splice(subtaskIndex, 1);
+            // Insert subtask at the new position
+            if (newPosition === 'start') {
+                parentTask.subtasks.unshift(subtaskId);
+            } else if (newPosition.startsWith('after_')) {
+                const afterId = newPosition.split('_')[1];
+                const afterIndex = parentTask.subtasks.indexOf(afterId);
+                if (afterIndex !== -1) {
+                    parentTask.subtasks.splice(afterIndex + 1, 0, subtaskId);
+                } else {
+                    parentTask.subtasks.push(subtaskId);
+                }
+            } else {
+                parentTask.subtasks.push(subtaskId);
+            }
+        }
 
         await parentTask.save();
 
-        const movedSubtask = await Task.findById(subtaskId);
-
         return NextResponse.json({
             updatedParent: parentTask,
-            movedSubtask: movedSubtask,
         });
     } catch (error) {
         console.error('Error moving subtask:', error);

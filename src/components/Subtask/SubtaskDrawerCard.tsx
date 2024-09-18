@@ -10,6 +10,7 @@ import { setSimplicityModalOpen } from '@/store/uiSlice';
 import { SubtaskTopBar } from './SubtaskTopBar';
 import { SubtaskBottomBar } from './SubtaskBottomBar';
 import { useChangeHierarchy } from '@/hooks/useChangeHierarchy';
+import { useMoveSubtask } from '@/hooks/useMoveSubtask';
 
 interface SubtaskDrawerCardProps {
     subtask: Task;
@@ -25,6 +26,12 @@ const SubtaskDrawerCard = React.memo(
         const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
         const currentTaskNameRef = useRef(subtask?.taskName || '');
         const ref = useRef<HTMLLIElement>(null);
+
+        const { commitSubtaskOrder } = useMoveSubtask();
+
+        const parentTask = useSelector((state: RootState) =>
+            state.tasks.tasks.find((task) => task._id === subtask.parentTask)
+        );
 
         const { convertTaskToSubtask, convertSubtaskToTask } =
             useChangeHierarchy();
@@ -71,6 +78,13 @@ const SubtaskDrawerCard = React.memo(
             [localSubtask, dispatch, position]
         );
 
+        const handleDropOnSelf = useCallback(() => {
+            console.log('parentTask', parentTask?.taskName);
+            if (parentTask && parentTask._id) {
+                commitSubtaskOrder(parentTask._id);
+            }
+        }, [parentTask, commitSubtaskOrder]);
+
         const handleDrop = useCallback(
             (item: Task) => {
                 const targetSubtask = subtask;
@@ -91,6 +105,8 @@ const SubtaskDrawerCard = React.memo(
                         draggedSubtask.ancestors.length > 1);
 
                 if (draggedSubtask._id === targetSubtask._id) {
+                    // If it drops on itself, change order
+                    handleDropOnSelf();
                     return;
                 } else if (!isAlreadyParent) {
                     handleConvertTaskToSubtask(
