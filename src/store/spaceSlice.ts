@@ -200,7 +200,6 @@ const spaceSlice = createSlice({
                 }
             })
             .addCase(updateSpaceSelectedEmojis.fulfilled, (state, action) => {
-                console.log('PAYLOAD', action.payload);
                 const space = state.spaces.find(
                     (space) => space._id === action.payload._id
                 );

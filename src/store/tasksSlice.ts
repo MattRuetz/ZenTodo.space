@@ -15,30 +15,30 @@ const initialState: TasksState = {
     error: null,
 };
 
-export const fetchTasks = createAsyncThunk(
-    'tasks/fetchTasks',
-    async (spaceId: string) => {
-        const response = await fetch(`/api/tasks?spaceId=${spaceId}`);
-        if (!response.ok) {
-            throw new Error('Failed to fetch tasks');
-        }
-        const tasks = await response.json();
-        return tasks;
+export const fetchTasks = createAsyncThunk('tasks/fetchTasks', async () => {
+    const response = await fetch(`/api/tasks`);
+    if (!response.ok) {
+        throw new Error('Failed to fetch tasks');
     }
-);
+    const tasks = await response.json();
+    return tasks;
+});
 
-export const addTask = createAsyncThunk(
+export const addTaskAsync = createAsyncThunk(
     'tasks/addTask',
-    async (task: Omit<Task, '_id'>, { rejectWithValue }) => {
+    async (
+        { task, tempId }: { task: Omit<Task, '_id'>; tempId: string },
+        { rejectWithValue }
+    ) => {
         try {
             const response = await fetch('/api/tasks', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(task),
+                body: JSON.stringify({ ...task, tempId }),
             });
             if (!response.ok) throw new Error('Failed to add task');
             const data = await response.json();
-            return data.task as Task;
+            return { newTask: data.task, originalTempId: data.originalTempId };
         } catch (error) {
             if (error instanceof Error) {
                 return rejectWithValue(error.message);
@@ -48,14 +48,20 @@ export const addTask = createAsyncThunk(
     }
 );
 
-export const addNewSubtask = createAsyncThunk(
+export const addNewSubtaskAsync = createAsyncThunk(
     'tasks/addNewSubtask',
     async (
         {
             subtask,
             parentId,
             position,
-        }: { subtask: Omit<Task, '_id'>; parentId?: string; position: string },
+            tempId,
+        }: {
+            subtask: Omit<Task, '_id'>;
+            parentId?: string;
+            position: string;
+            tempId: string;
+        },
         { rejectWithValue }
     ) => {
         try {
@@ -74,6 +80,7 @@ export const addNewSubtask = createAsyncThunk(
                     subtasks: [],
                     ancestors: subtask.ancestors,
                     position: position,
+                    originalTempId: tempId,
                 }),
             });
 
@@ -373,12 +380,55 @@ export const tasksSlice = createSlice({
     name: 'tasks',
     initialState,
     reducers: {
-        hideNewChildTask: (state, action: PayloadAction<string>) => {
-            state.tasks = state.tasks.filter(
-                (task) => task._id !== action.payload
-            );
-        },
+        // hideNewChildTask: (state, action: PayloadAction<string>) => {
+        //     state.tasks = state.tasks.filter(
+        //         (task) => task._id !== action.payload
+        //     );
+        // },
         // Optimistic duplication of tasks
+        addTaskOptimistic: (state, action: PayloadAction<Task>) => {
+            state.tasks.push(action.payload);
+        },
+
+        addNewSubtaskOptimistic: (
+            state,
+            action: PayloadAction<{
+                newSubtask: Task;
+                parentId?: string;
+                position: string;
+            }>
+        ) => {
+            const { newSubtask, parentId, position } = action.payload;
+            state.tasks.push(newSubtask);
+
+            if (parentId) {
+                const parentTask = state.tasks.find(
+                    (task) => task._id === parentId
+                );
+                if (parentTask && newSubtask._id) {
+                    if (position === 'start') {
+                        parentTask.subtasks.unshift(newSubtask._id);
+                    } else if (position.startsWith('after_')) {
+                        const afterId = position.split('_')[1];
+                        const index = parentTask.subtasks.findIndex(
+                            (id) => id === afterId
+                        );
+                        if (index !== -1) {
+                            parentTask.subtasks.splice(
+                                index + 1,
+                                0,
+                                newSubtask._id
+                            );
+                        } else {
+                            parentTask.subtasks.push(newSubtask._id);
+                        }
+                    } else {
+                        parentTask.subtasks.push(newSubtask._id);
+                    }
+                }
+            }
+        },
+
         duplicateTasksOptimistic: (state, action: PayloadAction<Task[]>) => {
             state.tasks.push(...action.payload);
         },
@@ -470,14 +520,57 @@ export const tasksSlice = createSlice({
             })
             .addCase(fetchTasks.fulfilled, (state, action) => {
                 state.status = 'succeeded';
+                console.log('action.payload', action.payload);
                 state.tasks = action.payload.tasks;
             })
             .addCase(fetchTasks.rejected, (state, action) => {
                 state.status = 'failed';
                 state.error = action.error.message || null;
             })
-            .addCase(addTask.fulfilled, (state, action) => {
-                state.tasks.push(action.payload);
+            .addCase(addTaskAsync.fulfilled, (state, action) => {
+                const { newTask, originalTempId } = action.payload;
+
+                console.log('newTask', newTask);
+                const tempTask = state.tasks.find(
+                    (task) => task.isTemp && task._id === originalTempId
+                );
+                if (tempTask) {
+                    Object.assign(tempTask, { ...newTask, isTemp: false });
+                } else {
+                    state.tasks.push(newTask);
+                }
+            })
+            .addCase(addTaskAsync.rejected, (state, action) => {
+                state.tasks = state.tasks.filter((task) => !task.isTemp);
+                state.error = action.payload as string;
+            })
+            .addCase(addNewSubtaskAsync.fulfilled, (state, action) => {
+                const { newSubtask, updatedParentTask } = action.payload;
+                const tempSubtask = state.tasks.find(
+                    (task) =>
+                        task.isTemp && task._id === newSubtask.originalTempId
+                );
+                if (tempSubtask) {
+                    Object.assign(tempSubtask, {
+                        ...newSubtask,
+                        isTemp: false,
+                    });
+                } else {
+                    state.tasks.push(newSubtask);
+                }
+
+                if (updatedParentTask) {
+                    const parentIndex = state.tasks.findIndex(
+                        (task) => task._id === updatedParentTask._id
+                    );
+                    if (parentIndex !== -1) {
+                        state.tasks[parentIndex] = updatedParentTask;
+                    }
+                }
+            })
+            .addCase(addNewSubtaskAsync.rejected, (state, action) => {
+                state.tasks = state.tasks.filter((task) => !task.isTemp);
+                state.error = action.payload as string;
             })
             .addCase(updateTask.fulfilled, (state, action) => {
                 const index = state.tasks.findIndex(
@@ -625,19 +718,19 @@ export const tasksSlice = createSlice({
                 }));
                 state.error = action.payload as string;
             })
-            .addCase(addNewSubtask.fulfilled, (state, action) => {
-                const { newSubtask, updatedParentTask } = action.payload;
+            // .addCase(addNewSubtask.fulfilled, (state, action) => {
+            //     const { newSubtask, updatedParentTask } = action.payload;
 
-                // Add the new subtask to the tasks array
-                state.tasks.push(newSubtask);
-                // Update the parent task
-                const parentIndex = state.tasks.findIndex(
-                    (task) => task._id === updatedParentTask._id
-                );
-                if (parentIndex !== -1) {
-                    state.tasks[parentIndex] = updatedParentTask;
-                }
-            })
+            //     // Add the new subtask to the tasks array
+            //     state.tasks.push(newSubtask);
+            //     // Update the parent task
+            //     const parentIndex = state.tasks.findIndex(
+            //         (task) => task._id === updatedParentTask._id
+            //     );
+            //     if (parentIndex !== -1) {
+            //         state.tasks[parentIndex] = updatedParentTask;
+            //     }
+            // })
             .addCase(moveSubtaskWithinLevel.fulfilled, (state, action) => {
                 const { updatedParent, movedSubtask } = action.payload;
 
@@ -751,11 +844,13 @@ export const selectSubtasksByParentId = (state: RootState, parentId: string) =>
     state.tasks.tasks.filter((task) => task.parentTask === parentId);
 
 export const {
-    hideNewChildTask,
+    // hideNewChildTask,
     duplicateTasksOptimistic,
     convertTaskToSubtaskOptimistic,
     convertSubtaskToTaskOptimistic,
     moveSubtaskWithinLevelOptimistic,
+    addNewSubtaskOptimistic,
+    addTaskOptimistic,
 } = tasksSlice.actions;
 
 export default tasksSlice.reducer;

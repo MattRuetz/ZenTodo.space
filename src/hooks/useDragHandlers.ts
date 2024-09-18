@@ -100,6 +100,7 @@ export const useDragHandlers = ({
             if (!isDragging) return;
             if (!allowDropRef.current) {
                 setIsDragging(false);
+                onDragStop();
                 dispatch(setGlobalDragging(false));
                 dispatch(setDraggingCardId(null));
                 return;

@@ -1,9 +1,8 @@
 import React, { useCallback, useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { createSelector } from '@reduxjs/toolkit';
 import { AppDispatch, RootState } from '../../store/store';
-import { convertTaskToSubtask, updateTask } from '@/store/tasksSlice';
+import { updateTask } from '@/store/tasksSlice';
 import { Task, TaskProgress } from '@/types';
 import { useDrag, useDrop } from 'react-dnd';
 import { store } from '@/store/store';
@@ -100,9 +99,9 @@ const SubtaskDrawerCard = React.memo(
                     setLocalSubtask((prevSubtask) => ({
                         ...prevSubtask,
                         subtasks: [
-                            ...(prevSubtask.subtasks as Task[]),
-                            draggedSubtask as Task,
-                        ],
+                            ...prevSubtask.subtasks,
+                            draggedSubtask,
+                        ] as string[],
                     }));
                 } else {
                     dispatch(setSimplicityModalOpen(true));

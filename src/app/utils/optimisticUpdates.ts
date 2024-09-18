@@ -33,21 +33,21 @@ export const duplicateTaskWithTempIds = (
         taskName: `(Copy) ${task.taskName}`,
         isTemp: true,
         parentTask: parentTempId,
-        subtasks: [],
+        subtasks: [], // Initialize with an empty array
         ancestors: parentTempId ? [...parentAncestors, parentTempId] : [],
     };
 
     let duplicatedTasks = [duplicatedTask];
 
+    console.log('task.subtasks', task.subtasks);
+
     if (task.subtasks && task.subtasks.length > 0) {
         for (const subtaskId of task.subtasks) {
-            let subtaskObject: Task | undefined;
+            console.log('subtaskId', subtaskId);
 
-            if (typeof subtaskId === 'string') {
-                subtaskObject = taskMap.get(subtaskId);
-            } else if (typeof subtaskId === 'object') {
-                subtaskObject = subtaskId;
-            }
+            // WHAT IS THIS HELL
+            const subtaskObject = taskMap.get(subtaskId);
+
             if (!subtaskObject) continue; // Skip if subtask is not loaded
 
             const { duplicatedTasks: subDuplicatedTasks } =
@@ -55,8 +55,10 @@ export const duplicateTaskWithTempIds = (
                     ...(duplicatedTask.ancestors || []),
                 ]);
 
-            // Only add the first element of subDuplicatedTasks to the subtasks array
-            duplicatedTask.subtasks.push(subDuplicatedTasks[0]._id || '');
+            // Add the ID of the first duplicated subtask to the current task's subtasks array
+            duplicatedTask.subtasks.push(subDuplicatedTasks[0]._id as string);
+
+            // Add all duplicated subtasks to the overall duplicatedTasks array
             duplicatedTasks = [...duplicatedTasks, ...subDuplicatedTasks];
         }
     }

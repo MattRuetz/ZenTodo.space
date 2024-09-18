@@ -1,5 +1,11 @@
+import mongoose from 'mongoose';
+
 export const generateTempId = () =>
     `temp-${Math.random().toString(36).substr(2, 9)}`;
+
+export const generateNewObjectId = (id: string) => {
+    return new mongoose.Types.ObjectId(id);
+};
 
 export const generateRandomDarkColor = () => {
     // Generate a random color in the HSL space

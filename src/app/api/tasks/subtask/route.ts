@@ -95,6 +95,8 @@ export async function POST(req: NextRequest) {
 
         const savedTask = await newTask.save();
 
+        savedTask.originalTempId = body.originalTempId;
+
         return NextResponse.json(
             {
                 newSubtask: savedTask,

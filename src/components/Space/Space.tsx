@@ -8,7 +8,7 @@ import TaskCard from '../TaskCards/TaskCard';
 import SignUpForm from '../SignUpForm';
 import SubtaskDrawer from '../Subtask/SubtaskDrawer';
 import { RootState, AppDispatch } from '../../store/store';
-import { addTask, fetchTasks, updateTask } from '../../store/tasksSlice';
+import { fetchTasks, updateTask } from '../../store/tasksSlice';
 import {
     updateSpaceMaxZIndex,
     fetchSpaceMaxZIndex,
@@ -18,6 +18,7 @@ import { TaskProgress, Task } from '@/types';
 import { selectTasksForSpace } from '@/store/selectors';
 import { createSelector } from '@reduxjs/toolkit';
 import { useClearEmojis } from '@/hooks/useClearEmojis';
+import { useAddTask } from '@/hooks/useAddTask';
 
 // Memoized selectors
 
@@ -37,13 +38,15 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId, onLoaded }) => {
     const tasks = useSelector((state: RootState) =>
         selectTasksForSpace(state, spaceId)
     );
-    const taskStatus = useSelector((state: RootState) => state.tasks.status);
     const currentSpace = useSelector(
         (state: RootState) => state.spaces.currentSpace
     );
     const selectedEmojis = useSelector(selectSelectedEmojis);
     const isDrawerOpen = useSelector(
         (state: RootState) => state.ui.isSubtaskDrawerOpen
+    );
+    const isGlobalDragging = useSelector(
+        (state: RootState) => state.ui.isGlobalDragging
     );
 
     const { clearEmojis } = useClearEmojis(spaceId);
@@ -60,6 +63,8 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId, onLoaded }) => {
     const spaceRef = useRef<HTMLDivElement>(null);
 
     const COOLDOWN_TIME = 500; // ms
+
+    const { addTask } = useAddTask();
 
     const normalizeZIndexValues = useCallback(() => {
         const sortedTasks = [...tasks].sort((a, b) => a.zIndex - b.zIndex);
@@ -105,7 +110,8 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId, onLoaded }) => {
 
     useEffect(() => {
         dispatch(fetchSpaceMaxZIndex(spaceId));
-        dispatch(fetchTasks(spaceId));
+        dispatch(fetchTasks());
+        console.log('tasks', tasks);
     }, [spaceId, dispatch]);
 
     const handleCloseDrawer = () => dispatch(setSubtaskDrawerOpen(false));
@@ -205,7 +211,7 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId, onLoaded }) => {
                         width: 270,
                         height: 250,
                     };
-                    dispatch(addTask(newTask));
+                    addTask(newTask);
                     setCanCreateTask(false);
                     setTimeout(() => setCanCreateTask(true), COOLDOWN_TIME);
                 }
@@ -221,9 +227,7 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId, onLoaded }) => {
         isDraggingRef.current = true;
     };
     const handleDragStop = () => {
-        setTimeout(() => {
-            isDraggingRef.current = false;
-        }, 0);
+        isDraggingRef.current = false;
     };
 
     // Combine the drop ref with the space ref
@@ -253,7 +257,7 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId, onLoaded }) => {
                         .map((task) => (
                             <TaskCard
                                 key={task._id}
-                                task={task as Task}
+                                task={task as unknown as Task}
                                 onDragStart={handleDragStart}
                                 onDragStop={handleDragStop}
                                 getNewZIndex={getNewZIndex}

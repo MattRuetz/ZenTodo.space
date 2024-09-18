@@ -20,9 +20,9 @@ export const selectTasksForSpace = createSelector(
         );
         return tasksInSpace.map((task) => ({
             ...task,
-            subtasks: tasks.filter(
-                (subtask) => subtask.parentTask === task._id
-            ),
+            subtasks: tasks
+                .filter((subtask) => subtask.parentTask === task._id)
+                .map((subtask) => subtask._id), // Only include the IDs
         }));
     }
 );
@@ -36,12 +36,23 @@ export const selectSubtasks = createSelector(
         const subtasks =
             task?.subtasks
                 ?.map((subtask) =>
-                    tasks.find(
-                        (t) => t._id === (subtask._id as unknown as string)
-                    )
+                    tasks.find((t) => t._id === (subtask as string))
                 )
                 .filter((t): t is Task => t !== undefined) || [];
 
         return subtasks;
     }
 );
+
+// Selector to get tasks by their IDs
+// export const selectTasksByIds = createSelector(
+//     [
+//         (state: RootState) => state.tasks.tasks,
+//         (state: RootState, taskIds: string[]) => taskIds,
+//     ],
+//     (tasks, taskIds) => {
+//         return taskIds
+//             .map((id) => tasks.find((task) => task._id === id))
+//             .filter((task): task is Task => task !== undefined);
+//     }
+// );

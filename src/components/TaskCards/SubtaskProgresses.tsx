@@ -7,6 +7,7 @@ import {
 import { Task } from '@/types';
 import { Tooltip } from 'react-tooltip';
 import { AppDispatch, RootState } from '@/store/store';
+import { selectSubtasks } from '@/store/selectors';
 
 export interface SubtaskProgressesProps {
     task: Task;
@@ -15,6 +16,10 @@ export interface SubtaskProgressesProps {
 const SubtaskProgresses: React.FC<SubtaskProgressesProps> = React.memo(
     ({ task }) => {
         const dispatch = useDispatch<AppDispatch>();
+
+        const subtasks = useSelector((state: RootState) =>
+            selectSubtasks(state, task)
+        );
 
         const isSubtaskDrawerOpen = useSelector(
             (state: RootState) => state.ui.isSubtaskDrawerOpen
@@ -27,7 +32,7 @@ const SubtaskProgresses: React.FC<SubtaskProgressesProps> = React.memo(
         }, [dispatch, task._id, isSubtaskDrawerOpen]);
 
         const subtaskProgresses = useMemo(() => {
-            return task.subtasks.reduce(
+            return subtasks.reduce(
                 (acc, subtask) => {
                     if (subtask) {
                         switch (subtask.progress) {
