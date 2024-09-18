@@ -82,6 +82,7 @@ const SubtaskDropZone = React.memo(
 
             addNewSubtask({
                 subtask: newSubtask,
+                parentId: parentTask?._id as string,
                 position: position,
             });
         };
