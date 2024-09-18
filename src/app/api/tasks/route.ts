@@ -42,6 +42,7 @@ export async function POST(req: NextRequest) {
             ancestors,
             subtasks,
             emoji,
+            tempId,
         } = body;
 
         // Get the current maxZIndex for the space and increment it
@@ -68,11 +69,13 @@ export async function POST(req: NextRequest) {
 
         // Update the space's maxZIndex
         if (space) {
-            console.log('space', space);
             await Space.findByIdAndUpdate(space, { maxZIndex: newZIndex });
         }
 
-        return NextResponse.json({ task: savedTask }, { status: 201 });
+        return NextResponse.json(
+            { task: savedTask, originalTempId: tempId },
+            { status: 201 }
+        );
     } catch (error) {
         console.error('Error creating task:', error);
         return NextResponse.json(

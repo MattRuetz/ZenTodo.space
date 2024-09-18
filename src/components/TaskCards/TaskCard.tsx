@@ -5,19 +5,8 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import Draggable from 'react-draggable';
 import debounce from 'lodash.debounce';
-import {
-    updateTask,
-    hideNewChildTask,
-    convertTaskToSubtask,
-    moveTaskToSpace,
-    addNewSubtask,
-} from '../../store/tasksSlice';
-import {
-    setSubtaskDrawerOpen,
-    setSubtaskDrawerParentId,
-} from '../../store/uiSlice';
+import { updateTask, moveTaskToSpace } from '../../store/tasksSlice';
 import { AppDispatch, RootState } from '../../store/store';
-import TaskCardToolBar from './TaskCardBottomBar';
 import { Task, TaskProgress } from '@/types';
 import DraggableArea from './DraggableArea';
 import { useThrottle } from '@/hooks/useThrottle';
@@ -28,11 +17,8 @@ import { useDeleteTask } from '@/hooks/useDeleteTask';
 import { useResizeHandle } from '@/hooks/useResizeHandle';
 import { toast } from 'react-toastify';
 import TaskCardTopBar from './TaskCardTopBar';
-import { FaX } from 'react-icons/fa6';
-import { FaInfoCircle } from 'react-icons/fa';
-import { useDateString, useDateTimeString } from '@/hooks/useDateString';
 import { TaskDetails } from '../TaskDetails';
-import { useAddSubtask } from '@/hooks/useAddSubtask';
+import { useAddNewSubtask } from '@/hooks/useAddNewSubtask';
 import TaskCardBottomBar from './TaskCardBottomBar';
 import { useDuplicateTask } from '@/hooks/useDuplicateTask';
 import { useChangeHierarchy } from '@/hooks/useChangeHierarchy';
@@ -58,8 +44,7 @@ const TaskCard = React.memo(
         const tasksState = useSelector((state: RootState) => state.tasks.tasks);
 
         const { duplicateTask } = useDuplicateTask();
-        const { convertTaskToSubtask, convertSubtaskToTask } =
-            useChangeHierarchy();
+        const { convertTaskToSubtask } = useChangeHierarchy();
 
         const {
             localTask,
@@ -185,7 +170,7 @@ const TaskCard = React.memo(
             allowDrop,
         });
 
-        const { handleAddSubtask } = useAddSubtask({ task, position: 'start' });
+        const { addNewSubtask } = useAddNewSubtask();
 
         const { handleDelete } = useDeleteTask({
             deletingTasks,
@@ -234,12 +219,14 @@ const TaskCard = React.memo(
             };
         }, [isGlobalDragging, draggingCardId, task._id, isDraggingOver]);
 
-        const opacity = useFadeOutEffect(
-            localTask,
-            isHovering,
-            isFocused,
-            handleDelete
-        );
+        const opacity = 100;
+
+        // = useFadeOutEffect(
+        //     localTask,
+        //     isHovering,
+        //     isFocused,
+        //     handleDelete
+        // );
 
         // Force re-render every animation frame
         const [, forceUpdate] = useState({});
@@ -314,6 +301,7 @@ const TaskCard = React.memo(
         };
 
         const handleDuplicateTask = () => {
+            console.log('task in handleDuplicateTask', task);
             duplicateTask(task, tasksState);
         };
 
@@ -323,6 +311,25 @@ const TaskCard = React.memo(
 
         const handleSetEmoji = (emoji: string) => {
             setLocalTask((prevTask) => ({ ...prevTask, emoji }));
+        };
+
+        const handleAddSubtask = () => {
+            addNewSubtask({
+                subtask: {
+                    taskName: 'New Subtask',
+                    taskDescription: '',
+                    x: 0,
+                    y: 0,
+                    width: 100,
+                    height: 100,
+                    subtasks: [],
+                    zIndex: 0,
+                    progress: 'Not Started',
+                    space: localTask.space || '',
+                },
+                parentId: localTask._id,
+                position: 'start',
+            });
         };
 
         const cardStyle: React.CSSProperties = useMemo(

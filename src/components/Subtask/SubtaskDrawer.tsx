@@ -7,7 +7,6 @@ import React, {
     useEffect,
 } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { createSelector } from '@reduxjs/toolkit';
 import { AppDispatch, RootState } from '@/store/store';
 import { Task } from '@/types';
 import SubtaskDrawerCard from './SubtaskDrawerCard';
@@ -51,25 +50,9 @@ const SubtaskDrawer = React.memo(
                 (state: RootState) => state.tasks.tasks
             );
 
-            const subtasks = useMemo(() => {
+            const allSubtasksOfParent = useMemo(() => {
                 if (!parentTaskId) return [];
-
-                const getFullTaskData = (taskId: string): Task | undefined => {
-                    const task = allTasks.find((t) => t._id === taskId);
-                    if (!task) return undefined;
-
-                    return {
-                        ...task,
-                        subtasks: task.subtasks
-                            .map((subtaskId) =>
-                                getFullTaskData(subtaskId as unknown as string)
-                            )
-                            .filter((t): t is Task => Boolean(t)),
-                    };
-                };
-
-                const parentTask = getFullTaskData(parentTaskId);
-                return parentTask ? parentTask.subtasks : [];
+                return allTasks.filter((t) => t.parentTask === parentTaskId);
             }, [allTasks, parentTaskId]);
 
             const parentTask = useMemo(() => {
@@ -90,7 +73,7 @@ const SubtaskDrawer = React.memo(
             );
 
             const sortedSubtasks = useMemo(() => {
-                let sorted = [...subtasks];
+                let sorted = [...allSubtasksOfParent];
                 switch (sortOption) {
                     case 'name':
                         sorted.sort((a, b) =>
@@ -123,7 +106,7 @@ const SubtaskDrawer = React.memo(
                     sorted.reverse();
                 }
                 return sorted;
-            }, [subtasks, sortOption, isReversed]);
+            }, [allSubtasksOfParent, sortOption, isReversed]);
 
             const [isTaskCardOver, setIsTaskCardOver] = useState(false);
 

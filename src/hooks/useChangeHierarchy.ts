@@ -31,7 +31,7 @@ export const useChangeHierarchy = () => {
             ...(taskMap.get(parentTaskId) as Task),
             subtasks: [
                 ...(taskMap.get(parentTaskId)?.subtasks || []),
-                updatedTask,
+                updatedTask._id as string,
             ],
             isTemp: true,
         };

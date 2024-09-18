@@ -7,12 +7,12 @@ import { useEffect, useRef, useState } from 'react';
 import { TaskDetails } from '../TaskDetails';
 import { TaskDueDatePicker } from '../TaskCards/TaskDueDatePicker';
 import { DueDateIndicator } from '../TaskCards/DueDateIndicator';
-import { useAddSubtask } from '@/hooks/useAddSubtask';
+import { useAddNewSubtask } from '@/hooks/useAddNewSubtask';
 import { useDeleteTask } from '@/hooks/useDeleteTask';
 import EmojiDropdown from '../EmojiDropdown';
 import { updateTask } from '@/store/tasksSlice';
-import { useDispatch } from 'react-redux';
-import { AppDispatch } from '@/store/store';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '@/store/store';
 import { toast } from 'react-toastify';
 import { useDuplicateTask } from '@/hooks/useDuplicateTask';
 
@@ -35,6 +35,10 @@ export const SubtaskTopBar = ({
 
     const menuRef = useRef<HTMLDivElement>(null);
     const datePickerRef = useRef<HTMLDivElement>(null);
+
+    const currentSpaceId = useSelector(
+        (state: RootState) => state.spaces.currentSpace?._id
+    );
 
     const { duplicateTask } = useDuplicateTask();
 
@@ -69,10 +73,26 @@ export const SubtaskTopBar = ({
         setIsSubtaskMenuOpen(false);
     };
 
-    const { handleAddSubtask } = useAddSubtask({
-        task: subtask,
-        position: 'start',
-    });
+    const { addNewSubtask } = useAddNewSubtask();
+
+    const handleAddSubtask = () => {
+        addNewSubtask({
+            subtask: {
+                taskName: 'New Subtask',
+                taskDescription: '',
+                x: 0,
+                y: 0,
+                width: 100,
+                height: 100,
+                subtasks: [],
+                zIndex: 0,
+                progress: 'Not Started',
+                space: currentSpaceId || '',
+            },
+            parentId: subtask._id,
+            position: 'start',
+        });
+    };
 
     const { handleDelete } = useDeleteTask({
         deletingTasks,
@@ -83,11 +103,6 @@ export const SubtaskTopBar = ({
         if (subtask._id) {
             dispatch(updateTask({ _id: subtask._id, emoji: emoji }));
         }
-    };
-
-    const handleDuplicateTask = () => {
-        duplicateTask(subtask);
-        toast.success('Task duplicated successfully');
     };
 
     return (

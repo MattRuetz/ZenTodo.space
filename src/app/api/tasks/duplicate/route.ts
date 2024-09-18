@@ -54,7 +54,10 @@ export async function POST(req: NextRequest) {
             duplicatedTasks.push(newTask);
 
             // Recursively duplicate subtasks
-            for (const subtask of taskData.subtasks) {
+            const subtasks = tasks.filter(
+                (task) => task.parentTask === taskData._id
+            );
+            for (const subtask of subtasks) {
                 const duplicatedSubtask = await duplicateTask(subtask);
                 newTask.subtasks.push(duplicatedSubtask._id);
             }
@@ -69,7 +72,11 @@ export async function POST(req: NextRequest) {
 
         // Process all tasks
         for (const task of tasks) {
-            await duplicateTask(task);
+            // Only process the main parent task
+            // We'll duplicate the subtasks in the recursive function
+            if (!task.parentTask) {
+                await duplicateTask(task);
+            }
         }
 
         return NextResponse.json({ tasks: duplicatedTasks }, { status: 201 });

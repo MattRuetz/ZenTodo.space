@@ -30,6 +30,7 @@ export async function POST(req: NextRequest) {
             zIndex,
             position,
             dueDate,
+            originalTempId,
         } = body;
 
         const newTask = new Task({
@@ -45,6 +46,7 @@ export async function POST(req: NextRequest) {
             subtasks: [],
             ancestors: ancestors,
             dueDate: dueDate,
+            originalTempId: originalTempId,
         });
 
         let updateOperation;
@@ -99,6 +101,7 @@ export async function POST(req: NextRequest) {
             {
                 newSubtask: savedTask,
                 updatedParentTask: updatedParentTask,
+                originalTempId: body.originalTempId,
             },
             { status: 201 }
         );

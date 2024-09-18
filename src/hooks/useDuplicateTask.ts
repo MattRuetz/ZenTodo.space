@@ -14,6 +14,7 @@ export const useDuplicateTask = () => {
     const dispatch = useDispatch<AppDispatch>();
 
     const duplicateTask = async (task: Task, tasksState: Task[]) => {
+        // console.log('tasksState', tasksState);
         // Pre-fetch all necessary task objects
         if (!task._id) {
             console.error('Task ID is undefined');

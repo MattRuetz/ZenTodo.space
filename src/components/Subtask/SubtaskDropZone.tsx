@@ -1,10 +1,10 @@
 import { AppDispatch, RootState } from '@/store/store';
-import { addNewSubtask } from '@/store/tasksSlice';
 import { Task, TaskProgress } from '@/types';
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useDrop } from 'react-dnd';
 import { useMoveSubtask } from '@/hooks/useMoveSubtask';
+import { useAddNewSubtask } from '@/hooks/useAddNewSubtask';
 
 interface SubtaskDropZoneProps {
     position: string;
@@ -14,6 +14,8 @@ interface SubtaskDropZoneProps {
 const SubtaskDropZone = React.memo(
     ({ position, parentTask }: SubtaskDropZoneProps) => {
         const dispatch = useDispatch<AppDispatch>();
+
+        const { addNewSubtask } = useAddNewSubtask();
 
         const sortOption = useSelector(
             (state: RootState) => state.ui.sortOption
@@ -99,12 +101,10 @@ const SubtaskDropZone = React.memo(
                 emoji: '',
             };
 
-            dispatch(
-                addNewSubtask({
-                    subtask: newSubtask,
-                    position: position,
-                })
-            );
+            addNewSubtask({
+                subtask: newSubtask,
+                position: position,
+            });
         };
 
         useEffect(() => {

@@ -1,9 +1,9 @@
 import { ProgressDropdown } from '../TaskCards/ProgressDropdown';
 import SubtaskProgresses from '../TaskCards/SubtaskProgresses';
-import { TaskProgress } from '@/types';
+import { Task, TaskProgress } from '@/types';
 
 interface SubtaskBottomBarProps {
-    subtask: any;
+    subtask: Task;
     handleProgressChange: (TaskProgress: TaskProgress) => void;
     handleSetDueDate: (dueDate: Date | undefined) => void;
 }
