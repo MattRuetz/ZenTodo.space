@@ -5,6 +5,7 @@ import { setGlobalDragging, setDraggingCardId } from '../store/uiSlice';
 import { Task } from '@/types';
 import { DraggableData, DraggableEvent } from 'react-draggable';
 import { updateSpaceMaxZIndex } from '@/store/spaceSlice';
+import { useAlert } from '@/hooks/useAlert';
 
 interface UseDragHandlersProps {
     task: Task;
@@ -52,6 +53,7 @@ export const useDragHandlers = ({
     setAllowDrop,
 }: UseDragHandlersProps) => {
     const dispatch = useDispatch<AppDispatch>();
+    const { showAlert } = useAlert();
 
     const handleDragStart = useCallback(
         (e: DraggableEvent, data: DraggableData) => {
@@ -153,11 +155,15 @@ export const useDragHandlers = ({
             if (droppedOnCard && droppedOnCard !== e.target) {
                 if (droppedOnCard.getAttribute('data-task-id') === task._id) {
                     // If the card is dropped on itself... somehow... do nothing
+                    setIsFocused(false);
                     return;
                 }
                 if (task.taskName.length === 0) {
-                    alert(
-                        'Please enter the task name before making it a subtask.'
+                    setIsFocused(false);
+
+                    showAlert(
+                        'Please enter the task name before making it a subtask.',
+                        'error'
                     );
                     return;
                 }

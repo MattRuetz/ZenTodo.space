@@ -441,21 +441,43 @@ export const tasksSlice = createSlice({
         ) => {
             const { updatedTask, updatedParentTask, updatedGrandparentTask } =
                 action.payload;
+
+            // Remove the task from its original parent, if any
+            if (updatedTask.parentTask) {
+                const oldParentTask = state.tasks.find(
+                    (task) => task._id === updatedTask.parentTask
+                );
+                if (oldParentTask) {
+                    oldParentTask.subtasks = oldParentTask.subtasks.filter(
+                        (id) => id !== updatedTask._id
+                    );
+                }
+            }
+
+            // Update the task
             const taskIndex = state.tasks.findIndex(
                 (task) => task._id === updatedTask._id
             );
+            if (taskIndex !== -1) {
+                state.tasks[taskIndex] = updatedTask;
+            }
+
+            // Update the new parent task
             const parentTaskIndex = state.tasks.findIndex(
                 (task) => task._id === updatedParentTask._id
             );
-            const grandparentTaskIndex = state.tasks.findIndex(
-                (task) => task._id === updatedGrandparentTask?._id
-            );
-            if (taskIndex !== -1 && parentTaskIndex !== -1) {
-                state.tasks[taskIndex] = updatedTask;
+            if (parentTaskIndex !== -1) {
                 state.tasks[parentTaskIndex] = updatedParentTask;
             }
-            if (grandparentTaskIndex !== -1 && updatedGrandparentTask) {
-                state.tasks[grandparentTaskIndex] = updatedGrandparentTask;
+
+            // Update the grandparent task if provided
+            if (updatedGrandparentTask) {
+                const grandparentTaskIndex = state.tasks.findIndex(
+                    (task) => task._id === updatedGrandparentTask._id
+                );
+                if (grandparentTaskIndex !== -1) {
+                    state.tasks[grandparentTaskIndex] = updatedGrandparentTask;
+                }
             }
         },
         convertSubtaskToTaskOptimistic: (
@@ -610,33 +632,15 @@ export const tasksSlice = createSlice({
                 if (oldParentIndex !== -1 && updatedOldParentTask) {
                     state.tasks[oldParentIndex] = updatedOldParentTask;
                 }
-                if (newParentIndex !== -1) {
-                    state.tasks[newParentIndex] = updatedNewParentTask;
-                }
                 if (subtaskIndex !== -1) {
                     state.tasks[subtaskIndex] = {
                         ...updatedSubtask,
                         isTemp: false,
                     };
                 }
-
-                // Update ancestors of all descendants
-                state.tasks = state.tasks.map((task) => {
-                    if (task.ancestors?.includes(updatedSubtask._id)) {
-                        return {
-                            ...task,
-                            ancestors: [
-                                ...updatedSubtask.ancestors,
-                                updatedSubtask._id,
-                                ...task.ancestors.slice(
-                                    task.ancestors.indexOf(updatedSubtask._id) +
-                                        1
-                                ),
-                            ],
-                        };
-                    }
-                    return task;
-                });
+                if (newParentIndex !== -1) {
+                    state.tasks[newParentIndex] = updatedNewParentTask;
+                }
             })
             .addCase(convertTaskToSubtaskAsync.rejected, (state, action) => {
                 // Rollback optimistic updates

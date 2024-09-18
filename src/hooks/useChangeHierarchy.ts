@@ -57,10 +57,7 @@ export const useChangeHierarchy = () => {
 
         const optimisticUpdate = {
             updatedTask,
-            updatedParentTask: {
-                ...updatedParentTask,
-                subtasks: [...updatedParentTask.subtasks, task._id],
-            } as Task,
+            updatedParentTask,
             updatedGrandparentTask,
         };
 
