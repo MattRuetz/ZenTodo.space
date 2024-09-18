@@ -92,6 +92,7 @@ export const addNewSubtaskAsync = createAsyncThunk(
             return {
                 newSubtask: data.newSubtask,
                 updatedParentTask: data.updatedParentTask,
+                originalTempId: data.originalTempId,
             };
         } catch (error) {
             if (error instanceof Error) {
@@ -543,10 +544,12 @@ export const tasksSlice = createSlice({
                 state.error = action.payload as string;
             })
             .addCase(addNewSubtaskAsync.fulfilled, (state, action) => {
-                const { newSubtask, updatedParentTask } = action.payload;
+                const { newSubtask, updatedParentTask, originalTempId } =
+                    action.payload;
+                console.log('newSubtask', newSubtask);
+                console.log('originalTempId', originalTempId);
                 const tempSubtask = state.tasks.find(
-                    (task) =>
-                        task.isTemp && task._id === newSubtask.originalTempId
+                    (task) => task.isTemp && task._id === originalTempId
                 );
                 if (tempSubtask) {
                     Object.assign(tempSubtask, {
