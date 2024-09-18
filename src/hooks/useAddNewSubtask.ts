@@ -6,9 +6,12 @@ import {
 } from '@/store/tasksSlice';
 import { Task } from '@/types';
 import { generateTempId } from '@/app/utils/utils';
+import { useAlert } from './useAlert';
 
 export const useAddNewSubtask = () => {
     const dispatch = useDispatch<AppDispatch>();
+
+    const { showAlert } = useAlert();
 
     const canAddSubtask = (parentTask: Task | null): boolean => {
         console.log('parentTask', parentTask);
@@ -67,6 +70,7 @@ export const useAddNewSubtask = () => {
                 })
             ).unwrap();
             // Success: The new subtask with a real ID is added in the fulfilled case
+            showAlert('Added subtask!', 'success');
         } catch (error) {
             // Error: rollback optimistic updates -- handled in the .rejected case in taskSlice extra reducers
             console.error('Failed to add subtask:', error);

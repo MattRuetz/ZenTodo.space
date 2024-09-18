@@ -384,11 +384,6 @@ export const tasksSlice = createSlice({
     name: 'tasks',
     initialState,
     reducers: {
-        // hideNewChildTask: (state, action: PayloadAction<string>) => {
-        //     state.tasks = state.tasks.filter(
-        //         (task) => task._id !== action.payload
-        //     );
-        // },
         // Optimistic duplication of tasks
         addTaskOptimistic: (state, action: PayloadAction<Task>) => {
             state.tasks.push(action.payload);
