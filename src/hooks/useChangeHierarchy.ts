@@ -67,18 +67,26 @@ export const useChangeHierarchy = () => {
         dispatch(convertTaskToSubtaskOptimistic(optimisticUpdate));
 
         try {
-            await dispatch(
+            const result = await dispatch(
                 convertTaskToSubtaskAsync({
                     childTask: task,
                     parentTaskId,
                     oldParentTaskId: task.parentTask || null,
                 })
             ).unwrap();
+
+            if (result.error) {
+                console.error(
+                    'Failed to convert task to subtask:',
+                    result.error
+                );
+                // You might want to show an error message to the user here
+            }
         } catch (error) {
             console.error('Failed to convert task to subtask:', error);
+            // You might want to show an error message to the user here
         }
     };
-
     const convertSubtaskToTask = async (
         subtask: Task,
         dropPosition: { x: number; y: number } | undefined

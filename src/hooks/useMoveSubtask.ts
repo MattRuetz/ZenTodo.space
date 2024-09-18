@@ -57,7 +57,6 @@ export const useMoveSubtask = () => {
             ...subtask,
             isTemp: true,
         };
-
         // Dispatch optimistic update
         dispatch(
             moveSubtaskWithinLevelOptimistic({
