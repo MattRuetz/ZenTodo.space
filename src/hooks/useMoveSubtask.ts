@@ -6,16 +6,19 @@ import {
 } from '@/store/tasksSlice';
 import { Task } from '@/types';
 import { useCallback, useRef } from 'react';
+import { useAlert } from '@/hooks/useAlert';
 
 export const useMoveSubtask = () => {
     const dispatch = useDispatch<AppDispatch>();
     const tasksState = useSelector((state: RootState) => state.tasks.tasks);
-
+    const { showAlert } = useAlert();
+    
     const moveSubtaskTemporary = useCallback(
         (subtaskId: string, parentId: string, newPosition: string) => {
             const parentTask = tasksState.find((task) => task._id === parentId);
             if (!parentTask) {
                 console.error('Parent task not found');
+                showAlert('Parent task not found', 'error');
                 return;
             }
 
@@ -26,6 +29,7 @@ export const useMoveSubtask = () => {
 
             if (currentIndex === -1) {
                 console.error('Subtask not found in parent task');
+                showAlert('Subtask not found in parent task', 'error');
                 return;
             }
 
@@ -70,6 +74,7 @@ export const useMoveSubtask = () => {
             );
             if (!parentTask) {
                 console.error('Parent task not found');
+                showAlert('Parent task not found', 'error');
                 return;
             }
 
@@ -86,6 +91,7 @@ export const useMoveSubtask = () => {
                 ).unwrap();
             } catch (error) {
                 console.error('Failed to commit subtask order:', error);
+                showAlert('Failed to commit change order', 'error');
             }
         },
         [dispatch] // Remove tasksState from dependencies

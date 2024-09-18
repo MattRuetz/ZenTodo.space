@@ -11,6 +11,7 @@ import { SubtaskTopBar } from './SubtaskTopBar';
 import { SubtaskBottomBar } from './SubtaskBottomBar';
 import { useChangeHierarchy } from '@/hooks/useChangeHierarchy';
 import { useMoveSubtask } from '@/hooks/useMoveSubtask';
+import { useAlert } from '@/hooks/useAlert';
 
 interface SubtaskDrawerCardProps {
     subtask: Task;
@@ -20,6 +21,7 @@ interface SubtaskDrawerCardProps {
 const SubtaskDrawerCard = React.memo(
     ({ subtask, position }: SubtaskDrawerCardProps) => {
         const dispatch = useDispatch<AppDispatch>();
+        const { showAlert } = useAlert();
 
         const [localSubtask, setLocalSubtask] = useState(subtask || {});
         const [isEditing, setIsEditing] = useState<string | null>(null);
@@ -96,6 +98,7 @@ const SubtaskDrawerCard = React.memo(
 
                 if (!draggedSubtask) {
                     console.error('Dragged subtask not found in the store');
+                    showAlert('An unknown error occurred', 'error');
                     return;
                 }
                 // Check if the dropped task is already a parent of the target subtask

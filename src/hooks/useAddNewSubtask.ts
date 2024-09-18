@@ -74,6 +74,7 @@ export const useAddNewSubtask = () => {
         } catch (error) {
             // Error: rollback optimistic updates -- handled in the .rejected case in taskSlice extra reducers
             console.error('Failed to add subtask:', error);
+            showAlert('Failed to add subtask', 'error');
         }
     };
 

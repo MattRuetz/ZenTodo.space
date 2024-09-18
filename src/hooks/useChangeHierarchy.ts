@@ -8,9 +8,11 @@ import {
 } from '@/store/tasksSlice';
 import { Task } from '@/types';
 import { fetchAllTasksFromState } from '@/app/utils/optimisticUpdates';
+import { useAlert } from '@/hooks/useAlert';
 
 export const useChangeHierarchy = () => {
     const dispatch = useDispatch<AppDispatch>();
+    const { showAlert } = useAlert();
     const tasksState = useSelector((state: RootState) => state.tasks.tasks);
 
     const convertTaskToSubtask = async (task: Task, parentTaskId: string) => {
@@ -42,6 +44,7 @@ export const useChangeHierarchy = () => {
 
         if (!updatedParentTask) {
             console.error('Parent task not found');
+            showAlert('Parent task not found', 'error');
             return;
         }
 
@@ -77,11 +80,11 @@ export const useChangeHierarchy = () => {
                     'Failed to convert task to subtask:',
                     result.error
                 );
-                // You might want to show an error message to the user here
+                showAlert(result.error, 'error');
             }
         } catch (error) {
             console.error('Failed to convert task to subtask:', error);
-            // You might want to show an error message to the user here
+            showAlert('Failed to convert task to subtask', 'error');
         }
     };
     const convertSubtaskToTask = async (

@@ -3,9 +3,11 @@ import { AppDispatch } from '@/store/store';
 import { addTaskOptimistic, addTaskAsync } from '@/store/tasksSlice';
 import { Task } from '@/types';
 import { generateTempId } from '@/app/utils/utils';
+import { useAlert } from '@/hooks/useAlert';
 
 export const useAddTask = () => {
     const dispatch = useDispatch<AppDispatch>();
+    const { showAlert } = useAlert();
 
     const addTask = async (taskData: Omit<Task, '_id'>) => {
         const tempId = generateTempId();
@@ -27,6 +29,7 @@ export const useAddTask = () => {
         } catch (error) {
             // Error: rollback optimistic updates -- handled in the .rejected case in taskSlice extra reducers
             console.error('Failed to add task:', error);
+            showAlert('Failed to add task', 'error');
         }
     };
 

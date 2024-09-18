@@ -2,6 +2,7 @@
 import React, { useRef, useState } from 'react';
 import { signIn } from 'next-auth/react';
 import Draggable from 'react-draggable';
+import { useAlert } from '@/hooks/useAlert';
 
 interface SignUpFormProps {
     position: { x: number; y: number };
@@ -11,6 +12,7 @@ interface SignUpFormProps {
 
 const SignUpForm: React.FC<SignUpFormProps> = React.memo(
     ({ position, onClose, onDrag }) => {
+        const { showAlert } = useAlert();
         const [name, setName] = useState('');
         const [email, setEmail] = useState('');
         const [password, setPassword] = useState('');
@@ -27,7 +29,7 @@ const SignUpForm: React.FC<SignUpFormProps> = React.memo(
                     password,
                 });
                 if (result?.error) {
-                    alert(result.error);
+                    showAlert(result.error, 'error');
                 } else {
                     onClose();
                 }
@@ -48,7 +50,7 @@ const SignUpForm: React.FC<SignUpFormProps> = React.memo(
                     });
                     onClose();
                 } else {
-                    alert(data.message || 'An error occurred');
+                    showAlert(data.message || 'An error occurred', 'error');
                 }
             }
         };
