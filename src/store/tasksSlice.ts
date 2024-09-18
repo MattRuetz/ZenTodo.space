@@ -53,12 +53,12 @@ export const addNewSubtaskAsync = createAsyncThunk(
     async (
         {
             subtask,
-            parentId,
+            parentTask,
             position,
             tempId,
         }: {
             subtask: Omit<Task, '_id'>;
-            parentId?: string;
+            parentTask: Task | null;
             position: string;
             tempId: string;
         },
@@ -76,9 +76,11 @@ export const addNewSubtaskAsync = createAsyncThunk(
                     progress: subtask.progress,
                     space: subtask.space,
                     zIndex: 0,
-                    parentTask: parentId || subtask.parentTask,
+                    parentTask: parentTask?._id || null,
                     subtasks: [],
-                    ancestors: subtask.ancestors,
+                    ancestors: parentTask?.ancestors
+                        ? [...parentTask.ancestors, parentTask._id as string]
+                        : [parentTask?._id as string],
                     position: position,
                     originalTempId: tempId,
                 }),

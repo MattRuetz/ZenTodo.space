@@ -1,5 +1,5 @@
 import { useDispatch } from 'react-redux';
-import { AppDispatch } from '@/store/store';
+import { AppDispatch, store } from '@/store/store';
 import {
     addNewSubtaskOptimistic,
     addNewSubtaskAsync,
@@ -10,25 +10,43 @@ import { generateTempId } from '@/app/utils/utils';
 export const useAddNewSubtask = () => {
     const dispatch = useDispatch<AppDispatch>();
 
+    const canAddSubtask = (parentTask: Task | null): boolean => {
+        console.log('parentTask', parentTask);
+        if (!parentTask) return false;
+        if (!parentTask.ancestors) return true;
+        return parentTask.ancestors.length < 2;
+    };
+
     const addNewSubtask = async ({
         subtask,
         parentId,
         position,
     }: {
-        subtask: Omit<Task, '_id'>;
+        // subtask: Omit<Task, '_id'>;
+        subtask: Task;
         parentId?: string;
         position: string;
     }) => {
+        const parentTask = store
+            .getState()
+            .tasks.tasks.find((task: Task) => task._id === parentId);
+
+        if (!canAddSubtask(parentTask as Task)) {
+            console.error('Cannot add subtask: ancestors limit reached');
+            return;
+        }
+
         const tempId = generateTempId();
         const tempSubtask: Task = {
             ...subtask,
             _id: tempId,
             isTemp: true,
             subtasks: [],
-            ancestors: parentId ? [parentId] : [],
+            ancestors: parentTask?.ancestors
+                ? [...parentTask.ancestors, parentTask._id as string]
+                : [parentTask?._id as string],
             parentTask: parentId,
         };
-
         // Dispatch optimistic update
         dispatch(
             addNewSubtaskOptimistic({
@@ -41,7 +59,12 @@ export const useAddNewSubtask = () => {
         try {
             // Attempt to add subtask in the backend
             await dispatch(
-                addNewSubtaskAsync({ subtask, parentId, position, tempId })
+                addNewSubtaskAsync({
+                    subtask,
+                    parentTask: parentTask as Task,
+                    position,
+                    tempId,
+                })
             ).unwrap();
             // Success: The new subtask with a real ID is added in the fulfilled case
         } catch (error) {
