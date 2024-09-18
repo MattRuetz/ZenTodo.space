@@ -10,7 +10,6 @@ import { AppDispatch, RootState } from '../../store/store';
 import { Task, TaskProgress } from '@/types';
 import DraggableArea from './DraggableArea';
 import { useThrottle } from '@/hooks/useThrottle';
-import { useFadeOutEffect } from '@/hooks/useFadeOutEffect';
 import { useDragHandlers } from '@/hooks/useDragHandlers';
 import { useTaskState } from '@/hooks/useTaskState';
 import { useDeleteTask } from '@/hooks/useDeleteTask';

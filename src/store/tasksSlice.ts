@@ -146,28 +146,53 @@ export const convertTaskToSubtaskAsync = createAsyncThunk(
         },
         { rejectWithValue }
     ) => {
-        try {
-            const response = await fetch('/api/tasks/hierarchy', {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    subtaskIdString: childTask._id,
-                    parentTaskIdString: parentTaskId,
-                    oldParentTaskIdString: oldParentTaskId,
-                }),
-            });
+        const MAX_RETRIES = 5;
+        const INITIAL_BACKOFF = 100; // ms
 
-            if (!response.ok) {
-                throw new Error('Failed to convert task to subtask');
-            }
+        for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+            try {
+                const response = await fetch('/api/tasks/hierarchy', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        subtaskIdString: childTask._id,
+                        parentTaskIdString: parentTaskId,
+                        oldParentTaskIdString: oldParentTaskId,
+                    }),
+                });
 
-            const data = await response.json();
-            return data;
-        } catch (error) {
-            if (error instanceof Error) {
-                return rejectWithValue(error.message);
+                if (!response.ok) {
+                    throw new Error('Failed to convert task to subtask');
+                }
+
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                if (attempt === MAX_RETRIES - 1) {
+                    return rejectWithValue(
+                        'Max retries reached. Operation failed.'
+                    );
+                }
+
+                if (
+                    error instanceof Error &&
+                    error.message.includes('Write conflict')
+                ) {
+                    console.log(
+                        `Retry attempt ${
+                            attempt + 1
+                        } for convertTaskToSubtaskAsync`
+                    );
+                    await new Promise((resolve) =>
+                        setTimeout(
+                            resolve,
+                            INITIAL_BACKOFF * Math.pow(2, attempt)
+                        )
+                    );
+                } else {
+                    throw error;
+                }
             }
-            return rejectWithValue('An unknown error occurred');
         }
     }
 );
@@ -499,6 +524,8 @@ export const tasksSlice = createSlice({
             }>
         ) => {
             const { updatedParentTask, updatedSubtask } = action.payload;
+            console.log('updatedParentTask', updatedParentTask);
+            console.log('updatedSubtask', updatedSubtask);
             const parentIndex = state.tasks.findIndex(
                 (task) => task._id === updatedParentTask._id
             );
@@ -506,6 +533,8 @@ export const tasksSlice = createSlice({
                 (task) => task._id === updatedSubtask._id
             );
 
+            console.log('parentIndex', parentIndex);
+            console.log('subtaskIndex', subtaskIndex);
             if (parentIndex !== -1) {
                 state.tasks[parentIndex] = updatedParentTask;
             }
