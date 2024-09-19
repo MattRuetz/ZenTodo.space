@@ -141,19 +141,21 @@ const SuperSpace = React.memo(() => {
                             >
                                 {spaces.map(
                                     (space: SpaceData, index: number) => (
-                                        <SpaceCard
-                                            key={space._id}
-                                            space={space}
-                                            index={index}
-                                            handleDragEnd={handleDragEnd}
-                                            moveSpaceCard={moveSpaceCard}
-                                            onClick={() => {
-                                                dispatch(
-                                                    setCurrentSpace(space)
-                                                );
-                                                setIsZoomedOut(false);
-                                            }}
-                                        />
+                                        <motion.div variants={item}>
+                                            <SpaceCard
+                                                key={space._id}
+                                                space={space}
+                                                index={index}
+                                                handleDragEnd={handleDragEnd}
+                                                moveSpaceCard={moveSpaceCard}
+                                                onClick={() => {
+                                                    dispatch(
+                                                        setCurrentSpace(space)
+                                                    );
+                                                    setIsZoomedOut(false);
+                                                }}
+                                            />
+                                        </motion.div>
                                     )
                                 )}
                                 {spaces.length < 9 && (

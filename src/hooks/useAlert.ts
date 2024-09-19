@@ -8,7 +8,7 @@ export const useAlert = () => {
     const showAlert = (
         message: string,
         type: AlertType = 'notice',
-        duration: number = 3000
+        duration: number = 2000
     ) => {
         const toastConfig = {
             position: 'top-center' as const,
@@ -22,16 +22,22 @@ export const useAlert = () => {
 
         const styles = {
             error: {
-                backgroundColor: '#f8d7da',
-                color: '#721c24',
+                border: '2px solid',
+                backgroundColor: '#721c2433',
+                borderColor: '#721c24',
+                color: 'white',
             },
             notice: {
-                backgroundColor: '#e2e3e5',
-                color: '#383d41',
+                border: '2px solid',
+                backgroundColor: '#383d4133',
+                borderColor: '#383d41',
+                color: 'white',
             },
             success: {
-                backgroundColor: '#d4edda',
-                color: '#155724',
+                border: '2px solid',
+                backgroundColor: '#15572433',
+                borderColor: '#155724',
+                color: 'white',
             },
         };
 
@@ -48,6 +54,7 @@ export const useAlert = () => {
                 padding: '10px 20px',
                 borderRadius: '5px',
                 boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)',
+                fontSize: '14px',
             },
         });
     };

@@ -47,9 +47,6 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId, onLoaded }) => {
     const isDrawerOpen = useSelector(
         (state: RootState) => state.ui.isSubtaskDrawerOpen
     );
-    const isGlobalDragging = useSelector(
-        (state: RootState) => state.ui.isGlobalDragging
-    );
 
     const { clearEmojis } = useClearEmojis(spaceId);
 
@@ -183,6 +180,7 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId, onLoaded }) => {
 
     const handleSpaceClick = useCallback(
         (e: React.MouseEvent<HTMLDivElement>) => {
+            console.log(currentSpace?.color);
             if (e.target !== e.currentTarget || isDraggingRef.current) return;
 
             if (!session) {
@@ -236,14 +234,27 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId, onLoaded }) => {
         }
     }, [drop]);
 
+    const outlineColor = currentSpace?.color || 'black';
+
     return (
         <motion.div
-            initial={{ opacity: 0, scale: 0.9, translateY: 20 }}
-            animate={{ opacity: 1, scale: 1, translateY: 0 }}
-            exit={{ opacity: 0, scale: 0.9, translateY: 20 }}
+            initial={{
+                opacity: 0,
+                scale: 0.8,
+            }}
+            animate={{
+                opacity: 1,
+                scale: 1,
+            }}
+            exit={{
+                opacity: 0,
+                scale: 0.9,
+                translateY: 20,
+            }}
             transition={{ duration: 0.5, ease: 'easeInOut' }}
             ref={spaceRef}
-            className={`relative w-full h-screen bg-base-100 space-${spaceId} shadow-md shadow-black/80 overflow-hidden`}
+            className={`relative w-full h-screen bg-base-100 space-${spaceId} shadow-md shadow-black/80 overflow-hidden outline outline-8 `}
+            style={{ outlineColor: outlineColor }}
             onMouseDown={handleSpaceClick}
         >
             {!session && (

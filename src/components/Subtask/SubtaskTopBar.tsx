@@ -169,14 +169,14 @@ export const SubtaskTopBar = ({
                             <FaTrash className="mr-2" /> Delete
                         </button>
                     </div>
-                    {showDeleteConfirm && taskToDelete && (
-                        <ConfirmDelete
-                            objectToDelete={taskToDelete}
-                            cancelDelete={cancelDelete}
-                            spaceOrTask={'task'}
-                        />
-                    )}
                 </div>
+            )}
+            {showDeleteConfirm && taskToDelete && (
+                <ConfirmDelete
+                    objectToDelete={taskToDelete}
+                    cancelDelete={cancelDelete}
+                    spaceOrTask={'task'}
+                />
             )}
             <EmojiDropdown
                 taskEmoji={subtask.emoji || <FaTag />}

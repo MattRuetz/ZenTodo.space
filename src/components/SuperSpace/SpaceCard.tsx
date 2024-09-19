@@ -8,6 +8,7 @@ import { FaTag } from 'react-icons/fa';
 import { getComplementaryColor, getContrastingColor } from '@/app/utils/utils';
 import { FaTrash } from 'react-icons/fa6';
 import { useDrag, useDrop } from 'react-dnd';
+import ConfirmDelete from '../TaskCards/ConfirmDelete';
 
 interface SpaceCardProps {
     space: SpaceData;
@@ -122,15 +123,9 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
         }
     };
 
-    const handleDelete = () => {
+    const handleDelete = (e: React.MouseEvent<HTMLDivElement>) => {
+        e.stopPropagation();
         setShowDeleteConfirm(true);
-    };
-
-    const confirmDelete = () => {
-        if (space._id) {
-            dispatch(deleteSpace(space._id));
-        }
-        setShowDeleteConfirm(false);
     };
 
     const cancelDelete = () => {
@@ -146,8 +141,10 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
             className={`space rounded-lg shadow-md hover:shadow-xl p-8 cursor-pointer relative flex flex-row justify-start items-center gap-4 min-h-[150px] h-full max-h-[300px] hover:-rotate-1 border-4 border-transparent hover:border-white transition-all duration-300 ease-in-out ${
                 isDragging ? 'opacity-50' : ''
             }`}
-            style={{ backgroundColor: space.color }}
-            onClick={onClick}
+            style={{
+                backgroundColor: space.color,
+            }}
+            onClick={handleCardClick}
         >
             <div
                 className=" shadow-slate-900 rounded-full p-1 text-2xl"
@@ -157,10 +154,24 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
                     color: complementaryColor,
                 }}
             >
-                <EmojiDropdown
-                    taskEmoji={space.emoji || <FaTag />}
-                    setTaskEmoji={handleSetSpaceEmoji}
-                />
+                {isEditing ? (
+                    <div
+                        className="border-2 rounded-full p-1"
+                        style={{
+                            borderColor: complementaryColor,
+                            borderStyle: 'dashed',
+                        }}
+                    >
+                        <EmojiDropdown
+                            taskEmoji={space.emoji || <FaTag />}
+                            setTaskEmoji={handleSetSpaceEmoji}
+                        />
+                    </div>
+                ) : (
+                    <span className="text-2xl p-1 flex items-center justify-center">
+                        {space.emoji || <FaTag />}
+                    </span>
+                )}
             </div>
             {isEditing ? (
                 <div className="h-full">
@@ -247,32 +258,11 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
                 </>
             )}
             {showDeleteConfirm && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-slate-800 p-6 rounded-lg shadow-xl max-w-sm shadow-slate-900/50">
-                        <h3 className="text-xl font-bold mb-4">
-                            Delete Space?
-                        </h3>
-                        <p className="mb-6">
-                            Are you sure you want to delete this space? This
-                            action will delete the space and all of its tasks.
-                            This cannot be undone.
-                        </p>
-                        <div className="flex justify-end space-x-4">
-                            <button
-                                className="btn btn-ghost"
-                                onClick={cancelDelete}
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                className="btn btn-error"
-                                onClick={confirmDelete}
-                            >
-                                Delete
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                <ConfirmDelete
+                    objectToDelete={space}
+                    spaceOrTask="space"
+                    cancelDelete={cancelDelete}
+                />
             )}
         </div>
     );
