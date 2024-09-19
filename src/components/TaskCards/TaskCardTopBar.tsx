@@ -147,7 +147,7 @@ const TaskCardTopBar: React.FC<TaskCardTopBarProps> = React.memo(
                             onClick={() => setIsMenuOpen(!isMenuOpen)}
                         />
                         {isMenuOpen && (
-                            <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-base-300 border border-slate-700 ring-1 ring-black ring-opacity-5">
+                            <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-base-300 border border-slate-700 ring-1 ring-black ring-opacity-5 z-50">
                                 <div
                                     className="py-1"
                                     role="menu"
@@ -236,31 +236,37 @@ const TaskCardTopBar: React.FC<TaskCardTopBarProps> = React.memo(
                         {showMoveOptions && (
                             <div
                                 ref={moveOptionsRef}
-                                className="absolute right-0 mt-2 w-48 bg-slate-200 rounded-md shadow-lg"
+                                className="absolute right-0 mt-2 w-48 bg-base-300 border border-slate-700 ring-1 ring-black ring-opacity-5 rounded-md shadow-lg"
                             >
                                 <div className="py-2 px-4">
                                     Move to different space:
                                 </div>
                                 <ul>
-                                    <li
-                                        className="px-4 py-2 hover:bg-slate-300 cursor-pointer"
-                                        onClick={() =>
-                                            handleMoveTaskToNewSpace()
-                                        }
-                                    >
-                                        + New Space
-                                    </li>
-                                    {spaces.map((space: SpaceData) => (
-                                        <li
-                                            key={space._id}
-                                            className="px-4 py-2 hover:bg-slate-300 cursor-pointer"
-                                            onClick={() =>
-                                                handleMoveTask(space._id || '')
-                                            }
-                                        >
-                                            {space.name}
-                                        </li>
-                                    ))}
+                                    {spaces
+                                        .filter(
+                                            (space: SpaceData) =>
+                                                space._id !== task.space
+                                        )
+                                        .map((space: SpaceData) => (
+                                            <li
+                                                key={space._id}
+                                                className="flex items-center gap-2 px-4 py-2 hover:bg-black cursor-pointer"
+                                                onClick={() =>
+                                                    handleMoveTask(
+                                                        space._id || ''
+                                                    )
+                                                }
+                                            >
+                                                <div
+                                                    className="w-3 h-3 rounded-full border border-white"
+                                                    style={{
+                                                        backgroundColor:
+                                                            space.color,
+                                                    }}
+                                                ></div>
+                                                {space.name}
+                                            </li>
+                                        ))}
                                 </ul>
                             </div>
                         )}

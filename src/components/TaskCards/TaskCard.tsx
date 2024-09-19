@@ -22,6 +22,7 @@ import TaskCardBottomBar from './TaskCardBottomBar';
 import { useDuplicateTask } from '@/hooks/useDuplicateTask';
 import { useChangeHierarchy } from '@/hooks/useChangeHierarchy';
 import ConfirmDelete from './ConfirmDelete';
+import { useAlert } from '@/hooks/useAlert';
 
 interface TaskCardProps {
     task: Task;
@@ -53,6 +54,7 @@ const TaskCard = React.memo(
             taskToDelete,
         } = useDeleteTask();
         const { addNewSubtask } = useAddNewSubtask();
+        const { showAlert } = useAlert();
 
         const {
             localTask,
@@ -294,7 +296,7 @@ const TaskCard = React.memo(
 
         const handleMoveTask = (spaceId: string) => {
             dispatch(moveTaskToSpace({ taskId: task._id!, spaceId }));
-            toast.success('Task moved successfully');
+            showAlert('Task moved successfully', 'notice');
         };
 
         const handleCreateSpaceAndMoveTask = () => {

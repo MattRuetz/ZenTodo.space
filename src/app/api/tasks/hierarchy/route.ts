@@ -51,10 +51,6 @@ export async function PUT(req: NextRequest) {
                 ? new ObjectId(oldParentTaskIdString)
                 : null;
 
-            console.log('subtaskId in route', subtaskId);
-            console.log('parentTaskId in route', parentTaskId);
-            console.log('oldParentTaskId in route', oldParentTaskId);
-
             const mongoSession = await mongoose.startSession();
             mongoSession.startTransaction();
 

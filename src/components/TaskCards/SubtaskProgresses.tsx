@@ -8,6 +8,7 @@ import { Task } from '@/types';
 import { Tooltip } from 'react-tooltip';
 import { AppDispatch, RootState } from '@/store/store';
 import { selectTasksByIds } from '@/store/selectors';
+import { motion } from 'framer-motion';
 
 export interface SubtaskProgressesProps {
     task: Task;
@@ -61,50 +62,74 @@ const SubtaskProgresses: React.FC<SubtaskProgressesProps> = React.memo(
             );
         }, [task.subtasks]);
 
-        // const isVisible = Object.values(subtaskProgresses).some(
-        //     (count) => count > 0
-        // );
-
         return (
-            <div
-                data-tooltip-id={`${task._id}-subtask-progresses-tooltip`}
-                style={{
-                    visibility: subtasks.length > 0 ? 'visible' : 'hidden',
-                }}
-                className={`flex gap-1 ${
-                    task.parentTask ? 'bg-base-300' : 'bg-base-100'
-                } hover:bg-slate-800 transition-colors duration-200 rounded-full cursor-pointer items-center justify-center text-xs h-8 px-2 max-w-5/12`}
-                onClick={handleOpenDrawer}
-            >
-                {subtaskProgresses.notStarted > 0 && (
-                    <div className="subtask-count text-gray-400 rounded-full flex items-center justify-center w-4 h-4">
-                        {subtaskProgresses.notStarted}
-                    </div>
+            <>
+                {task.subtasks.length > 0 && (
+                    <motion.div
+                        initial={{
+                            opacity: 0,
+                            y: -10,
+                            scale: 0.8,
+                            filter: 'brightness(8)',
+                        }}
+                        animate={{
+                            opacity: 1,
+                            y: 0,
+                            scale: 1,
+                            filter: 'brightness(1)',
+                        }}
+                        exit={{
+                            opacity: 0,
+                            y: 10,
+                            scale: 0.8,
+                            filter: 'brightness(8)',
+                        }}
+                        transition={{
+                            duration: 0.2,
+                        }}
+                        data-tooltip-id={`${task._id}-subtask-progresses-tooltip`}
+                        style={{
+                            zIndex: 1,
+                        }}
+                    >
+                        <div
+                            className={`flex gap-1 ${
+                                task.parentTask ? 'bg-base-300' : 'bg-base-100'
+                            } hover:bg-slate-800 transition-colors duration-200 rounded-full cursor-pointer items-center justify-center text-xs h-8 px-2 max-w-5/12`}
+                            onClick={handleOpenDrawer}
+                        >
+                            {subtaskProgresses.notStarted > 0 && (
+                                <div className="subtask-count text-gray-400 rounded-full flex items-center justify-center w-4 h-4">
+                                    {subtaskProgresses.notStarted}
+                                </div>
+                            )}
+                            {subtaskProgresses.inProgress > 0 && (
+                                <div className="subtask-count text-yellow-400 rounded-full flex items-center justify-center w-4 h-4">
+                                    {subtaskProgresses.inProgress}
+                                </div>
+                            )}
+                            {subtaskProgresses.blocked > 0 && (
+                                <div className="subtask-count text-red-400 rounded-full flex items-center justify-center w-4 h-4">
+                                    {subtaskProgresses.blocked}
+                                </div>
+                            )}
+                            {subtaskProgresses.complete > 0 && (
+                                <div className="subtask-count text-green-400 rounded-full flex items-center justify-center w-4 h-4">
+                                    {subtaskProgresses.complete}
+                                </div>
+                            )}
+                            <Tooltip
+                                id={`${task._id}-subtask-progresses-tooltip`}
+                                style={{ zIndex: 100000 }}
+                                place="top"
+                            >
+                                {/* Due Date: {new Date(task.dueDate).toLocaleDateString()} */}
+                                Subtasks
+                            </Tooltip>
+                        </div>
+                    </motion.div>
                 )}
-                {subtaskProgresses.inProgress > 0 && (
-                    <div className="subtask-count text-yellow-400 rounded-full flex items-center justify-center w-4 h-4">
-                        {subtaskProgresses.inProgress}
-                    </div>
-                )}
-                {subtaskProgresses.blocked > 0 && (
-                    <div className="subtask-count text-red-400 rounded-full flex items-center justify-center w-4 h-4">
-                        {subtaskProgresses.blocked}
-                    </div>
-                )}
-                {subtaskProgresses.complete > 0 && (
-                    <div className="subtask-count text-green-400 rounded-full flex items-center justify-center w-4 h-4">
-                        {subtaskProgresses.complete}
-                    </div>
-                )}
-                <Tooltip
-                    id={`${task._id}-subtask-progresses-tooltip`}
-                    style={{ zIndex: 100000 }}
-                    place="top"
-                >
-                    {/* Due Date: {new Date(task.dueDate).toLocaleDateString()} */}
-                    Subtasks
-                </Tooltip>
-            </div>
+            </>
         );
     }
 );

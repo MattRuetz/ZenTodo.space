@@ -111,7 +111,6 @@ export const updateTask = createAsyncThunk(
         partialTask: Partial<Task> & { _id: string },
         { rejectWithValue }
     ) => {
-        console.log('partialTask in updateTask', partialTask);
         try {
             const response = await fetch('/api/tasks', {
                 method: 'PUT',
@@ -249,12 +248,10 @@ export const deleteTaskAsync = createAsyncThunk(
         try {
             let response;
             if (parentTaskId === '') {
-                console.log('deleting task', taskId);
                 response = await fetch(`/api/tasks?id=${taskId}`, {
                     method: 'DELETE',
                 });
             } else {
-                console.log('deleting subtask', taskId);
                 response = await fetch(
                     `/api/tasks?id=${taskId}&parentId=${parentTaskId}`,
                     {
@@ -290,9 +287,7 @@ export const deleteTasksInSpace = createAsyncThunk(
                 throw new Error('Failed to delete tasks in space');
             }
             const data = await response.json();
-            console.log(
-                `Deleted ${data.deletedCount} tasks in space ${spaceId}`
-            );
+
             return spaceId;
         } catch (error) {
             return rejectWithValue((error as Error).message);
@@ -571,8 +566,7 @@ export const tasksSlice = createSlice({
             .addCase(addNewSubtaskAsync.fulfilled, (state, action) => {
                 const { newSubtask, updatedParentTask, originalTempId } =
                     action.payload;
-                console.log('newSubtask', newSubtask);
-                console.log('originalTempId', originalTempId);
+
                 const tempSubtask = state.tasks.find(
                     (task) => task.isTemp && task._id === originalTempId
                 );

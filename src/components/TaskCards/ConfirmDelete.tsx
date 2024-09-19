@@ -2,6 +2,7 @@ import { useDeleteSpace } from '@/hooks/useDeleteSpace';
 import { useDeleteTask } from '@/hooks/useDeleteTask';
 import { Task, SpaceData } from '@/types';
 import { motion } from 'framer-motion';
+import { useState } from 'react';
 
 const ConfirmDelete = ({
     objectToDelete,
@@ -14,6 +15,7 @@ const ConfirmDelete = ({
 }) => {
     const { performDeleteTask } = useDeleteTask();
     const { performDeleteSpace } = useDeleteSpace();
+    const [isDeleting, setIsDeleting] = useState(false);
 
     const numSubtasks =
         spaceOrTask === 'task' ? (objectToDelete as Task).subtasks.length : 0;
@@ -56,9 +58,21 @@ const ConfirmDelete = ({
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     performDeleteTask(objectToDelete as Task);
+                                    setIsDeleting(true);
                                 }}
                             >
-                                Delete
+                                <span
+                                    className={`${
+                                        isDeleting ? 'invisible' : 'visible'
+                                    } delete-text`}
+                                >
+                                    Delete
+                                </span>
+                                <span
+                                    className={`${
+                                        isDeleting ? 'visible' : 'invisible'
+                                    } delete-spinner loading loading-ring text-slate-200 loading-lg`}
+                                ></span>
                             </button>
                         </div>
                     </>
@@ -85,9 +99,21 @@ const ConfirmDelete = ({
                                     performDeleteSpace(
                                         objectToDelete as SpaceData
                                     );
+                                    setIsDeleting(true);
                                 }}
                             >
-                                Delete
+                                <span
+                                    className={`${
+                                        isDeleting ? 'invisible' : 'visible'
+                                    } delete-text`}
+                                >
+                                    Delete
+                                </span>
+                                <span
+                                    className={`${
+                                        isDeleting ? 'visible' : 'invisible'
+                                    } delete-spinner loading loading-ring text-slate-200 loading-lg`}
+                                ></span>
                             </button>
                         </div>
                     </>

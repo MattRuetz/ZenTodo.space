@@ -17,7 +17,6 @@ import Preloader from './Preloader';
 import { useSession } from 'next-auth/react';
 import { Tooltip } from 'react-tooltip';
 import { generateRandomDarkColor } from '@/app/utils/utils';
-import { toast } from 'react-toastify';
 import SpaceCard from './SpaceCard';
 import {
     setSubtaskDrawerOpen,
@@ -26,6 +25,7 @@ import {
 import { AnimatePresence, motion } from 'framer-motion';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import { useAlert } from '@/hooks/useAlert';
 
 const SuperSpace = React.memo(() => {
     const dispatch = useDispatch<AppDispatch>();
@@ -38,8 +38,11 @@ const SuperSpace = React.memo(() => {
     // CHANGE THIS DEFAULT STATE TO TRUE WHEN WE WANT TO SHOW THE PRELOADER
     const [isLoading, setIsLoading] = useState(false);
     const [fadeOut, setFadeOut] = useState(false);
+    const [isAdding, setIsAdding] = useState(false);
 
     const { data: session, status: sessionStatus } = useSession();
+
+    const { showAlert } = useAlert();
 
     const moveSpaceCard = useCallback(
         (dragIndex: number, hoverIndex: number) => {
@@ -70,16 +73,7 @@ const SuperSpace = React.memo(() => {
 
     const addSpace = () => {
         if (spaces.length >= 9) {
-            toast.error('You can only create up to 9 spaces.', {
-                position: 'top-right',
-                autoClose: 3000,
-                hideProgressBar: true,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                theme: 'dark',
-            });
+            showAlert('You can only have 9 spaces');
             return;
         }
         const newSpace = {
@@ -166,15 +160,28 @@ const SuperSpace = React.memo(() => {
                                                     ? 'opacity-50 cursor-not-allowed'
                                                     : ''
                                             }`}
-                                            onClick={
-                                                spaces.length < 9
-                                                    ? addSpace
-                                                    : undefined
-                                            }
+                                            onClick={() => {
+                                                if (spaces.length < 9) {
+                                                    setIsAdding(true);
+                                                    addSpace();
+                                                    setIsAdding(false);
+                                                }
+                                            }}
                                         >
-                                            <span className="text-4xl text-sky-900">
+                                            <span
+                                                className={`plus-icon text-4xl text-sky-900 ${
+                                                    isAdding ? 'invisible' : ''
+                                                }`}
+                                            >
                                                 +
                                             </span>
+                                            <span
+                                                className={`${
+                                                    isAdding
+                                                        ? 'visible'
+                                                        : 'invisible'
+                                                } delete-spinner loading loading-ring text-slate-600 loading-lg`}
+                                            ></span>
                                         </div>
                                     </motion.div>
                                 )}
