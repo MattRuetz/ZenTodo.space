@@ -24,6 +24,8 @@ import { updateTask } from '@/store/tasksSlice';
 import { Tooltip } from 'react-tooltip';
 import { TaskDueDatePicker } from './TaskDueDatePicker';
 import { DueDateIndicator } from './DueDateIndicator';
+import { useTheme } from '@/hooks/useTheme';
+import TaskMenu from './TaskMenu';
 
 interface TaskCardTopBarProps {
     className?: string;
@@ -53,6 +55,7 @@ const TaskCardTopBar: React.FC<TaskCardTopBarProps> = React.memo(
     }) => {
         const dispatch = useDispatch<AppDispatch>();
         const spaces = useSelector((state: RootState) => state.spaces.spaces);
+        const currentTheme = useTheme();
 
         const [isMenuOpen, setIsMenuOpen] = useState(false);
         const [showDatePicker, setShowDatePicker] = useState(false);
@@ -126,16 +129,25 @@ const TaskCardTopBar: React.FC<TaskCardTopBarProps> = React.memo(
                 </div>
                 <div className="justify-center w-full">
                     <div
-                        className="mb-1 w-full bg-sky-950"
-                        style={{ height: '1px' }}
+                        className="mb-1 w-full"
+                        style={{
+                            height: '1px',
+                            backgroundColor: `var(--${currentTheme}-background-300)`,
+                        }}
                     ></div>
                     <div
-                        className="mb-1 w-full bg-sky-950"
-                        style={{ height: '1px' }}
+                        className="mb-1 w-full"
+                        style={{
+                            height: '1px',
+                            backgroundColor: `var(--${currentTheme}-background-300)`,
+                        }}
                     ></div>
                     <div
-                        className="mb-1 w-full bg-sky-950"
-                        style={{ height: '1px' }}
+                        className="mb-1 w-full"
+                        style={{
+                            height: '1px',
+                            backgroundColor: `var(--${currentTheme}-background-300)`,
+                        }}
                     ></div>
                 </div>
                 <div className="flex flex-row gap-4 items-center">
@@ -148,133 +160,30 @@ const TaskCardTopBar: React.FC<TaskCardTopBarProps> = React.memo(
                     <div className="relative" ref={menuRef}>
                         <FaEllipsisV
                             size={14}
-                            className="cursor-pointer text-slate-400 hover:text-sky-300 transition-colors duration-200"
+                            className="cursor-pointer"
+                            style={{
+                                color: `var(--${currentTheme}-text-subtle)`,
+                            }}
                             onClick={() => setIsMenuOpen(!isMenuOpen)}
                         />
-                        {isMenuOpen && (
-                            <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-base-300 border border-slate-700 ring-1 ring-black ring-opacity-5 z-50">
-                                <div
-                                    className="py-1"
-                                    role="menu"
-                                    aria-orientation="vertical"
-                                    aria-labelledby="options-menu"
-                                >
-                                    <button
-                                        className="flex items-center px-4 py-2 text-sm text-slate-200 hover:bg-black w-full"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            e.preventDefault();
-                                            handleShowDetails();
-                                        }}
-                                    >
-                                        <FaInfoCircle className="mr-2" />{' '}
-                                        Details
-                                    </button>
-                                    <button
-                                        className="flex items-center px-4 py-2 text-sm text-slate-200 hover:bg-black w-full"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            e.preventDefault();
-                                            setShowDatePicker(true);
-                                            setIsMenuOpen(false);
-                                        }}
-                                    >
-                                        <FaCalendar className="mr-2" /> Set Due
-                                        Date
-                                    </button>
-                                    <button
-                                        className="flex items-center px-4 py-2 text-sm text-slate-200 hover:bg-black w-full"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            e.preventDefault();
-                                            onAddSubtask();
-                                            setIsMenuOpen(false);
-                                        }}
-                                    >
-                                        <FaPlus className="mr-2" /> Add Subtask
-                                    </button>
-                                    <button
-                                        className="flex items-center px-4 py-2 text-sm text-slate-200 hover:bg-black w-full"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            e.preventDefault();
-                                            setShowMoveOptions(true);
-                                            setIsMenuOpen(false);
-                                        }}
-                                    >
-                                        <FaArrowsAlt className="mr-2" /> Move
-                                        Task
-                                    </button>
-                                    <button
-                                        className="flex items-center px-4 py-2 text-sm text-slate-200 hover:bg-black w-full"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            e.preventDefault();
-                                            onDuplicateTask();
-                                            setIsMenuOpen(false);
-                                        }}
-                                    >
-                                        <FaCopy className="mr-2" /> Duplicate
-                                        Task
-                                    </button>
-                                    <button
-                                        className="flex items-center px-4 py-2 text-sm text-red-700 hover:bg-black w-full"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            e.preventDefault();
-                                            onDelete();
-                                            setIsMenuOpen(false);
-                                        }}
-                                    >
-                                        <FaTrash className="mr-2" /> Delete
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-                        {showDatePicker && (
-                            <TaskDueDatePicker
-                                onSetDueDate={onSetDueDate}
-                                setShowDatePicker={setShowDatePicker}
-                                setIsMenuOpen={setIsMenuOpen}
-                            />
-                        )}
-                        {showMoveOptions && (
-                            <div
-                                ref={moveOptionsRef}
-                                className="absolute right-0 mt-2 w-48 bg-base-300 border border-slate-700 ring-1 ring-black ring-opacity-5 rounded-md shadow-lg"
-                            >
-                                <div className="py-2 px-4">
-                                    Move to different space:
-                                </div>
-                                <ul>
-                                    {spaces
-                                        .filter(
-                                            (space: SpaceData) =>
-                                                space._id !== task.space
-                                        )
-                                        .map((space: SpaceData) => (
-                                            <li
-                                                key={space._id}
-                                                className="flex items-center gap-2 px-4 py-2 hover:bg-black cursor-pointer"
-                                                onClick={() =>
-                                                    handleMoveTask(
-                                                        space._id || ''
-                                                    )
-                                                }
-                                            >
-                                                <div
-                                                    className="w-3 h-3 rounded-full border border-white"
-                                                    style={{
-                                                        backgroundColor:
-                                                            space.color,
-                                                    }}
-                                                ></div>
-                                                {space.name}
-                                            </li>
-                                        ))}
-                                </ul>
-                            </div>
-                        )}
+                        <TaskMenu
+                            isMenuOpen={isMenuOpen}
+                            currentTheme={currentTheme}
+                            handleShowDetails={handleShowDetails}
+                            setShowDatePicker={setShowDatePicker}
+                            setIsMenuOpen={setIsMenuOpen}
+                            onAddSubtask={onAddSubtask}
+                            onDuplicateTask={onDuplicateTask}
+                            onDelete={onDelete}
+                            showDatePicker={showDatePicker}
+                            showMoveOptions={showMoveOptions}
+                            moveOptionsRef={moveOptionsRef}
+                            spaces={spaces}
+                            task={task}
+                            onSetDueDate={onSetDueDate}
+                            handleMoveTask={handleMoveTask}
+                            setShowMoveOptions={setShowMoveOptions}
+                        />
                     </div>
                 </div>
             </div>

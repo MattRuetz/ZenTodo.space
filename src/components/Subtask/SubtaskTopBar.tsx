@@ -12,6 +12,7 @@ import { updateTask } from '@/store/tasksSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store/store';
 import ConfirmDelete from '../TaskCards/ConfirmDelete';
+import useClickOutside from '@/hooks/useClickOutside';
 
 interface SubtaskTopBarProps {
     subtask: any;
@@ -44,27 +45,8 @@ export const SubtaskTopBar = ({
         taskToDelete,
     } = useDeleteTask();
 
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (
-                menuRef.current &&
-                !menuRef.current.contains(event.target as Node)
-            ) {
-                setIsSubtaskMenuOpen(false);
-            }
-            if (
-                datePickerRef.current &&
-                !datePickerRef.current.contains(event.target as Node)
-            ) {
-                setShowDatePicker(false);
-            }
-        };
-
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, []);
+    useClickOutside([menuRef], () => setIsSubtaskMenuOpen(false));
+    useClickOutside([datePickerRef], () => setShowDatePicker(false));
 
     const openSubtaskMenu = (id: string) => {
         setIsSubtaskMenuOpen(true);
@@ -112,6 +94,7 @@ export const SubtaskTopBar = ({
                     onSetDueDate={handleSetDueDate}
                     setShowDatePicker={setShowDatePicker}
                     setIsMenuOpen={setIsSubtaskMenuOpen}
+                    datePickerRef={datePickerRef}
                 />
             )}
             {isSubtaskMenuOpen && (

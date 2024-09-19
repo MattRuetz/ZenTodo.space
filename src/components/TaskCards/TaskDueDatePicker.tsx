@@ -5,14 +5,15 @@ interface TaskDueDatePickerProps {
     onSetDueDate: (dueDate: Date | undefined) => void;
     setShowDatePicker: (showDatePicker: boolean) => void;
     setIsMenuOpen: (isMenuOpen: boolean) => void;
+    datePickerRef: React.RefObject<HTMLDivElement>;
 }
 
 export const TaskDueDatePicker = ({
     onSetDueDate,
     setShowDatePicker,
     setIsMenuOpen,
+    datePickerRef,
 }: TaskDueDatePickerProps) => {
-    const datePickerRef = useRef<HTMLDivElement>(null);
     const [dueDate, setDueDate] = useState<Date | null>(null);
 
     const handleSetDueDate = (dueDate: Date | undefined) => {
@@ -39,6 +40,16 @@ export const TaskDueDatePicker = ({
                 className="mt-1 bg-sky-700 text-white px-4 py-2 rounded"
             >
                 Okay
+            </button>
+            <button
+                onClick={() => {
+                    setShowDatePicker(false);
+                    setIsMenuOpen(false);
+                    handleSetDueDate(undefined);
+                }}
+                className="mt-1 bg-red-700 text-white px-4 py-2 rounded"
+            >
+                No Due Date
             </button>
         </div>
     );

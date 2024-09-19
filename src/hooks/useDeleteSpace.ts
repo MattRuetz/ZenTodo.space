@@ -3,9 +3,11 @@ import { useDispatch } from 'react-redux';
 import { deleteSpace } from '@/store/spaceSlice';
 import { AppDispatch } from '@/store/store';
 import { SpaceData } from '@/types';
+import { useAlert } from '@/hooks/useAlert';
 
 export const useDeleteSpace = () => {
     const dispatch = useDispatch<AppDispatch>();
+    const { showAlert } = useAlert();
 
     const performDeleteSpace = useCallback(
         async (space: SpaceData) => {
@@ -18,6 +20,7 @@ export const useDeleteSpace = () => {
             } catch (error) {
                 // Optionally handle error (e.g., show an error message)
                 console.error('Failed to delete space:', error);
+                showAlert('Failed to delete space', 'error');
             }
         },
         [dispatch]

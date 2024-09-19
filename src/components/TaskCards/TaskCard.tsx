@@ -23,6 +23,8 @@ import { useDuplicateTask } from '@/hooks/useDuplicateTask';
 import { useChangeHierarchy } from '@/hooks/useChangeHierarchy';
 import ConfirmDelete from './ConfirmDelete';
 import { useAlert } from '@/hooks/useAlert';
+import { useTheme } from '@/hooks/useTheme';
+import { useFadeOutEffect } from '@/hooks/useFadeOutEffect';
 
 interface TaskCardProps {
     task: Task;
@@ -34,6 +36,7 @@ interface TaskCardProps {
 const TaskCard = React.memo(
     ({ task, onDragStart, onDragStop, getNewZIndex }: TaskCardProps) => {
         const dispatch = useDispatch<AppDispatch>();
+        const currentTheme = useTheme();
 
         const isGlobalDragging = useSelector(
             (state: RootState) => state.ui.isGlobalDragging
@@ -222,14 +225,12 @@ const TaskCard = React.memo(
             };
         }, [isGlobalDragging, draggingCardId, task._id, isDraggingOver]);
 
-        const opacity = 100;
-
-        // = useFadeOutEffect(
-        //     localTask,
-        //     isHovering,
-        //     isFocused,
-        //     handleDelete
-        // );
+        const opacity = useFadeOutEffect(
+            localTask,
+            isHovering,
+            isFocused,
+            initiateDeleteTask
+        );
 
         // Force re-render every animation frame
         const [, forceUpdate] = useState({});
@@ -291,7 +292,9 @@ const TaskCard = React.memo(
 
         const handleSetDueDate = (date: Date | undefined) => {
             setLocalTask((prevTask) => ({ ...prevTask, dueDate: date }));
-            debouncedUpdate({ dueDate: date });
+
+            console.log('date in handleSetDueDate', date);
+            debouncedUpdate({ dueDate: date || null });
         };
 
         const handleMoveTask = (spaceId: string) => {
@@ -377,14 +380,20 @@ const TaskCard = React.memo(
             >
                 <div
                     ref={cardRef}
-                    className={`task-card absolute bg-base-300 shadow cursor-move flex flex-col space-y-2 rounded-xl transition-all duration-200 border-2  ${
+                    className={`task-card absolute shadow cursor-move flex flex-col space-y-2 rounded-xl transition-all duration-200 ${
                         isDraggingOver
-                            ? 'filter brightness-110 border-blue-900'
-                            : isDropped && allowDrop
-                            ? 'filter brightness-150 border-green-500'
-                            : 'border-base-300'
+                            ? 'filter brightness-110' // Keep this for visual feedback
+                            : '' // Keep this for visual feedback
                     } ${isResizing ? 'select-none' : ''}`}
-                    style={cardStyle}
+                    style={{
+                        ...cardStyle,
+                        border: '2px solid',
+                        backgroundColor: `var(--${currentTheme}-background-100)`,
+                        color: `var(--${currentTheme}-text-default)`,
+                        borderColor: isDraggingOver
+                            ? `var(--${currentTheme}-accent-blue)` // Replace with your theme color
+                            : `var(--${currentTheme}-background-200)`, // Replace with your theme color
+                    }}
                     onMouseDown={handleMouseDown}
                     onMouseEnter={() => setIsHovering(true)}
                     onMouseLeave={() => setIsHovering(false)}
@@ -440,6 +449,10 @@ const TaskCard = React.memo(
                                     onBlur={handleInputBlur}
                                     className="input input-bordered w-full p-4 pt-2 pb-2 h-8 mb-2 resize-none"
                                     maxLength={30}
+                                    style={{
+                                        backgroundColor: `var(--${currentTheme}-background-200)`, // Use theme color
+                                        color: `var(--${currentTheme}-text-default)`, // Use theme color
+                                    }}
                                 />
                                 <textarea
                                     ref={taskDescriptionRef}
@@ -456,6 +469,8 @@ const TaskCard = React.memo(
                                         minHeight: '100px',
                                         maxHeight: '500px',
                                         overflowY: 'auto',
+                                        backgroundColor: `var(--${currentTheme}-background-200)`, // Use theme color
+                                        color: `var(--${currentTheme}-text-default)`, // Use theme color
                                     }}
                                     maxLength={500}
                                 />
@@ -464,7 +479,7 @@ const TaskCard = React.memo(
                                     progress={localTask.progress}
                                     onProgressChange={handleProgressChange}
                                     handleResizeStart={handleResizeStart}
-                                    isResizing={isResizing}
+                                    currentTheme={currentTheme}
                                 />
                             </DraggableArea>
                         </div>

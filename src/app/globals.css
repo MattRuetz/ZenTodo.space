@@ -3,10 +3,44 @@
 @tailwind utilities;
 
 :root {
-    --primary: #475569;
-    --foreground-rgb: 0, 0, 0;
-    --background-start-rgb: 214, 219, 220;
-    --background-end-rgb: 255, 255, 255;
+    --buji-background-100: #1a1a1a;
+    --buji-background-200: #3a3a3a;
+    --buji-background-300: #5a5a5a;
+    --buji-text-default: #ffffff;
+    --buji-text-subtle: #cccccc;
+    --buji-accent-red: #ff4d4d;
+    --buji-accent-yellow: #ffcc00;
+    --buji-accent-green: #66ff66;
+    --buji-accent-blue: #6666ff;
+    --buji-accent-grey: #b3b3b3;
+    --buji-emphasis-light: #ffffff;
+    --buji-emphasis-dark: #000000;
+
+    --daigo-background-100: #f1f1f1;
+    --daigo-background-200: #e0e0e0;
+    --daigo-background-300: #d0d0d0;
+    --daigo-text-default: #000000;
+    --daigo-text-subtle: #333333;
+    --daigo-accent-red: #ff6666;
+    --daigo-accent-yellow: #ffff66;
+    --daigo-accent-green: #66ff66;
+    --daigo-accent-blue: #6666ff;
+    --daigo-accent-grey: #999999;
+    --daigo-emphasis-light: #000000;
+    --daigo-emphasis-dark: #ffffff;
+
+    --enzu-background-100: #d9e6d9;
+    --enzu-background-200: #c0d9c0;
+    --enzu-background-300: #a8d1a8;
+    --enzu-text-default: #f5f5dc;
+    --enzu-text-subtle: #e0e0d0;
+    --enzu-accent-red: #ff9999;
+    --enzu-accent-yellow: #ffff99;
+    --enzu-accent-green: #99ff99;
+    --enzu-accent-blue: #9999ff;
+    --enzu-accent-grey: #cccccc;
+    --enzu-emphasis-light: #f5f5dc;
+    --enzu-emphasis-dark: #3a3a3a;
 }
 
 @media (prefers-color-scheme: dark) {

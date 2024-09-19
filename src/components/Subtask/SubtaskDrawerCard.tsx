@@ -12,6 +12,7 @@ import { SubtaskBottomBar } from './SubtaskBottomBar';
 import { useChangeHierarchy } from '@/hooks/useChangeHierarchy';
 import { useMoveSubtask } from '@/hooks/useMoveSubtask';
 import { useAlert } from '@/hooks/useAlert';
+import useClickOutside from '@/hooks/useClickOutside';
 
 interface SubtaskDrawerCardProps {
     subtask: Task;
@@ -145,24 +146,7 @@ const SubtaskDrawerCard = React.memo(
 
         drag(drop(ref));
 
-        useEffect(() => {
-            const handleClickOutside = (event: MouseEvent) => {
-                if (
-                    inputRef.current &&
-                    !inputRef.current.contains(event.target as Node)
-                ) {
-                    handleBlur();
-                }
-            };
-
-            if (isEditing) {
-                document.addEventListener('mousedown', handleClickOutside);
-            }
-
-            return () => {
-                document.removeEventListener('mousedown', handleClickOutside);
-            };
-        }, [isEditing]);
+        useClickOutside([inputRef], () => handleBlur());
 
         const handleBlur = useCallback(() => {
             if (
@@ -195,7 +179,7 @@ const SubtaskDrawerCard = React.memo(
 
         const handleSetDueDate = (date: Date | undefined) => {
             if (!subtask._id) return;
-            dispatch(updateTask({ _id: subtask._id, dueDate: date }));
+            dispatch(updateTask({ _id: subtask._id, dueDate: date || null }));
         };
 
         const handleInputChange = useCallback(
