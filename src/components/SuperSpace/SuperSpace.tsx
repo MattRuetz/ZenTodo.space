@@ -16,7 +16,7 @@ import ControlPanel from './ControlPanel';
 import Preloader from './Preloader';
 import { useSession } from 'next-auth/react';
 import { Tooltip } from 'react-tooltip';
-import { generateRandomDarkColor } from '@/app/utils/utils';
+import { generateRandomColor } from '@/app/utils/utils';
 import SpaceCard from './SpaceCard';
 import {
     setSubtaskDrawerOpen,
@@ -78,7 +78,7 @@ const SuperSpace = React.memo(() => {
         }
         const newSpace = {
             name: `Space ${spaces.length + 1}`,
-            color: generateRandomDarkColor(),
+            color: generateRandomColor(),
             maxZIndex: 1,
             selectedEmojis: [],
             emoji: '',

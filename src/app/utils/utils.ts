@@ -7,11 +7,11 @@ export const generateNewObjectId = (id: string) => {
     return new mongoose.Types.ObjectId(id);
 };
 
-export const generateRandomDarkColor = () => {
+export const generateRandomColor = () => {
     // Generate a random color in the HSL space
     const hue = Math.floor(Math.random() * 360);
-    const saturation = Math.floor(Math.random() * 30) + 70; // 70-100%
-    const lightness = Math.floor(Math.random() * 20) + 10; // 10-30%
+    const saturation = Math.floor(Math.random() * 100); // 0-100%
+    const lightness = Math.floor(Math.random() * 100); // 0-100%
 
     // Convert HSL to RGB
     const h = hue / 360;

@@ -1,12 +1,12 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { useDispatch } from 'react-redux';
-import { SpaceData } from '@/types';
+import { useDispatch, useSelector } from 'react-redux';
+import { SpaceData, Task } from '@/types';
 import { deleteSpace, reorderSpaces, updateSpace } from '@/store/spaceSlice';
-import { AppDispatch } from '@/store/store';
+import { AppDispatch, RootState } from '@/store/store';
 import EmojiDropdown from '../EmojiDropdown';
-import { FaTag } from 'react-icons/fa';
+import { FaClock, FaTag } from 'react-icons/fa';
 import { getComplementaryColor, getContrastingColor } from '@/app/utils/utils';
-import { FaTrash } from 'react-icons/fa6';
+import { FaClockRotateLeft, FaTrash } from 'react-icons/fa6';
 import { useDrag, useDrop } from 'react-dnd';
 import ConfirmDelete from '../TaskCards/ConfirmDelete';
 
@@ -31,6 +31,28 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
     const [color, setColor] = useState(space.color);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
+
+    const tasks = useSelector((state: RootState) =>
+        state.tasks.tasks.filter((task: Task) => task.space === space._id)
+    );
+
+    const tasksDueToday = tasks.filter((task: Task) => {
+        const dueDate = new Date(task.dueDate || '');
+        const today = new Date();
+        return (
+            dueDate.getFullYear() === today.getFullYear() &&
+            dueDate.getMonth() === today.getMonth() &&
+            dueDate.getDate() === today.getDate()
+        );
+    });
+
+    const tasksDueThisWeek = tasks.filter((task: Task) => {
+        const dueDate = new Date(task.dueDate || '');
+        const today = new Date();
+        const endOfWeek = new Date(today);
+        endOfWeek.setDate(today.getDate() + 7);
+        return dueDate >= today && dueDate <= endOfWeek;
+    });
 
     useEffect(() => {
         if (isEditing && inputRef.current) {
@@ -133,6 +155,7 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
     };
 
     const contrastColor = getContrastingColor(color);
+    const contrastInvertedColor = contrastColor === 'white' ? 'black' : 'white';
     const complementaryColor = getComplementaryColor(color);
 
     return (
@@ -234,7 +257,7 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
                     </form>
                 </div>
             ) : (
-                <>
+                <div className="h-full flex flex-col justify-center ml-4">
                     <h2
                         className="text-2xl font-bold mb-2 line-clamp-2 break-words"
                         style={{
@@ -255,7 +278,118 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
                     >
                         Edit
                     </button>
-                </>
+                    <div className="flex flex-row justify-start items-center gap-4">
+                        <div className="task-summary">
+                            <div
+                                className="flex flex-col bg-opacity-80 p-4 rounded-lg shadow-md"
+                                style={{
+                                    backgroundColor: contrastInvertedColor,
+                                    border: `1px solid ${contrastColor}`,
+                                    color: contrastColor,
+                                }}
+                            >
+                                <h4 className="text-lg font-semibold mb-2">
+                                    {tasks.length} Tasks
+                                </h4>
+                                <p className="text-sm grid grid-cols-2 gap-2">
+                                    {tasks.filter(
+                                        (task) =>
+                                            task.progress === 'Not Started'
+                                    ).length > 0 && (
+                                        <div className="font-medium px-2 ">
+                                            <span className="font-bold ">
+                                                {
+                                                    tasks.filter(
+                                                        (task) =>
+                                                            task.progress ===
+                                                            'Not Started'
+                                                    ).length
+                                                }
+                                            </span>{' '}
+                                            Not Started
+                                        </div>
+                                    )}
+                                    {tasks.filter(
+                                        (task) =>
+                                            task.progress === 'In Progress'
+                                    ).length > 0 && (
+                                        <div className="font-medium px-2">
+                                            <span className="font-bold ">
+                                                {
+                                                    tasks.filter(
+                                                        (task) =>
+                                                            task.progress ===
+                                                            'In Progress'
+                                                    ).length
+                                                }
+                                            </span>{' '}
+                                            In Progress
+                                        </div>
+                                    )}
+                                    {tasks.filter(
+                                        (task) => task.progress === 'Blocked'
+                                    ).length > 0 && (
+                                        <div className="font-medium px-2">
+                                            <span className="font-bold ">
+                                                {
+                                                    tasks.filter(
+                                                        (task) =>
+                                                            task.progress ===
+                                                            'Blocked'
+                                                    ).length
+                                                }
+                                            </span>{' '}
+                                            Blocked
+                                        </div>
+                                    )}
+                                    {tasks.filter(
+                                        (task) => task.progress === 'Complete'
+                                    ).length > 0 && (
+                                        <div className="font-medium px-2">
+                                            <span className="font-bold ">
+                                                {
+                                                    tasks.filter(
+                                                        (task) =>
+                                                            task.progress ===
+                                                            'Complete'
+                                                    ).length
+                                                }
+                                            </span>{' '}
+                                            Completed
+                                        </div>
+                                    )}
+                                </p>
+
+                                {tasksDueToday.length > 0 && (
+                                    <div>
+                                        <div
+                                            className="w-full h-0 border-b-2 border-dashed my-2"
+                                            style={{
+                                                borderColor: contrastColor,
+                                                opacity: 0.5,
+                                            }}
+                                        />
+                                        <div
+                                            className="font-xs font-bold px-4 my-1 flex flex-row items-center gap-2"
+                                            style={{
+                                                color: contrastColor,
+                                            }}
+                                        >
+                                            <FaClock className="text-red-500/80" />
+                                            {tasksDueToday.length} due today
+                                        </div>
+                                    </div>
+                                )}
+                                {tasksDueThisWeek.length > 0 && (
+                                    <div className="font-xs font-bold px-4 flex flex-row items-center gap-2">
+                                        <FaClock className="text-yellow-500/80" />
+                                        {tasksDueThisWeek.length} due this week
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
             )}
             {showDeleteConfirm && (
                 <ConfirmDelete
