@@ -239,26 +239,34 @@ export const convertSubtaskToTaskAsync = createAsyncThunk(
     }
 );
 
-export const deleteTask = createAsyncThunk(
-    'tasks/deleteTask',
-    async (taskId: string, { getState, rejectWithValue }) => {
+// Update the `deleteTaskAsync` thunk
+export const deleteTaskAsync = createAsyncThunk(
+    'tasks/deleteTaskAsync',
+    async (
+        { taskId, parentTaskId }: { taskId: string; parentTaskId: string | '' },
+        { rejectWithValue }
+    ) => {
         try {
-            const state = getState() as RootState;
-
-            const task = state.tasks.tasks.find((task) => task._id === taskId);
-            const parentTaskId = task?.parentTask;
-
-            const response = await fetch(`/api/tasks?id=${taskId}`, {
-                method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ parentTaskId }),
-            });
-
+            let response;
+            if (parentTaskId === '') {
+                console.log('deleting task', taskId);
+                response = await fetch(`/api/tasks?id=${taskId}`, {
+                    method: 'DELETE',
+                });
+            } else {
+                console.log('deleting subtask', taskId);
+                response = await fetch(
+                    `/api/tasks?id=${taskId}&parentId=${parentTaskId}`,
+                    {
+                        method: 'DELETE',
+                    }
+                );
+            }
             if (!response.ok) {
                 throw new Error('Failed to delete task');
             }
-
-            return { taskId, parentTaskId };
+            const data = await response.json();
+            return data;
         } catch (error) {
             if (error instanceof Error) {
                 return rejectWithValue(error.message);
@@ -431,6 +439,11 @@ export const tasksSlice = createSlice({
         duplicateTasksOptimistic: (state, action: PayloadAction<Task[]>) => {
             state.tasks.push(...action.payload);
         },
+        deleteTaskOptimistic: (state, action: PayloadAction<string[]>) => {
+            state.tasks = state.tasks.filter(
+                (task) => !action.payload.includes(task._id as string)
+            );
+        },
         convertTaskToSubtaskOptimistic: (
             state,
             action: PayloadAction<{
@@ -593,23 +606,15 @@ export const tasksSlice = createSlice({
                     state.tasks[index] = action.payload;
                 }
             })
-            .addCase(deleteTask.fulfilled, (state, action) => {
-                const deletedTaskId = action.payload.taskId;
-                state.tasks = state.tasks.filter(
-                    (task) =>
-                        task._id !== deletedTaskId &&
-                        !task.ancestors?.includes(deletedTaskId)
-                );
-                const parentTaskId = action.payload.parentTaskId;
-
-                const parentTask = state.tasks.find(
-                    (task) => task._id === parentTaskId
-                );
-                if (parentTask) {
-                    parentTask.subtasks = parentTask.subtasks.filter(
-                        (subId) => subId.toString() !== deletedTaskId
-                    );
-                }
+            .addCase(deleteTaskAsync.fulfilled, (state, action) => {
+                // The optimistic update has already removed the tasks,
+                // so we don't need to do anything here
+            })
+            .addCase(deleteTaskAsync.rejected, (state, action) => {
+                // Rollback optimistic updates
+                state.error = action.payload as string;
+                // We need to fetch the tasks again from the server to ensure consistency
+                // This could be done by dispatching a fetchTasks action
             })
             .addCase(convertTaskToSubtaskAsync.fulfilled, (state, action) => {
                 const {
@@ -822,6 +827,7 @@ export const {
     moveSubtaskWithinLevelOptimistic,
     addNewSubtaskOptimistic,
     addTaskOptimistic,
+    deleteTaskOptimistic,
 } = tasksSlice.actions;
 
 export default tasksSlice.reducer;

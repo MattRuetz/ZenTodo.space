@@ -19,6 +19,7 @@ import { selectTasksForSpace } from '@/store/selectors';
 import { createSelector } from '@reduxjs/toolkit';
 import { useClearEmojis } from '@/hooks/useClearEmojis';
 import { useAddTask } from '@/hooks/useAddTask';
+import { motion } from 'framer-motion';
 
 // Memoized selectors
 
@@ -236,9 +237,13 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId, onLoaded }) => {
     }, [drop]);
 
     return (
-        <div
+        <motion.div
+            initial={{ opacity: 0, scale: 0.9, translateY: 20 }}
+            animate={{ opacity: 1, scale: 1, translateY: 0 }}
+            exit={{ opacity: 0, scale: 0.9, translateY: 20 }}
+            transition={{ duration: 0.5, ease: 'easeInOut' }}
             ref={spaceRef}
-            className={`relative w-full h-screen bg-base-100 space-${spaceId}`}
+            className={`relative w-full h-screen bg-base-100 space-${spaceId} shadow-md shadow-black/80 overflow-hidden`}
             onMouseDown={handleSpaceClick}
         >
             {!session && (
@@ -277,7 +282,7 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId, onLoaded }) => {
                 isOpen={isDrawerOpen as boolean}
                 onClose={handleCloseDrawer}
             />
-        </div>
+        </motion.div>
     );
 });
 

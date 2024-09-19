@@ -70,7 +70,7 @@ const SpaceCard: React.FC<SpaceCardProps> = ({ space, onClick }) => {
 
     return (
         <div
-            className="space rounded-lg shadow-md hover:shadow-xl p-8 cursor-pointer relative flex flex-row justify-start items-center gap-4 min-h-[150px] max-h-[300px] hover:-rotate-1 border-4 border-transparent hover:border-white transition-all duration-300 ease-in-out"
+            className="space rounded-lg shadow-md hover:shadow-xl p-8 cursor-pointer relative flex flex-row justify-start items-center gap-4 min-h-[150px] h-full max-h-[300px] hover:-rotate-1 border-4 border-transparent hover:border-white transition-all duration-300 ease-in-out"
             style={{ backgroundColor: color }}
             onClick={handleCardClick}
         >
@@ -88,9 +88,9 @@ const SpaceCard: React.FC<SpaceCardProps> = ({ space, onClick }) => {
                 />
             </div>
             {isEditing ? (
-                <>
+                <div className="h-full">
                     <div
-                        className="absolute rounded-full bottom-4 right-4 p-4 text-xl text-red-600 hover:text-red-700 cursor-pointer hover:rotate-12 transition-transform duration-300 ease-in-out"
+                        className="absolute rounded-full bottom-4 right-4 p-3 text-xl text-red-600 hover:text-red-700 cursor-pointer hover:rotate-12 transition-transform duration-300 ease-in-out"
                         onClick={handleDelete}
                         style={{
                             backgroundColor: contrastColor,
@@ -100,7 +100,7 @@ const SpaceCard: React.FC<SpaceCardProps> = ({ space, onClick }) => {
                     </div>
                     <form
                         onSubmit={handleSubmit}
-                        className="flex flex-col gap-2"
+                        className="flex flex-col justify-center gap-2 h-full"
                     >
                         <input
                             ref={inputRef}
@@ -110,10 +110,10 @@ const SpaceCard: React.FC<SpaceCardProps> = ({ space, onClick }) => {
                             className="input input-bordered w-full"
                             maxLength={20}
                         />
-                        <div className="flex items-center gap-2 bg-white rounded-lg p-0.5 px-2">
+                        <div className="flex items-center gap-2 bg-white rounded-lg px-2">
                             <label
                                 htmlFor="colorPicker"
-                                className="flex-grow p-2 rounded cursor-pointer text-sm font-medium"
+                                className="p-2 rounded cursor-pointer text-sm font-medium"
                                 style={{
                                     backgroundColor: color,
                                     color: getContrastingColor(color),
@@ -146,7 +146,7 @@ const SpaceCard: React.FC<SpaceCardProps> = ({ space, onClick }) => {
                             Save
                         </button>
                     </form>
-                </>
+                </div>
             ) : (
                 <>
                     <h2

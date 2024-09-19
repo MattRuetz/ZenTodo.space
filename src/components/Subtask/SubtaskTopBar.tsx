@@ -1,6 +1,4 @@
-import { FaCalendar, FaCopy, FaPlus, FaTag, FaTrash } from 'react-icons/fa6';
-import { ProgressDropdown } from '../TaskCards/ProgressDropdown';
-import SubtaskProgresses from '../TaskCards/SubtaskProgresses';
+import { FaCalendar, FaPlus, FaTag, FaTrash } from 'react-icons/fa6';
 import { TaskProgress } from '@/types';
 import { FaEllipsisV, FaInfoCircle } from 'react-icons/fa';
 import { useEffect, useRef, useState } from 'react';
@@ -13,8 +11,7 @@ import EmojiDropdown from '../EmojiDropdown';
 import { updateTask } from '@/store/tasksSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store/store';
-import { toast } from 'react-toastify';
-import { useDuplicateTask } from '@/hooks/useDuplicateTask';
+import ConfirmDelete from '../TaskCards/ConfirmDelete';
 
 interface SubtaskTopBarProps {
     subtask: any;
@@ -40,7 +37,12 @@ export const SubtaskTopBar = ({
         (state: RootState) => state.spaces.currentSpace?._id
     );
 
-    const { duplicateTask } = useDuplicateTask();
+    const {
+        initiateDeleteTask,
+        cancelDelete,
+        showDeleteConfirm,
+        taskToDelete,
+    } = useDeleteTask();
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -93,11 +95,6 @@ export const SubtaskTopBar = ({
             position: 'start',
         });
     };
-
-    const { handleDelete } = useDeleteTask({
-        deletingTasks,
-        setDeletingTasks,
-    });
 
     const handleSetSubtaskEmoji = (emoji: string) => {
         if (subtask._id) {
@@ -165,13 +162,20 @@ export const SubtaskTopBar = ({
                             onClick={(e) => {
                                 e.stopPropagation();
                                 e.preventDefault();
-                                handleDelete(subtask._id);
+                                initiateDeleteTask(subtask._id);
                                 setIsSubtaskMenuOpen(false);
                             }}
                         >
                             <FaTrash className="mr-2" /> Delete
                         </button>
                     </div>
+                    {showDeleteConfirm && taskToDelete && (
+                        <ConfirmDelete
+                            objectToDelete={taskToDelete}
+                            cancelDelete={cancelDelete}
+                            spaceOrTask={'task'}
+                        />
+                    )}
                 </div>
             )}
             <EmojiDropdown

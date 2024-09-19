@@ -21,6 +21,7 @@ import { useAddNewSubtask } from '@/hooks/useAddNewSubtask';
 import TaskCardBottomBar from './TaskCardBottomBar';
 import { useDuplicateTask } from '@/hooks/useDuplicateTask';
 import { useChangeHierarchy } from '@/hooks/useChangeHierarchy';
+import ConfirmDelete from './ConfirmDelete';
 
 interface TaskCardProps {
     task: Task;
@@ -44,6 +45,14 @@ const TaskCard = React.memo(
 
         const { duplicateTask } = useDuplicateTask();
         const { convertTaskToSubtask } = useChangeHierarchy();
+
+        const {
+            initiateDeleteTask,
+            cancelDelete,
+            showDeleteConfirm,
+            taskToDelete,
+        } = useDeleteTask();
+        const { addNewSubtask } = useAddNewSubtask();
 
         const {
             localTask,
@@ -167,13 +176,6 @@ const TaskCard = React.memo(
             allowDropRef,
             setAllowDrop,
             allowDrop,
-        });
-
-        const { addNewSubtask } = useAddNewSubtask();
-
-        const { handleDelete } = useDeleteTask({
-            deletingTasks,
-            setDeletingTasks,
         });
 
         useEffect(() => {
@@ -390,7 +392,9 @@ const TaskCard = React.memo(
                         <div className="flex flex-col h-full">
                             <DraggableArea
                                 className="flex flex-col h-full p-4 pt-2 pb-0"
-                                onDelete={() => handleDelete(task._id ?? '')}
+                                onDelete={() =>
+                                    initiateDeleteTask(task._id ?? '')
+                                }
                                 onDetails={handleShowDetails}
                                 onSetDueDate={handleSetDueDate}
                                 onMoveTask={handleMoveTask}
@@ -411,7 +415,7 @@ const TaskCard = React.memo(
                                     className="pb-2"
                                     task={task}
                                     onDelete={() =>
-                                        handleDelete(task._id ?? '')
+                                        initiateDeleteTask(task._id ?? '')
                                     }
                                     onDetails={handleShowDetails}
                                     onSetDueDate={handleSetDueDate}
@@ -463,6 +467,13 @@ const TaskCard = React.memo(
                             </DraggableArea>
                         </div>
                     </>
+                    {showDeleteConfirm && taskToDelete && (
+                        <ConfirmDelete
+                            objectToDelete={taskToDelete}
+                            cancelDelete={cancelDelete}
+                            spaceOrTask={'task'}
+                        />
+                    )}
                 </div>
             </Draggable>
         );

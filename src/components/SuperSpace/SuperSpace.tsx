@@ -17,6 +17,7 @@ import {
     setSubtaskDrawerOpen,
     setSubtaskDrawerParentId,
 } from '@/store/uiSlice';
+import { AnimatePresence, motion } from 'framer-motion';
 
 const SuperSpace = React.memo(() => {
     const dispatch = useDispatch<AppDispatch>();
@@ -78,40 +79,80 @@ const SuperSpace = React.memo(() => {
         return <Preloader fadeOut={fadeOut} />;
     }
 
+    const container = {
+        hidden: { opacity: 1, scale: 0 },
+        visible: {
+            opacity: 1,
+            scale: 1,
+            transition: {
+                delayChildren: 0.2,
+                staggerChildren: 0.05,
+            },
+        },
+    };
+
+    const item = {
+        hidden: { y: 20, opacity: 0 },
+        visible: {
+            y: 0,
+            opacity: 1,
+        },
+    };
+
     return (
-        <div className="relative w-full h-full bg-gradient-to-b from-slate-900 to-slate-800">
+        <div className="relative w-full h-full bg-gradient-to-b from-slate-900 to-slate-800 overflow-hidden">
             {isZoomedOut ? (
                 <>
                     <h4 className="text-xl text-white text-center pt-4 pb-2 font-bold">
                         Spaces: {spaces.length} / 9
                     </h4>
 
-                    <div className="grid grid-cols-3 gap-8 p-4 h-[calc(100%-50px)]">
-                        {spaces.map((space: SpaceData) => (
-                            <SpaceCard
-                                key={space._id}
-                                space={space}
-                                onClick={() => {
-                                    dispatch(setCurrentSpace(space));
-                                    setIsZoomedOut(false);
-                                }}
-                            />
-                        ))}
-                        {spaces.length < 9 && (
-                            <div
-                                className={`space bg-slate-300 hover:bg-slate-400 transition-colors duration-300 border-4 border-sky-900 rounded-lg shadow-md p-4 cursor-pointer flex items-center justify-center min-h-[150px] max-h-[300px] ${
-                                    spaces.length >= 9
-                                        ? 'opacity-50 cursor-not-allowed'
-                                        : ''
-                                }`}
-                                onClick={
-                                    spaces.length < 9 ? addSpace : undefined
-                                }
-                            >
-                                <span className="text-4xl text-sky-900">+</span>
-                            </div>
-                        )}
-                    </div>
+                    <AnimatePresence>
+                        <motion.div
+                            className="grid grid-cols-3 gap-8 p-4 h-[calc(100%-50px)]"
+                            variants={container}
+                            initial="hidden"
+                            animate="visible"
+                        >
+                            {spaces.map((space: SpaceData) => (
+                                <motion.div
+                                    key={space._id}
+                                    variants={item}
+                                    className="h-full"
+                                >
+                                    <SpaceCard
+                                        space={space}
+                                        onClick={() => {
+                                            dispatch(setCurrentSpace(space));
+                                            setIsZoomedOut(false);
+                                        }}
+                                    />
+                                </motion.div>
+                            ))}
+                            {spaces.length < 9 && (
+                                <motion.div variants={item}>
+                                    {spaces.length < 9 && (
+                                        <div
+                                            className={`space bg-slate-300 hover:bg-slate-400 transition-colors duration-300 border-4 border-sky-900 rounded-lg shadow-md p-4 cursor-pointer flex items-center justify-center min-h-[150px] max-h-[300px] ${
+                                                spaces.length >= 9
+                                                    ? 'opacity-50 cursor-not-allowed'
+                                                    : ''
+                                            }`}
+                                            onClick={
+                                                spaces.length < 9
+                                                    ? addSpace
+                                                    : undefined
+                                            }
+                                        >
+                                            <span className="text-4xl text-sky-900">
+                                                +
+                                            </span>
+                                        </div>
+                                    )}
+                                </motion.div>
+                            )}
+                        </motion.div>
+                    </AnimatePresence>
                 </>
             ) : (
                 (currentSpace || !session) && (

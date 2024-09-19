@@ -152,8 +152,8 @@ const SubtaskDrawer = React.memo(
                 <div
                     ref={ref}
                     data-drawer-parent-id={parentTask?._id}
-                    className={`subtask-drawer fixed top-0 right-0 h-full shadow-md transform w-[400px] border-l-2 bg-base-300 opacity-90 ${
-                        isOpen ? '' : 'translate-x-full'
+                    className={`subtask-drawer fixed top-0 right-0 h-full shadow-md transform w-[400px] border-l-2 bg-base-300 ${
+                        isOpen ? 'opacity-90' : 'translate-x-full opacity-0'
                     } transition-transform duration-300 ease-in-out subtask-drawer-items ${
                         isTaskCardOver
                             ? 'border-blue-700 filter brightness-125'

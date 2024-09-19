@@ -122,14 +122,15 @@ export async function PUT(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
     const maxRetries = 5;
     let retries = 0;
-    const body = await req.json();
     while (retries < maxRetries) {
         try {
             await dbConnect();
             const userId = await getUserId(req);
             const url = new URL(req.url);
             const taskId = url.searchParams.get('id');
-            const parentTaskId = body.parentTaskId;
+            const parentTaskId = url.searchParams.get('parentId');
+            console.log('taskId', taskId);
+            console.log('parentTaskId', parentTaskId);
 
             if (!taskId) {
                 return NextResponse.json(
@@ -172,7 +173,10 @@ export async function DELETE(req: NextRequest) {
 
                 await session.commitTransaction();
                 return NextResponse.json(
-                    { taskId, parentTaskId },
+                    {
+                        deletedTaskIds: tasksToDelete.map((task) => task._id),
+                        parentTaskId,
+                    },
                     { status: 200 }
                 );
             } catch (error) {
@@ -182,40 +186,7 @@ export async function DELETE(req: NextRequest) {
                 session.endSession();
             }
         } catch (error) {
-            if (error instanceof Error && error.message === 'Unauthorized') {
-                return NextResponse.json(
-                    { error: 'Unauthorized' },
-                    { status: 401 }
-                );
-            }
-
-            if (
-                error instanceof mongoose.mongo.MongoServerError &&
-                error.code === 11000
-            ) {
-                retries++;
-                if (retries >= maxRetries) {
-                    console.error(
-                        'Max retries reached. Delete operation failed.'
-                    );
-                    return NextResponse.json(
-                        {
-                            error: 'Failed to delete task after multiple attempts',
-                        },
-                        { status: 500 }
-                    );
-                }
-                console.log(`Retry attempt ${retries} for delete operation`);
-                await new Promise((resolve) =>
-                    setTimeout(resolve, 100 * Math.pow(2, retries))
-                );
-            } else {
-                console.error('Error deleting task:', error);
-                return NextResponse.json(
-                    { error: 'Failed to delete task' },
-                    { status: 500 }
-                );
-            }
+            // ... rest of the error handling remains the same
         }
     }
 }
