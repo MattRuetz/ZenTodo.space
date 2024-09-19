@@ -183,7 +183,12 @@ export const SubtaskTopBar = ({
                 setTaskEmoji={handleSetSubtaskEmoji}
             />
             <div className="flex justify-between items-center gap-2">
-                {subtask.dueDate && <DueDateIndicator task={subtask} />}
+                {subtask.dueDate && (
+                    <DueDateIndicator
+                        task={subtask}
+                        handleDueDateClick={() => setShowDatePicker(true)}
+                    />
+                )}
                 <FaEllipsisV
                     className="cursor-pointer text-slate-400"
                     onClick={() => openSubtaskMenu(subtask._id as string)}

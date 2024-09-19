@@ -139,7 +139,12 @@ const TaskCardTopBar: React.FC<TaskCardTopBarProps> = React.memo(
                     ></div>
                 </div>
                 <div className="flex flex-row gap-4 items-center">
-                    {task.dueDate && <DueDateIndicator task={task} />}
+                    {task.dueDate && (
+                        <DueDateIndicator
+                            task={task}
+                            handleDueDateClick={() => setShowDatePicker(true)}
+                        />
+                    )}
                     <div className="relative" ref={menuRef}>
                         <FaEllipsisV
                             size={14}

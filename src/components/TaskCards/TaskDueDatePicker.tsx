@@ -17,6 +17,7 @@ export const TaskDueDatePicker = ({
 
     const handleSetDueDate = (dueDate: Date | undefined) => {
         onSetDueDate(dueDate || undefined);
+        setDueDate(dueDate || null);
         setShowDatePicker(false);
         setIsMenuOpen(false);
     };
@@ -35,7 +36,7 @@ export const TaskDueDatePicker = ({
                 onClick={() => {
                     handleSetDueDate(dueDate || undefined);
                 }}
-                className="mt-1 bg-blue-500 text-white px-4 py-2 rounded"
+                className="mt-1 bg-sky-700 text-white px-4 py-2 rounded"
             >
                 Okay
             </button>
