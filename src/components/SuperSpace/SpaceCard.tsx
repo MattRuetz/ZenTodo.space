@@ -1,19 +1,29 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { SpaceData } from '@/types';
-import { deleteSpace, updateSpace } from '@/store/spaceSlice';
+import { deleteSpace, reorderSpaces, updateSpace } from '@/store/spaceSlice';
 import { AppDispatch } from '@/store/store';
 import EmojiDropdown from '../EmojiDropdown';
 import { FaTag } from 'react-icons/fa';
 import { getComplementaryColor, getContrastingColor } from '@/app/utils/utils';
 import { FaTrash } from 'react-icons/fa6';
+import { useDrag, useDrop } from 'react-dnd';
 
 interface SpaceCardProps {
     space: SpaceData;
+    index: number;
+    moveSpaceCard: (dragIndex: number, hoverIndex: number) => void;
+    handleDragEnd: () => void;
     onClick: () => void;
 }
 
-const SpaceCard: React.FC<SpaceCardProps> = ({ space, onClick }) => {
+const SpaceCard: React.FC<SpaceCardProps> = ({
+    space,
+    index,
+    moveSpaceCard,
+    handleDragEnd,
+    onClick,
+}) => {
     const dispatch = useDispatch<AppDispatch>();
     const [isEditing, setIsEditing] = useState(false);
     const [name, setName] = useState(space.name);
@@ -26,6 +36,68 @@ const SpaceCard: React.FC<SpaceCardProps> = ({ space, onClick }) => {
             inputRef.current.focus();
         }
     }, [isEditing]);
+
+    const ref = useRef<HTMLDivElement>(null);
+
+    const [{ isDragging }, drag] = useDrag({
+        type: 'SPACE_CARD',
+        item: () => ({ id: space._id, index }),
+        collect: (monitor) => ({
+            isDragging: monitor.isDragging(),
+        }),
+    });
+
+    const [, drop] = useDrop({
+        accept: 'SPACE_CARD',
+        hover: (item: { id: string; index: number }, monitor) => {
+            if (!ref.current) {
+                return;
+            }
+            const dragIndex = item.index;
+            const hoverIndex = index;
+
+            // Don't replace items with themselves
+            if (dragIndex === hoverIndex) {
+                return;
+            }
+
+            // Determine rectangle on screen
+            const hoverBoundingRect = ref.current?.getBoundingClientRect();
+
+            // Determine mouse position
+            const clientOffset = monitor.getClientOffset();
+
+            const hoverClientY = clientOffset!.y - hoverBoundingRect.top;
+            const hoverClientX = clientOffset!.x - hoverBoundingRect.left;
+
+            // Check if the mouse is within the bounds of the card
+            const hoverHeight = hoverBoundingRect.height;
+            const hoverWidth = hoverBoundingRect.width;
+
+            if (
+                hoverClientY < 0 ||
+                hoverClientY > hoverHeight ||
+                hoverClientX < 0 ||
+                hoverClientX > hoverWidth
+            ) {
+                return;
+            }
+
+            // Time to actually perform the action
+            moveSpaceCard(dragIndex, hoverIndex);
+
+            // Note: we're mutating the monitor item here!
+            // Generally it's better to avoid mutations,
+            // but it's good here for the sake of performance
+            // to avoid expensive index searches.
+            item.index = hoverIndex;
+        },
+        drop: () => {
+            handleDragEnd();
+        },
+    });
+
+    drag(drop(ref));
 
     const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setName(e.target.value);
@@ -70,9 +142,12 @@ const SpaceCard: React.FC<SpaceCardProps> = ({ space, onClick }) => {
 
     return (
         <div
-            className="space rounded-lg shadow-md hover:shadow-xl p-8 cursor-pointer relative flex flex-row justify-start items-center gap-4 min-h-[150px] h-full max-h-[300px] hover:-rotate-1 border-4 border-transparent hover:border-white transition-all duration-300 ease-in-out"
-            style={{ backgroundColor: color }}
-            onClick={handleCardClick}
+            ref={ref}
+            className={`space rounded-lg shadow-md hover:shadow-xl p-8 cursor-pointer relative flex flex-row justify-start items-center gap-4 min-h-[150px] h-full max-h-[300px] hover:-rotate-1 border-4 border-transparent hover:border-white transition-all duration-300 ease-in-out ${
+                isDragging ? 'opacity-50' : ''
+            }`}
+            style={{ backgroundColor: space.color }}
+            onClick={onClick}
         >
             <div
                 className=" shadow-slate-900 rounded-full p-1 text-2xl"

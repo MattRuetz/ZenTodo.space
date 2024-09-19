@@ -13,7 +13,7 @@ export async function GET() {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const spaces = await Space.find({ userId: session.user.id });
+    const spaces = await Space.find({ userId: session.user.id }).sort('order');
     return NextResponse.json(spaces);
 }
 
@@ -25,12 +25,16 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { name, color } = await req.json();
+    const { color, name, order } = await req.json();
+
     const newSpace = await Space.create({
         name,
         color,
         userId: session.user.id,
-        maxZIndex: 1, // Initialize maxZIndex to 1
+        order,
+        maxZIndex: 0,
+        emoji: '',
+        selectedEmojis: [],
     });
 
     return NextResponse.json(newSpace);

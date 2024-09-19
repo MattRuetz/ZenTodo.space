@@ -5,7 +5,8 @@ interface ISpace extends Document {
     _id: string;
     name: string;
     color: string;
-    uderId: mongoose.Schema.Types.ObjectId;
+    order: number;
+    userId: mongoose.Schema.Types.ObjectId;
     maxZIndex: number;
     emoji: string;
     selectedEmojis: string[];
@@ -14,6 +15,7 @@ interface ISpace extends Document {
 const SpaceSchema = new mongoose.Schema({
     name: { type: String, required: true },
     color: { type: String, required: true },
+    order: { type: Number, required: true },
     userId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',

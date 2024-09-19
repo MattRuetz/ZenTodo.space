@@ -31,6 +31,7 @@ export interface SpaceData {
     _id?: string;
     name: string;
     color: string;
+    order: number;
     maxZIndex: number;
     emoji: string;
     selectedEmojis: string[];

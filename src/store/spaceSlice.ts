@@ -46,6 +46,28 @@ export const createSpace = createAsyncThunk(
     }
 );
 
+export const reorderSpaces = createAsyncThunk(
+    'spaces/reorderSpaces',
+    async (newSpaces: SpaceData[], { rejectWithValue }) => {
+        try {
+            const response = await fetch('/api/spaces/reorder', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ spaces: newSpaces }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to reorder spaces');
+            }
+
+            const data = await response.json();
+            return data.spaces;
+        } catch (error) {
+            return rejectWithValue((error as Error).message);
+        }
+    }
+);
+
 export const updateSpace = createAsyncThunk(
     'spaces/updateSpace',
     async (spaceData: Partial<SpaceData>, { rejectWithValue }) => {
@@ -156,6 +178,12 @@ const spaceSlice = createSlice({
                 state.currentSpace = state.spaces[0];
             }
         },
+        reorderSpacesOptimistic: (
+            state,
+            action: PayloadAction<SpaceData[]>
+        ) => {
+            state.spaces = action.payload;
+        },
     },
     extraReducers: (builder) => {
         builder
@@ -239,9 +267,21 @@ const spaceSlice = createSlice({
                 ) {
                     state.currentSpace = null;
                 }
+            })
+            .addCase(reorderSpaces.pending, (state) => {
+                state.status = 'loading';
+            })
+            .addCase(reorderSpaces.fulfilled, (state, action) => {
+                state.status = 'succeeded';
+                state.spaces = action.payload;
+            })
+            .addCase(reorderSpaces.rejected, (state, action) => {
+                state.status = 'failed';
+                state.error = action.payload as string;
             });
     },
 });
 
-export const { setCurrentSpace, setInitialSpace } = spaceSlice.actions;
+export const { setCurrentSpace, setInitialSpace, reorderSpacesOptimistic } =
+    spaceSlice.actions;
 export default spaceSlice.reducer;

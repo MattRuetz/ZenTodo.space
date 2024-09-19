@@ -1,8 +1,14 @@
 'use client';
 // src/components/SuperSpace.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchSpaces, createSpace, setCurrentSpace } from '@/store/spaceSlice';
+import {
+    fetchSpaces,
+    createSpace,
+    setCurrentSpace,
+    reorderSpacesOptimistic,
+    reorderSpaces,
+} from '@/store/spaceSlice';
 import Space from '../Space/Space';
 import { AppDispatch, RootState } from '@/store/store';
 import { SpaceData, Task } from '@/types';
@@ -18,6 +24,8 @@ import {
     setSubtaskDrawerParentId,
 } from '@/store/uiSlice';
 import { AnimatePresence, motion } from 'framer-motion';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 
 const SuperSpace = React.memo(() => {
     const dispatch = useDispatch<AppDispatch>();
@@ -33,11 +41,26 @@ const SuperSpace = React.memo(() => {
 
     const { data: session, status: sessionStatus } = useSession();
 
+    const moveSpaceCard = useCallback(
+        (dragIndex: number, hoverIndex: number) => {
+            const draggedSpace = spaces[dragIndex];
+            const newSpaces = [...spaces];
+            newSpaces.splice(dragIndex, 1);
+            newSpaces.splice(hoverIndex, 0, draggedSpace);
+            dispatch(reorderSpacesOptimistic(newSpaces));
+        },
+        [spaces, dispatch]
+    );
+
+    const handleDragEnd = useCallback(() => {
+        dispatch(reorderSpaces(spaces));
+    }, [spaces, dispatch]);
+
     useEffect(() => {
         if (sessionStatus === 'authenticated' && status === 'idle') {
             dispatch(fetchSpaces()).then(() => {
                 setFadeOut(true);
-                setTimeout(() => setIsLoading(false), 500); // Delay to allow fade-out animation
+                setTimeout(() => setIsLoading(false), 500);
             });
         } else if (sessionStatus === 'unauthenticated') {
             setFadeOut(true);
@@ -65,6 +88,7 @@ const SuperSpace = React.memo(() => {
             maxZIndex: 1,
             selectedEmojis: [],
             emoji: '',
+            order: spaces.length,
         };
         dispatch(createSpace(newSpace));
     };
@@ -100,38 +124,40 @@ const SuperSpace = React.memo(() => {
     };
 
     return (
-        <div className="relative w-full h-full bg-gradient-to-b from-slate-900 to-slate-800 overflow-hidden">
-            {isZoomedOut ? (
-                <>
-                    <h4 className="text-xl text-white text-center pt-4 pb-2 font-bold">
-                        Spaces: {spaces.length} / 9
-                    </h4>
+        <DndProvider backend={HTML5Backend}>
+            <div className="relative w-full h-full bg-gradient-to-b from-slate-900 to-slate-800 overflow-hidden">
+                {isZoomedOut ? (
+                    <>
+                        <h4 className="text-xl text-white text-center pt-4 pb-2 font-bold">
+                            Spaces: {spaces.length} / 9
+                        </h4>
 
-                    <AnimatePresence>
-                        <motion.div
-                            className="grid grid-cols-3 gap-8 p-4 h-[calc(100%-50px)]"
-                            variants={container}
-                            initial="hidden"
-                            animate="visible"
-                        >
-                            {spaces.map((space: SpaceData) => (
-                                <motion.div
-                                    key={space._id}
-                                    variants={item}
-                                    className="h-full"
-                                >
-                                    <SpaceCard
-                                        space={space}
-                                        onClick={() => {
-                                            dispatch(setCurrentSpace(space));
-                                            setIsZoomedOut(false);
-                                        }}
-                                    />
-                                </motion.div>
-                            ))}
-                            {spaces.length < 9 && (
-                                <motion.div variants={item}>
-                                    {spaces.length < 9 && (
+                        <AnimatePresence>
+                            <motion.div
+                                className="grid grid-cols-3 gap-8 p-4 h-[calc(100%-50px)]"
+                                variants={container}
+                                initial="hidden"
+                                animate="visible"
+                            >
+                                {spaces.map(
+                                    (space: SpaceData, index: number) => (
+                                        <SpaceCard
+                                            key={space._id}
+                                            space={space}
+                                            index={index}
+                                            handleDragEnd={handleDragEnd}
+                                            moveSpaceCard={moveSpaceCard}
+                                            onClick={() => {
+                                                dispatch(
+                                                    setCurrentSpace(space)
+                                                );
+                                                setIsZoomedOut(false);
+                                            }}
+                                        />
+                                    )
+                                )}
+                                {spaces.length < 9 && (
+                                    <motion.div variants={item}>
                                         <div
                                             className={`space bg-slate-300 hover:bg-slate-400 transition-colors duration-300 border-4 border-sky-900 rounded-lg shadow-md p-4 cursor-pointer flex items-center justify-center min-h-[150px] max-h-[300px] ${
                                                 spaces.length >= 9
@@ -148,64 +174,64 @@ const SuperSpace = React.memo(() => {
                                                 +
                                             </span>
                                         </div>
-                                    )}
-                                </motion.div>
-                            )}
-                        </motion.div>
-                    </AnimatePresence>
-                </>
-            ) : (
-                (currentSpace || !session) && (
-                    <>
-                        <Space
-                            spaceId={currentSpace?._id ?? ''}
-                            onLoaded={() => setIsLoading(false)}
-                        />
-                        {session && <ControlPanel />}
+                                    </motion.div>
+                                )}
+                            </motion.div>
+                        </AnimatePresence>
                     </>
-                )
-            )}
-            {session && (
-                <>
-                    <button
-                        data-tooltip-id={`go-to-super-space-tooltip`}
-                        onClick={toggleZoom}
-                        className="absolute bg-sky-600 hover:bg-sky-400 text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl"
-                        style={
-                            isZoomedOut
-                                ? { left: '20px', top: '10px' }
-                                : {
-                                      right: '20px',
-                                      bottom: '20px',
-                                      zIndex: 100000,
-                                  }
-                        }
-                    >
-                        {isZoomedOut ? '↩' : '↪'}
-                    </button>
-                    <Tooltip
-                        id={`go-to-super-space-tooltip`}
-                        style={{
-                            zIndex: 100000,
-                            backgroundColor: 'white',
-                            color: 'black',
-                        }}
-                        place="left"
-                    >
-                        {isZoomedOut ? (
-                            <>
-                                Return to{' '}
-                                <em>
-                                    <strong>{currentSpace?.name}</strong>
-                                </em>
-                            </>
-                        ) : (
-                            'Go to Super Space'
-                        )}
-                    </Tooltip>
-                </>
-            )}
-        </div>
+                ) : (
+                    (currentSpace || !session) && (
+                        <>
+                            <Space
+                                spaceId={currentSpace?._id ?? ''}
+                                onLoaded={() => setIsLoading(false)}
+                            />
+                            {session && <ControlPanel />}
+                        </>
+                    )
+                )}
+                {session && (
+                    <>
+                        <button
+                            data-tooltip-id={`go-to-super-space-tooltip`}
+                            onClick={toggleZoom}
+                            className="absolute bg-sky-600 hover:bg-sky-400 text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl"
+                            style={
+                                isZoomedOut
+                                    ? { left: '20px', top: '10px' }
+                                    : {
+                                          right: '20px',
+                                          bottom: '20px',
+                                          zIndex: 100000,
+                                      }
+                            }
+                        >
+                            {isZoomedOut ? '↩' : '↪'}
+                        </button>
+                        <Tooltip
+                            id={`go-to-super-space-tooltip`}
+                            style={{
+                                zIndex: 100000,
+                                backgroundColor: 'white',
+                                color: 'black',
+                            }}
+                            place="left"
+                        >
+                            {isZoomedOut ? (
+                                <>
+                                    Return to{' '}
+                                    <em>
+                                        <strong>{currentSpace?.name}</strong>
+                                    </em>
+                                </>
+                            ) : (
+                                'Go to Super Space'
+                            )}
+                        </Tooltip>
+                    </>
+                )}
+            </div>
+        </DndProvider>
     );
 });
 

@@ -186,7 +186,14 @@ export async function DELETE(req: NextRequest) {
                 session.endSession();
             }
         } catch (error) {
-            // ... rest of the error handling remains the same
+            console.error('Error deleting task:', error);
+            retries++;
+            if (retries >= maxRetries) {
+                return NextResponse.json(
+                    { error: 'Failed to delete task' },
+                    { status: 500 }
+                );
+            }
         }
     }
 }
