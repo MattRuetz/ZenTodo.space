@@ -11,13 +11,15 @@ import {
     FaPizzaSlice,
 } from 'react-icons/fa';
 import { useDispatch, useSelector } from 'react-redux';
+import { useTheme } from '@/hooks/useTheme';
+
 type SortOption = 'custom' | 'name' | 'progress' | 'created' | 'lastEdited';
 
 interface SortingDropdownProps {}
 
 const SortingDropdown: React.FC<SortingDropdownProps> = React.memo(() => {
     const dispatch = useDispatch();
-
+    const currentTheme = useTheme();
     // Imported selectors
     const sortOption = useSelector((state: RootState) => state.ui.sortOption);
     const isReversed = useSelector((state: RootState) => state.ui.isReversed);
@@ -46,7 +48,11 @@ const SortingDropdown: React.FC<SortingDropdownProps> = React.memo(() => {
         <div className="relative">
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center space-x-1 bg-sky-900 hover:bg-sky-800 rounded-md px-2 py-1 text-xs"
+                className="flex items-center space-x-1 px-2 py-1 rounded-md shadow-md"
+                style={{
+                    backgroundColor: `var(--${currentTheme}-accent-blue)`, // Use theme color
+                    color: `var(--${currentTheme}-text-default)`, // Use theme color
+                }}
             >
                 <FaSort />
                 <span>
@@ -56,50 +62,98 @@ const SortingDropdown: React.FC<SortingDropdownProps> = React.memo(() => {
                 </span>
             </button>
             {isOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-base-300 rounded-md shadow-lg z-10">
+                <div
+                    className="absolute right-0 mt-2 w-48 rounded-md shadow-lg z-10"
+                    style={{
+                        backgroundColor: `var(--${currentTheme}-background-200)`, // Use theme color
+                        border: `1px solid var(--${currentTheme}-text-default)`, // Use theme color
+                    }}
+                >
                     <ul>
                         <li
-                            className="px-4 py-2 hover:bg-base-200 cursor-pointer flex items-center space-x-2"
+                            className="px-4 py-2 hover:bg-black/20 cursor-pointer flex items-center space-x-2"
                             onClick={() => handleSortChange('custom')}
+                            style={{
+                                color: `var(--${currentTheme}-text-default)`, // Use theme color
+                            }}
                         >
-                            <FaPizzaSlice className="text-primary" />
+                            <FaPizzaSlice
+                                className="text-primary"
+                                style={{
+                                    color: `var(--${currentTheme}-text-default)`,
+                                }}
+                            />
                             <span>Custom</span>
                         </li>
                         <li
-                            className="px-4 py-2 hover:bg-base-200 cursor-pointer flex items-center space-x-2"
+                            className="px-4 py-2 hover:bg-black/20 cursor-pointer flex items-center space-x-2"
                             onClick={() => handleSortChange('name')}
+                            style={{
+                                color: `var(--${currentTheme}-text-default)`, // Use theme color
+                            }}
                         >
                             {sortOption === 'name' ? (
                                 isReversed ? (
                                     <>
-                                        <FaSortAlphaUp className="text-primary" />
+                                        <FaSortAlphaUp
+                                            className="text-primary"
+                                            style={{
+                                                color: `var(--${currentTheme}-text-default)`,
+                                            }}
+                                        />
                                         <span>Name (a-Z)</span>
                                     </>
                                 ) : (
                                     <>
-                                        <FaSortAlphaDown className="text-primary" />
+                                        <FaSortAlphaDown
+                                            className="text-primary"
+                                            style={{
+                                                color: `var(--${currentTheme}-text-default)`,
+                                            }}
+                                        />
                                         <span>Name (Z-a)</span>
                                     </>
                                 )
                             ) : (
                                 <>
-                                    <FaSortAlphaDown className="text-primary" />
+                                    <FaSortAlphaDown
+                                        className="text-primary"
+                                        style={{
+                                            color: `var(--${currentTheme}-text-default)`,
+                                        }}
+                                    />
                                     <span>Name (Z-a)</span>
                                 </>
                             )}
                         </li>
                         <li
-                            className="px-4 py-2 hover:bg-base-200 cursor-pointer flex items-center space-x-2"
+                            className="px-4 py-2 hover:bg-black/20 cursor-pointer flex items-center space-x-2"
                             onClick={() => handleSortChange('progress')}
+                            style={{
+                                color: `var(--${currentTheme}-text-default)`, // Use theme color
+                            }}
                         >
-                            <FaSignal className="text-primary" />
+                            <FaSignal
+                                className="text-primary"
+                                style={{
+                                    color: `var(--${currentTheme}-text-default)`,
+                                }}
+                            />
                             <span>Progress</span>
                         </li>
                         <li
-                            className="px-4 py-2 hover:bg-base-200 cursor-pointer flex items-center space-x-2"
+                            className="px-4 py-2 hover:bg-black/20 cursor-pointer flex items-center space-x-2"
                             onClick={() => handleSortChange('created')}
+                            style={{
+                                color: `var(--${currentTheme}-text-default)`, // Use theme color
+                            }}
                         >
-                            <FaCalendarAlt className="text-primary" />
+                            <FaCalendarAlt
+                                className="text-primary"
+                                style={{
+                                    color: `var(--${currentTheme}-text-default)`,
+                                }}
+                            />
                             <span>
                                 Created{' '}
                                 {sortOption === 'created' &&
@@ -107,10 +161,18 @@ const SortingDropdown: React.FC<SortingDropdownProps> = React.memo(() => {
                             </span>
                         </li>
                         <li
-                            className="px-4 py-2 hover:bg-base-200 cursor-pointer flex items-center space-x-2"
+                            className="px-4 py-2 hover:bg-black/20 cursor-pointer flex items-center space-x-2"
                             onClick={() => handleSortChange('lastEdited')}
+                            style={{
+                                color: `var(--${currentTheme}-text-default)`, // Use theme color
+                            }}
                         >
-                            <FaEdit className="text-primary" />
+                            <FaEdit
+                                className="text-primary"
+                                style={{
+                                    color: `var(--${currentTheme}-text-default)`,
+                                }}
+                            />
                             <span>
                                 Last Edited{' '}
                                 {sortOption === 'lastEdited' &&

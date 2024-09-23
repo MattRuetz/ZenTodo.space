@@ -13,7 +13,7 @@ export const SubtaskBottomBar = ({
     handleProgressChange,
 }: SubtaskBottomBarProps) => {
     return (
-        <div className="flex justify-between items-top gap-2">
+        <div className="flex justify-between items-top gap-2 relative">
             <ProgressDropdown
                 progress={subtask.progress}
                 onProgressChange={handleProgressChange}

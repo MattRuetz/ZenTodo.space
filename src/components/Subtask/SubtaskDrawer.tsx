@@ -16,7 +16,7 @@ import SubtaskDropZone from './SubtaskDropZone';
 import SortingDropdown from './SortingDropdown';
 import SimplicityModal from '../SimplicityModal';
 import { setSimplicityModalOpen } from '@/store/uiSlice';
-
+import { useTheme } from '@/hooks/useTheme';
 interface SubtaskDrawerProps {
     isOpen: boolean;
     onClose: () => void;
@@ -28,6 +28,7 @@ const SubtaskDrawer = React.memo(
             { isOpen, onClose }: SubtaskDrawerProps,
             ref: ForwardedRef<HTMLDivElement>
         ) => {
+            const currentTheme = useTheme();
             const dispatch = useDispatch<AppDispatch>();
 
             const isSimplicityModalOpen = useSelector(
@@ -152,40 +153,68 @@ const SubtaskDrawer = React.memo(
                 <div
                     ref={ref}
                     data-drawer-parent-id={parentTask?._id}
-                    className={`subtask-drawer fixed top-0 right-0 h-full shadow-md transform w-[400px] border-l-2 bg-base-300 ${
+                    className={`subtask-drawer fixed top-0 right-0 h-full shadow-md transform w-[400px] border-l-2 ${
                         isOpen ? 'opacity-90' : 'translate-x-full opacity-0'
-                    } transition-transform duration-300 ease-in-out subtask-drawer-items ${
-                        isTaskCardOver
-                            ? 'border-blue-700 filter brightness-125'
-                            : 'border-transparent'
-                    }`}
-                    style={isTaskCardOver ? { zIndex: 1 } : { zIndex: 9999 }}
+                    } transition-transform duration-300 ease-in-out subtask-drawer-items`}
+                    style={{
+                        backgroundColor: `var(--${currentTheme}-background-300)`, // Use theme color
+                        borderColor: isTaskCardOver
+                            ? `var(--${currentTheme}-accent-blue)`
+                            : 'transparent', // Use theme color
+                        zIndex: isTaskCardOver ? 1 : 9999,
+                    }}
                 >
                     <SimplicityModal
                         isOpen={isSimplicityModalOpen}
                         onClose={() => dispatch(setSimplicityModalOpen(false))}
                     />
                     <div className="p-3 subtask-drawer-items">
-                        <div className="flex flex-row justify-between items-center py-2 bg-base-100 px-3 rounded-md">
-                            <h2 className="text-lg font-bold uppercase subtask-drawer-items text-center w-full">
+                        <div
+                            className="flex flex-row justify-between items-center p-2 rounded-md"
+                            style={{
+                                backgroundColor: `var(--${currentTheme}-background-100)`,
+                            }}
+                        >
+                            <h2
+                                className="text-lg font-bold uppercase subtask-drawer-items text-center w-full"
+                                style={{
+                                    color: `var(--${currentTheme}-emphasis-light)`,
+                                }}
+                            >
                                 Subtasks
                             </h2>
                             <button
                                 onClick={onClose}
-                                className="text-red-500 flex items-center gap-1 subtask-drawer-items hover:text-white hover:bg-red-500 rounded-full transition-colors duration-300 p-1"
+                                className="flex items-center gap-1 subtask-drawer-items text-red-500 hover:text-white hover:bg-red-500 rounded-full transition-colors duration-300 p-1"
                             >
                                 <FaXmark className="text-sm" />
                             </button>
                         </div>
                         <div className="flex flex-row gap-2 w-full pt-2">
-                            <p className="uppercase text-xs">Main Task:</p>
+                            <p
+                                className="uppercase text-xs"
+                                style={{
+                                    color: `var(--${currentTheme}-text-default)`,
+                                }}
+                            >
+                                Main Task:
+                            </p>
                         </div>
-                        <div className="flex items-center gap-2 py-2 text-sm text-slate-300">
-                            <div className="flex flex-row items-center gap-2 w-full text-sm text-slate-300">
+                        <div
+                            className="flex items-center gap-2 py-2 text-sm"
+                            style={{
+                                color: `var(--${currentTheme}-text-subtle)`,
+                            }}
+                        >
+                            <div className="flex flex-row items-center gap-2 w-full text-sm">
                                 {grandparentTask && (
                                     <>
                                         <p
-                                            className="p-2 shadow-sm shadow-slate-950 hover:text-white bg-gradient-to-r from-sky-800 to-sky-900 hover:from-sky-600 hover:to-sky-700 rounded-md cursor-pointer w-full max-w-32 break-words overflow-wrap-anywhere"
+                                            className="p-2 shadow-sm rounded-md cursor-pointer w-full max-w-32 break-words overflow-wrap-anywhere border-2 hover:bg-slate-500/20"
+                                            style={{
+                                                backgroundColor: `var(--${currentTheme}-background-100)`, // Use theme color
+                                                color: `var(--${currentTheme}-emphasis-light)`, // Use theme color
+                                            }}
                                             onClick={() =>
                                                 handleSwitchParentTask(
                                                     grandparentTask as Task
@@ -195,19 +224,26 @@ const SubtaskDrawer = React.memo(
                                             {grandparentTask?.taskName}
                                         </p>
                                         <FaAngleRight
-                                            className="text-sm text-slate-700"
+                                            className="text-sm"
+                                            style={{
+                                                color: `var(--${currentTheme}-text-subtle)`,
+                                            }}
                                             size={24}
                                         />
                                     </>
                                 )}
                                 <>
                                     <p
-                                        className="p-2 rounded-md cursor-default max-w-32 bg-slate-700/50 w-full break-words overflow-wrap-anywhere"
+                                        className="p-2 rounded-md cursor-default max-w-32 w-full break-words overflow-wrap-anywhere"
                                         onClick={() =>
                                             handleSwitchParentTask(
                                                 parentTask as Task
                                             )
                                         }
+                                        style={{
+                                            backgroundColor: `var(--${currentTheme}-background-300)`, // Use theme color
+                                            color: `var(--${currentTheme}-text-default)`, // Use theme color
+                                        }}
                                     >
                                         {parentTask?.taskName}
                                     </p>
@@ -215,7 +251,12 @@ const SubtaskDrawer = React.memo(
                             </div>
                             <SortingDropdown />
                         </div>
-                        <div className="flex flex-row gap-2 h-0.5 bg-base-100 w-full"></div>
+                        <div
+                            className="flex flex-row gap-2 h-0.5 w-full"
+                            style={{
+                                backgroundColor: `var(--${currentTheme}-background-100)`,
+                            }}
+                        ></div>
 
                         <ul className="overflow-y-auto overflow-x-visible h-[calc(100vh-10rem)] subtask-drawer-items pt-2">
                             <SubtaskDropZone

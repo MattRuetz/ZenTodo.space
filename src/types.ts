@@ -22,7 +22,7 @@ export interface Task {
     createdAt?: Date;
     updatedAt?: Date;
     ancestors?: string[];
-    dueDate?: Date;
+    dueDate?: Date | null;
     emoji?: string;
     isTemp?: boolean;
 }

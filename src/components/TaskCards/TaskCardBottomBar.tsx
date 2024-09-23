@@ -11,13 +11,19 @@ export interface TaskCardBottomBarProps {
     progress: TaskProgress;
     onProgressChange: (progress: TaskProgress) => void;
     handleResizeStart: (e: React.MouseEvent) => void;
-    isResizing: boolean;
+    currentTheme: string;
 }
 
 const TaskCardBottomBar: React.FC<TaskCardBottomBarProps> = React.memo(
-    ({ task, progress, onProgressChange, handleResizeStart, isResizing }) => {
+    ({ task, progress, onProgressChange, handleResizeStart, currentTheme }) => {
         return (
-            <div className="task-card-bottom-bar flex flex-row justify-between w-full gap-2 py-2 z-10">
+            <div
+                className="task-card-bottom-bar flex flex-row justify-between w-full gap-2 py-2 z-10"
+                style={{
+                    backgroundColor: `transparent`,
+                    color: `var(--${currentTheme}-text-default)`,
+                }}
+            >
                 <div className="flex flex-row gap-2 items-center max-w-7/12">
                     <ProgressDropdown
                         progress={progress}
@@ -36,7 +42,16 @@ const TaskCardBottomBar: React.FC<TaskCardBottomBarProps> = React.memo(
                 >
                     <Icon
                         name="resize"
-                        color="rgba(255, 255, 255, 0.3)"
+                        color={`rgba(${parseInt(
+                            `var(--${currentTheme}-text-default)`.slice(1, 3),
+                            16
+                        )}, ${parseInt(
+                            `var(--${currentTheme}-text-default)`.slice(3, 5),
+                            16
+                        )}, ${parseInt(
+                            `var(--${currentTheme}-text-default)`.slice(5, 7),
+                            16
+                        )}, 0.3)`} // Use theme color with opacity
                         size={21}
                     />
                 </div>

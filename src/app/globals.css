@@ -3,10 +3,74 @@
 @tailwind utilities;
 
 :root {
-    --primary: #475569;
-    --foreground-rgb: 0, 0, 0;
-    --background-start-rgb: 214, 219, 220;
-    --background-end-rgb: 255, 255, 255;
+    --buji-space-background: #0f172a;
+    --buji-background-100: #1e293b;
+    --buji-background-200: #475569;
+    --buji-background-300: #94a3b8;
+    --buji-text-default: #ffffff;
+    --buji-text-subtle: #cccccc;
+    --buji-accent-red: #ff4d4d;
+    --buji-accent-yellow: #ffcc00;
+    --buji-accent-green: #66ff66;
+    --buji-accent-blue: #0e7490;
+    --buji-accent-grey: #b3b3b3;
+    --buji-emphasis-light: #ffffff;
+    --buji-emphasis-dark: #000000;
+    /* Subtask Progress Colors */
+    --buji-not-started-text: #b3b3b3;
+    --buji-in-progress-text: #ffcc00;
+    --buji-complete-text: #66ff66;
+    --buji-blocked-text: #fc6363;
+    --buji-not-started-background: transparent;
+    --buji-in-progress-background: transparent;
+    --buji-complete-background: transparent;
+    --buji-blocked-background: transparent;
+
+    --daigo-space-background: #e4e4e7;
+    --daigo-background-100: #fafaf9;
+    --daigo-background-200: #e7e5e4;
+    --daigo-background-300: #d6d3d1;
+    --daigo-text-default: #000000;
+    --daigo-text-subtle: #333333;
+    --daigo-accent-red: #ff6666;
+    --daigo-accent-yellow: #faac03;
+    --daigo-accent-green: #66ff66;
+    --daigo-accent-blue: #0ea5e9;
+    --daigo-accent-grey: #999999;
+    --daigo-emphasis-light: #000000;
+    --daigo-emphasis-dark: #ffffff;
+    /* Subtask Progress Colors */
+    --daigo-not-started-text: #333333;
+    --daigo-in-progress-text: #333333;
+    --daigo-complete-text: #333333;
+    --daigo-blocked-text: #333333;
+    --daigo-not-started-background: #b3b3b3;
+    --daigo-in-progress-background: #ffff66;
+    --daigo-complete-background: #66ff66;
+    --daigo-blocked-background: #ff9292;
+
+    --enzu-space-background: #fefce8;
+    --enzu-background-100: #166534;
+    --enzu-background-200: #fefce8;
+    --enzu-background-300: #ecfccb;
+    --enzu-text-default: #3a3a3a;
+    --enzu-text-subtle: #6a6a6a;
+    --enzu-accent-red: #ff9999;
+    --enzu-accent-yellow: #f8ff95;
+    --enzu-accent-green: #99ff99;
+    --enzu-accent-blue: #7dd3fc;
+    --enzu-accent-grey: #cccccc;
+    --enzu-emphasis-light: #f5f5dc;
+    --enzu-emphasis-dark: #3a3a3a;
+    /* Subtask Progress Colors */
+    --enzu-not-started-text: #747474;
+    --enzu-in-progress-text: #d49100;
+    --enzu-complete-text: #0c830c;
+    --enzu-blocked-text: #fc6363;
+    --enzu-not-started-background: transparent;
+    --enzu-in-progress-background: transparent;
+    --enzu-complete-background: transparent;
+    --enzu-blocked-background: transparent;
 }
 
 @media (prefers-color-scheme: dark) {

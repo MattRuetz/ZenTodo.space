@@ -47,7 +47,6 @@ export const useDeleteTask = () => {
                         parentTaskId: parentTaskId || '',
                     })
                 ).unwrap();
-                showAlert('Task deleted successfully', 'success');
             } catch (error) {
                 console.error('Failed to delete tasks:', error);
                 dispatch(fetchTasks());

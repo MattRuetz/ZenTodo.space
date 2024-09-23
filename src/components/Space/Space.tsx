@@ -19,7 +19,8 @@ import { selectTasksForSpace } from '@/store/selectors';
 import { createSelector } from '@reduxjs/toolkit';
 import { useClearEmojis } from '@/hooks/useClearEmojis';
 import { useAddTask } from '@/hooks/useAddTask';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
+import { useTheme } from '@/hooks/useTheme';
 
 // Memoized selectors
 
@@ -35,6 +36,8 @@ export const selectSelectedEmojis = createSelector(
 
 const Space: React.FC<SpaceProps> = React.memo(({ spaceId, onLoaded }) => {
     const dispatch = useDispatch<AppDispatch>();
+    const currentTheme = useTheme();
+
     const { data: session, status: sessionStatus } = useSession();
 
     const tasks = useSelector((state: RootState) =>
@@ -234,7 +237,9 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId, onLoaded }) => {
         }
     }, [drop]);
 
-    const outlineColor = currentSpace?.color || 'black';
+    const spaceOutlineColor = useSelector(
+        (state: RootState) => state.spaces.currentSpace?.color
+    );
 
     return (
         <motion.div
@@ -253,15 +258,67 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId, onLoaded }) => {
             }}
             transition={{ duration: 0.5, ease: 'easeInOut' }}
             ref={spaceRef}
-            className={`relative w-full h-screen bg-base-100 space-${spaceId} shadow-md shadow-black/80 overflow-hidden outline outline-8 `}
-            style={{ outlineColor: outlineColor }}
+            className={`relative w-full h-screen space-${spaceId} overflow-hidden`}
+            style={{
+                backgroundColor: `var(--${currentTheme}-space-background)`,
+                boxShadow: `0 4px 6px -1px var(--${currentTheme}-background-300), 0 2px 4px -1px var(--${currentTheme}-background-300)`,
+                outline: `8px solid ${spaceOutlineColor}`,
+            }}
             onMouseDown={handleSpaceClick}
         >
             {!session && (
-                <div ref={cursorEffectRef} className="cursor-effect" />
+                <div
+                    ref={cursorEffectRef}
+                    className="cursor-effect"
+                    style={{
+                        background: `radial-gradient(
+                            circle,
+                            var(--${currentTheme}-background-100) 0%,
+                            var(--${currentTheme}-background-200) 20%,
+                            var(--${currentTheme}-background-300) 30%,
+                            transparent 60%
+                        )`,
+                    }}
+                />
             )}
             {session ? (
                 <>
+                    {tasks.length === 0 && (
+                        <div className="flex flex-col items-center justify-center h-full pointer-events-none">
+                            <AnimatePresence>
+                                <motion.div>
+                                    <motion.div
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        exit={{ opacity: 0 }}
+                                        transition={{
+                                            duration: 3,
+                                            delay: 1,
+                                            ease: 'easeInOut',
+                                        }}
+                                    >
+                                        <h1 className="text-center text-gray-500 text-5xl font-thin">
+                                            emptiness is bliss
+                                        </h1>
+                                    </motion.div>
+                                    <motion.div
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        exit={{ opacity: 0 }}
+                                        transition={{
+                                            duration: 3,
+                                            delay: 2,
+                                            ease: 'easeInOut',
+                                        }}
+                                    >
+                                        <p className="text-center text-gray-500 text-xl font-normal p-2 mt-2">
+                                            click anywhere to add a task.
+                                        </p>
+                                    </motion.div>
+                                </motion.div>
+                            </AnimatePresence>
+                        </div>
+                    )}
                     {tasks
                         .filter(
                             (task) =>
