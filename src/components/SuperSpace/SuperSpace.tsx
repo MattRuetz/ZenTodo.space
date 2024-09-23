@@ -27,7 +27,9 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useAlert } from '@/hooks/useAlert';
 import { useTheme } from '@/hooks/useTheme';
+import { fetchTheme, setTheme } from '@/store/themeSlice';
 
+type ThemeName = 'buji' | 'daigo' | 'enzu';
 const SuperSpace = React.memo(() => {
     const dispatch = useDispatch<AppDispatch>();
     const currentTheme = useTheme();
@@ -66,6 +68,8 @@ const SuperSpace = React.memo(() => {
                 setFadeOut(true);
                 setTimeout(() => setIsLoading(false), 500);
             });
+
+            dispatch(fetchTheme());
         } else if (sessionStatus === 'unauthenticated') {
             setFadeOut(true);
             setTimeout(() => setIsLoading(false), 500);
