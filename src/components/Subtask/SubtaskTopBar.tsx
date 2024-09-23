@@ -13,7 +13,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store/store';
 import ConfirmDelete from '../TaskCards/ConfirmDelete';
 import useClickOutside from '@/hooks/useClickOutside';
-
+import { useTheme } from '@/hooks/useTheme';
 interface SubtaskTopBarProps {
     subtask: any;
     handleProgressChange: (TaskProgress: TaskProgress) => void;
@@ -25,6 +25,7 @@ export const SubtaskTopBar = ({
     handleProgressChange,
     handleSetDueDate,
 }: SubtaskTopBarProps) => {
+    const currentTheme = useTheme();
     const dispatch = useDispatch<AppDispatch>();
     const [isSubtaskMenuOpen, setIsSubtaskMenuOpen] = useState(false);
     const [showDetails, setShowDetails] = useState(false);
@@ -85,7 +86,12 @@ export const SubtaskTopBar = ({
     };
 
     return (
-        <div className="flex justify-between items-top gap-2 h-auto pb-2">
+        <div
+            className="flex justify-between items-top gap-2 h-auto pb-2"
+            style={{
+                color: `var(--${currentTheme}-emphasis-light)`, // Use theme color
+            }}
+        >
             {showDetails && (
                 <TaskDetails task={subtask} setShowDetails={setShowDetails} />
             )}
@@ -100,16 +106,23 @@ export const SubtaskTopBar = ({
             {isSubtaskMenuOpen && (
                 <div
                     ref={menuRef}
-                    className="absolute top-10 right-0 w-48 rounded-md shadow-lg bg-base-300 z-10 border border-slate-700 ring-1 ring-black ring-opacity-5"
+                    className="absolute top-10 right-0 w-48 rounded-md shadow-lg z-10"
+                    style={{
+                        backgroundColor: `var(--${currentTheme}-background-200)`, // Use theme color
+                        border: `1px solid var(--${currentTheme}-accent-grey)`, // Use theme color
+                    }}
                 >
                     <div
-                        className="py-1"
+                        className="py-1 flex flex-col"
                         role="menu"
                         aria-orientation="vertical"
                         aria-labelledby="options-menu"
                     >
                         <button
-                            className="flex items-center px-4 py-2 text-sm text-slate-200 hover:bg-black w-full"
+                            className="flex items-center px-4 py-2 text-sm hover:bg-black/20"
+                            style={{
+                                color: `var(--${currentTheme}-text-default)`, // Use theme color
+                            }}
                             onClick={(e) => {
                                 e.stopPropagation();
                                 e.preventDefault();
@@ -119,7 +132,10 @@ export const SubtaskTopBar = ({
                             <FaInfoCircle className="mr-2" /> Details
                         </button>
                         <button
-                            className="flex items-center px-4 py-2 text-sm text-slate-200 hover:bg-black w-full"
+                            className="flex items-center px-4 py-2 text-sm hover:bg-black/20"
+                            style={{
+                                color: `var(--${currentTheme}-text-default)`, // Use theme color
+                            }}
                             onClick={(e) => {
                                 e.stopPropagation();
                                 e.preventDefault();
@@ -130,7 +146,10 @@ export const SubtaskTopBar = ({
                             <FaCalendar className="mr-2" /> Set Due Date
                         </button>
                         <button
-                            className="flex items-center px-4 py-2 text-sm text-slate-200 hover:bg-black w-full"
+                            className="flex items-center px-4 py-2 text-sm hover:bg-black/20"
+                            style={{
+                                color: `var(--${currentTheme}-text-default)`, // Use theme color
+                            }}
                             onClick={(e) => {
                                 e.stopPropagation();
                                 e.preventDefault();
@@ -141,7 +160,10 @@ export const SubtaskTopBar = ({
                             <FaPlus className="mr-2" /> Add Subtask
                         </button>
                         <button
-                            className="flex items-center px-4 py-2 text-sm text-red-700 hover:bg-black w-full"
+                            className="flex items-center px-4 py-2 text-sm hover:bg-black/20"
+                            style={{
+                                color: `var(--${currentTheme}-accent-red)`, // Use theme color
+                            }}
                             onClick={(e) => {
                                 e.stopPropagation();
                                 e.preventDefault();
@@ -173,7 +195,10 @@ export const SubtaskTopBar = ({
                     />
                 )}
                 <FaEllipsisV
-                    className="cursor-pointer text-slate-400"
+                    className="cursor-pointer"
+                    style={{
+                        color: `var(--${currentTheme}-emphasis-light)`, // Use theme color
+                    }}
                     onClick={() => openSubtaskMenu(subtask._id as string)}
                 />
             </div>

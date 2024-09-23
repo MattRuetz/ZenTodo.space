@@ -121,7 +121,10 @@ const TaskCardTopBar: React.FC<TaskCardTopBarProps> = React.memo(
             <div
                 className={`flex flex-row gap-4 drag-handle cursor-move items-center ${className}`}
             >
-                <div className="text-xl">
+                <div
+                    className="text-xl"
+                    style={{ color: `var(--${currentTheme}-emphasis-light)` }}
+                >
                     <EmojiDropdown
                         taskEmoji={task.emoji || <FaTag />}
                         setTaskEmoji={handleSetTaskEmoji}
@@ -162,7 +165,7 @@ const TaskCardTopBar: React.FC<TaskCardTopBarProps> = React.memo(
                             size={14}
                             className="cursor-pointer"
                             style={{
-                                color: `var(--${currentTheme}-text-subtle)`,
+                                color: `var(--${currentTheme}-emphasis-light)`,
                             }}
                             onClick={() => setIsMenuOpen(!isMenuOpen)}
                         />
@@ -177,7 +180,6 @@ const TaskCardTopBar: React.FC<TaskCardTopBarProps> = React.memo(
                             onDelete={onDelete}
                             showDatePicker={showDatePicker}
                             showMoveOptions={showMoveOptions}
-                            moveOptionsRef={moveOptionsRef}
                             spaces={spaces}
                             task={task}
                             onSetDueDate={onSetDueDate}

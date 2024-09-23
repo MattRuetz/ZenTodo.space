@@ -3,6 +3,7 @@ import Picker from '@emoji-mart/react';
 import EmojiPicker, { EmojiStyle, Categories } from 'emoji-picker-react';
 import { useEffect } from 'react';
 import { FaTrash, FaX } from 'react-icons/fa6';
+import { useTheme } from '@/hooks/useTheme';
 
 interface MyEmojiPickerProps {
     setTaskEmoji?: (emoji: string) => void;
@@ -13,6 +14,7 @@ export const MyEmojiPicker = ({
     setTaskEmoji,
     setIsOpen,
 }: MyEmojiPickerProps) => {
+    const currentTheme = useTheme();
     // useEffect to close the emoji picker when the user clicks outside of it
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
@@ -33,9 +35,17 @@ export const MyEmojiPicker = ({
     }, [setIsOpen]);
 
     return (
-        <div className="emoji-picker-container bg-sky-950 p-2 rounded-lg shadow-md">
+        <div
+            className="emoji-picker-container p-2 rounded-lg shadow-md"
+            style={{
+                backgroundColor: `var(--${currentTheme}-background-200)`, // Use theme color
+            }}
+        >
             <button
-                className="flex items-center gap-2 text-sm text-white btn btn-ghost btn-sm"
+                className="flex items-center gap-2 text-sm btn btn-ghost btn-sm"
+                style={{
+                    color: `var(--${currentTheme}-text-default)`, // Use theme color
+                }}
                 onClick={(e) => {
                     e.stopPropagation();
                     if (setTaskEmoji) {
@@ -44,7 +54,12 @@ export const MyEmojiPicker = ({
                     }
                 }}
             >
-                <FaX className="w-4 h-4 text-red-500" /> No Emoji
+                <FaX
+                    className="w-4 h-4"
+                    style={{ color: `var(--${currentTheme}-accent-red)` }}
+                />{' '}
+                {/* Use theme color */}
+                No Emoji
             </button>
             <Picker
                 onClick={(e: any) => {

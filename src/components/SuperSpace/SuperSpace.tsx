@@ -26,10 +26,11 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useAlert } from '@/hooks/useAlert';
+import { useTheme } from '@/hooks/useTheme';
 
 const SuperSpace = React.memo(() => {
     const dispatch = useDispatch<AppDispatch>();
-
+    const currentTheme = useTheme();
     const { spaces, currentSpace, status } = useSelector(
         (state: RootState) => state.spaces
     );
@@ -204,14 +205,21 @@ const SuperSpace = React.memo(() => {
                         <button
                             data-tooltip-id={`go-to-super-space-tooltip`}
                             onClick={toggleZoom}
-                            className="absolute bg-sky-600 hover:bg-sky-400 text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl"
+                            className="absolute text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl hover:scale-110 transition-all duration-200"
                             style={
                                 isZoomedOut
-                                    ? { left: '20px', top: '10px' }
+                                    ? {
+                                          left: '20px',
+                                          top: '10px',
+                                          backgroundColor: 'white',
+                                          color: 'black',
+                                      }
                                     : {
                                           right: '20px',
                                           bottom: '20px',
                                           zIndex: 100000,
+                                          backgroundColor: `var(--${currentTheme}-background-100)`,
+                                          color: `var(--${currentTheme}-emphasis-light)`,
                                       }
                             }
                         >

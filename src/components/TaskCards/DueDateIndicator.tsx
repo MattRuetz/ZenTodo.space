@@ -1,3 +1,4 @@
+import { useTheme } from '@/hooks/useTheme';
 import { Task } from '@/types';
 import { FaClock } from 'react-icons/fa';
 import { Tooltip } from 'react-tooltip';
@@ -9,6 +10,7 @@ export const DueDateIndicator = ({
     task: Task;
     handleDueDateClick: () => void;
 }) => {
+    const currentTheme = useTheme();
     const dueDateIsToday =
         new Date(task.dueDate as Date).toLocaleDateString() ===
         new Date().toLocaleDateString();
@@ -26,21 +28,22 @@ export const DueDateIndicator = ({
 
     return (
         <>
-            <div
-                className={`text-sm ${
-                    dueDateIsToday
-                        ? 'text-red-600'
-                        : dueDateIsThisWeek
-                        ? 'text-yellow-300'
-                        : 'text-slate-300'
-                }`}
-            >
+            <div className={`text-lg`}>
                 <div
                     data-tooltip-id={`due-date-tooltip-${task._id}`}
                     className="cursor-pointer"
                     onClick={handleDueDateClick}
                 >
-                    <FaClock className="hover:filter-saturate-150 transition-colors duration-200 text-lg" />
+                    <FaClock
+                        className="hover:filter-saturate-150 transition-colors duration-200"
+                        style={{
+                            color: dueDateIsToday
+                                ? `var(--${currentTheme}-accent-red)` // Use theme color for due today
+                                : dueDateIsThisWeek
+                                ? `var(--${currentTheme}-accent-yellow)` // Use theme color for due this week
+                                : `var(--${currentTheme}-text-subtle)`, // Use theme color for default
+                        }}
+                    />
                 </div>
                 <Tooltip id={`due-date-tooltip-${task._id}`} place="top">
                     {dueDateIsToday

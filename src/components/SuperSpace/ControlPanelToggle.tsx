@@ -6,7 +6,7 @@ import { EmojiFilter } from '../Space/EmojiFilter';
 import { useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store/store';
 import { useClearEmojis } from '@/hooks/useClearEmojis';
-
+import { useTheme } from '@/hooks/useTheme';
 interface ControlPanelToggleProps {
     isOpen: boolean;
     setIsOpen: (isOpen: boolean) => void;
@@ -15,7 +15,7 @@ interface ControlPanelToggleProps {
 const ControlPanelToggle: React.FC<ControlPanelToggleProps> = React.memo(
     ({ isOpen, setIsOpen }) => {
         const { data: session } = useSession();
-
+        const currentTheme = useTheme();
         if (!session) return null;
 
         const spaceId = useSelector(
@@ -30,13 +30,17 @@ const ControlPanelToggle: React.FC<ControlPanelToggleProps> = React.memo(
                     className={`fixed top-4 left-4 z-20 btn btn-circle ${
                         isOpen ? 'bg-sky-950' : ''
                     }`}
-                    style={{ zIndex: 10000 }}
+                    style={{
+                        color: `var(--${currentTheme}-text-default)`, // Use theme color
+                        backgroundColor: `var(--${currentTheme}-background-200)`, // Use theme color
+                        zIndex: 10000,
+                    }}
                     onClick={() => setIsOpen(!isOpen)}
                 >
                     {isOpen ? '×' : '☰'}
                 </button>
                 <div
-                    className="absolute top-6 left-20 btn btn-circle btn-sm text-lg flex items-center justify-center"
+                    className="absolute top-6 left-20 text-lg flex items-center justify-center"
                     style={{ zIndex: 10000 }}
                 >
                     <EmojiFilter

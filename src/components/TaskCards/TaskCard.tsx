@@ -104,11 +104,7 @@ const TaskCard = React.memo(
 
         const pushChildTask = useCallback(
             async (childTask: Task, parentTaskId: string) => {
-                // Assume task is already in the database
-                // dispatch(convertTaskToSubtask({ childTask, parentTaskId }));
-
                 convertTaskToSubtask(childTask, parentTaskId);
-                // dispatch(hideNewChildTask(childTask._id ?? ''));
             },
             [convertTaskToSubtask]
         );

@@ -1,4 +1,5 @@
 import useClickOutside from '@/hooks/useClickOutside';
+import { useTheme } from '@/hooks/useTheme';
 import { TaskProgress } from '@/types';
 import React, { useEffect, useRef, useState } from 'react';
 import { FaCheck, FaChevronDown } from 'react-icons/fa';
@@ -13,6 +14,7 @@ interface ProgressDropdownProps {
 
 export const ProgressDropdown: React.FC<ProgressDropdownProps> = React.memo(
     ({ progress, onProgressChange, isSubtask, taskId }) => {
+        const currentTheme = useTheme();
         const dropdownRef = useRef<HTMLDivElement>(null);
         const progressCardRef = useRef<HTMLDivElement>(null);
         const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -44,24 +46,6 @@ export const ProgressDropdown: React.FC<ProgressDropdownProps> = React.memo(
 
         const getProgressColor = () => PROGRESS_COLORS[progress];
 
-        useEffect(() => {
-            const handleClickOutside = (event: MouseEvent) => {
-                if (
-                    dropdownRef.current &&
-                    !dropdownRef.current.contains(event.target as Node) &&
-                    progressCardRef.current &&
-                    !progressCardRef.current.contains(event.target as Node)
-                ) {
-                    setShouldOpenDropdown(false);
-                }
-            };
-
-            document.addEventListener('mousedown', handleClickOutside);
-            return () => {
-                document.removeEventListener('mousedown', handleClickOutside);
-            };
-        }, []);
-
         // Custom hook for click outside logic
         useClickOutside([dropdownRef, progressCardRef], () =>
             setShouldOpenDropdown(false)
@@ -77,11 +61,18 @@ export const ProgressDropdown: React.FC<ProgressDropdownProps> = React.memo(
                     <div className="flex justify-between gap-2 items-center w-full">
                         <div
                             ref={progressCardRef}
-                            className="progress-card no-drag cursor-pointer p-2 bg-base-100 hover:bg-slate-800 transition-colors duration-200 rounded-md flex text-xs text-slate-500 items-center gap-2"
+                            className="progress-card no-drag cursor-pointer p-2 flex items-center justify-center gap-2 rounded-md"
+                            style={{
+                                backgroundColor: `var(--${currentTheme}-background-200)`, // Use theme color
+                                color: `var(--${currentTheme}-text-default)`, // Use theme color
+                            }}
                             onClick={handleProgressClick}
                         >
                             <div
                                 className={`w-3 h-3 rounded-full ${getProgressColor()} flex items-center justify-center`}
+                                style={{
+                                    outline: `1px solid var(--${currentTheme}-text-subtle)`, // Use theme color
+                                }}
                             >
                                 {progress === 'Complete' && (
                                     <FaCheck className="text-white" />
@@ -99,22 +90,37 @@ export const ProgressDropdown: React.FC<ProgressDropdownProps> = React.memo(
                                 className={`transition-transform ${
                                     isDropdownOpen ? 'rotate-180' : ''
                                 }`}
+                                style={{
+                                    color: `var(--${currentTheme}-text-subtle)`, // Use theme color
+                                }}
                             />
                         </div>
                     </div>
                 </div>
                 <div
                     ref={dropdownRef}
-                    className={`progress-dropdown mt-1 bg-slate-600 rounded-md shadow-md overflow-hidden transition-all duration-300 ease-in-out ${
-                        isSubtask ? 'w-full' : 'w-48 absolute'
-                    } ${isDropdownOpen ? 'max-h-40' : 'max-h-0'}`}
+                    className={`progress-dropdown mt-1 absolute z-50`}
+                    style={{
+                        backgroundColor: `var(--${currentTheme}-background-200)`, // Use theme color
+                        border: `1px solid var(--${currentTheme}-accent-grey)`, // Use theme color
+                        visibility: isDropdownOpen ? 'visible' : 'hidden',
+                        borderRadius: '0.375rem', // Tailwind's rounded-md
+                        overflow: 'hidden',
+                        transition: 'max-height 0.3s ease-in-out',
+                        maxHeight: isDropdownOpen ? '10rem' : '0', // Adjust max height based on dropdown state
+                    }}
                 >
                     {PROGRESS_OPTIONS.map((progressOption) => (
                         <div
                             key={progressOption}
-                            className={`p-2 cursor-pointer hover:bg-base-200 ${
-                                progress === progressOption ? 'bg-base-300' : ''
-                            }`}
+                            className={`p-2 cursor-pointer hover:bg-black/20`}
+                            style={{
+                                backgroundColor:
+                                    progress === progressOption
+                                        ? `var(--${currentTheme}-background-300)` // Use theme color
+                                        : '', // Default background
+                                color: `var(--${currentTheme}-text-default)`, // Use theme color
+                            }}
                             onClick={() => handleProgressSelect(progressOption)}
                         >
                             {progressOption}

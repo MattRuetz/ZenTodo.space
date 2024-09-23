@@ -1,5 +1,8 @@
 import { useRef, useState } from 'react';
 import ReactDatePicker from 'react-datepicker';
+import { useTheme } from '@/hooks/useTheme';
+import { FaTrash } from 'react-icons/fa';
+import { Tooltip } from 'react-tooltip';
 
 interface TaskDueDatePickerProps {
     onSetDueDate: (dueDate: Date | undefined) => void;
@@ -15,7 +18,7 @@ export const TaskDueDatePicker = ({
     datePickerRef,
 }: TaskDueDatePickerProps) => {
     const [dueDate, setDueDate] = useState<Date | null>(null);
-
+    const currentTheme = useTheme();
     const handleSetDueDate = (dueDate: Date | undefined) => {
         onSetDueDate(dueDate || undefined);
         setDueDate(dueDate || null);
@@ -26,31 +29,57 @@ export const TaskDueDatePicker = ({
     return (
         <div
             ref={datePickerRef}
-            className="absolute right-0 mt-2 bg-slate-200 shadow-md shadow-black/20 border-2 border-slate-500 rounded-lg p-2 z-20 flex flex-col"
+            className="absolute right-0 mt-2"
+            style={{
+                backgroundColor: `var(--${currentTheme}-background-200)`, // Use theme color
+                border: `2px solid var(--${currentTheme}-accent-grey)`, // Use theme color
+                borderRadius: '0.5rem', // Equivalent to rounded-lg
+                padding: '0.5rem', // Equivalent to p-2
+                zIndex: 20,
+                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.2)', // Shadow effect
+            }}
         >
             <ReactDatePicker
                 selected={dueDate}
                 onChange={(date: Date | null) => setDueDate(date)}
                 inline
             />
-            <button
-                onClick={() => {
-                    handleSetDueDate(dueDate || undefined);
-                }}
-                className="mt-1 bg-sky-700 text-white px-4 py-2 rounded"
-            >
-                Okay
-            </button>
-            <button
-                onClick={() => {
-                    setShowDatePicker(false);
-                    setIsMenuOpen(false);
-                    handleSetDueDate(undefined);
-                }}
-                className="mt-1 bg-red-700 text-white px-4 py-2 rounded"
-            >
-                No Due Date
-            </button>
+            <div className="flex flex-row justify-between gap-2">
+                <button
+                    onClick={() => {
+                        handleSetDueDate(dueDate || undefined);
+                    }}
+                    style={{
+                        marginTop: '0.25rem', // Equivalent to mt-1
+                        backgroundColor: `var(--${currentTheme}-accent-blue)`, // Use theme color
+                        color: `var(--${currentTheme}-text-default)`, // Use theme color
+                        padding: '0.5rem 1rem', // Equivalent to px-4 py-2
+                        borderRadius: '0.25rem', // Equivalent to rounded
+                    }}
+                >
+                    Okay
+                </button>
+                <button
+                    data-tooltip-id="delete-due-date-tooltip"
+                    onClick={() => {
+                        setShowDatePicker(false);
+                        setIsMenuOpen(false);
+                        handleSetDueDate(undefined);
+                    }}
+                    style={{
+                        marginTop: '0.25rem', // Equivalent to mt-1
+                        backgroundColor: `var(--${currentTheme}-accent-red)`, // Use theme color
+                        color: `var(--${currentTheme}-text-default)`, // Use theme color
+                        padding: '0.5rem 1rem', // Equivalent to px-4 py-2
+                        borderRadius: '0.25rem', // Equivalent to rounded
+                    }}
+                >
+                    <FaTrash />
+                    <Tooltip id="delete-due-date-tooltip" place="top">
+                        Delete Due Date
+                    </Tooltip>
+                </button>
+            </div>
         </div>
     );
 };

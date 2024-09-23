@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 import { useDrop, useDragLayer } from 'react-dnd';
 import { useMoveSubtask } from '@/hooks/useMoveSubtask';
 import { useAddNewSubtask } from '@/hooks/useAddNewSubtask';
-
+import { useTheme } from '@/hooks/useTheme';
 interface SubtaskDropZoneProps {
     position: string;
     parentTask: Task | null;
@@ -13,6 +13,7 @@ interface SubtaskDropZoneProps {
 
 const SubtaskDropZone = React.memo(
     ({ position, parentTask }: SubtaskDropZoneProps) => {
+        const currentTheme = useTheme();
         const { addNewSubtask } = useAddNewSubtask();
         const { moveSubtaskTemporary, commitSubtaskOrder } = useMoveSubtask();
         const sortOption = useSelector(
@@ -94,7 +95,11 @@ const SubtaskDropZone = React.memo(
             >
                 {position === 'start' ? (
                     <div
-                        className="flex mb-2 bg-slate-800 hover:bg-sky-950 transition-all duration-300 ease-in-out cursor-pointer rounded-lg px-2 py-1 justify-center text-sm font-semibold"
+                        className="flex mb-2 transition-all duration-300 ease-in-out cursor-pointer rounded-lg px-2 py-1 justify-center text-sm font-semibold hover:saturate-150"
+                        style={{
+                            backgroundColor: `var(--${currentTheme}-accent-blue)`, // Use theme color
+                            color: `var(--${currentTheme}-text-default)`, // Use theme color
+                        }}
                         onClick={handleAddSubtask}
                     >
                         + new subtask
@@ -108,15 +113,24 @@ const SubtaskDropZone = React.memo(
                             onClick={handleAddSubtask}
                         >
                             <div
-                                className={`w-full rounded-lg transition-all duration-300 ease-in-out cursor-pointer overflow-hidden ${
-                                    hoverStatus === 'hiding'
-                                        ? 'h-1 bg-base-300'
-                                        : 'h-7 bg-sky-950'
-                                }`}
+                                className={`w-full rounded-lg transition-all duration-300 ease-in-out cursor-pointer overflow-hidden`}
+                                style={{
+                                    color: `var(--${currentTheme}-text-default)`, // Use theme color
+                                    height:
+                                        hoverStatus === 'hiding'
+                                            ? '1rem'
+                                            : '1.75rem', // Adjust height based on hover status
+                                    backgroundColor:
+                                        hoverStatus === 'hiding'
+                                            ? `transparent` // Use theme color
+                                            : `var(--${currentTheme}-accent-blue)`, // Use theme color
+                                    filter: 'saturate(1.5)',
+                                }}
                             >
                                 <div
-                                    className="h-full flex items-center justify-center bg-sky-950 rounded-full px-2 py-1 text-sm font-semibold"
+                                    className="h-full flex items-center justify-center rounded-full px-2 py-1 text-sm font-semibold"
                                     style={{
+                                        backgroundColor: `var(--${currentTheme}-accent-blue)`, // Use theme color
                                         opacity: textOpacity,
                                         transition: 'opacity 0.3s ease-in-out',
                                     }}

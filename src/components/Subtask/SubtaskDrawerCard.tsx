@@ -13,7 +13,7 @@ import { useChangeHierarchy } from '@/hooks/useChangeHierarchy';
 import { useMoveSubtask } from '@/hooks/useMoveSubtask';
 import { useAlert } from '@/hooks/useAlert';
 import useClickOutside from '@/hooks/useClickOutside';
-
+import { useTheme } from '@/hooks/useTheme';
 interface SubtaskDrawerCardProps {
     subtask: Task;
     position: string;
@@ -22,6 +22,7 @@ interface SubtaskDrawerCardProps {
 const SubtaskDrawerCard = React.memo(
     ({ subtask, position }: SubtaskDrawerCardProps) => {
         const dispatch = useDispatch<AppDispatch>();
+        const currentTheme = useTheme();
         const { showAlert } = useAlert();
 
         const [localSubtask, setLocalSubtask] = useState(subtask || {});
@@ -204,15 +205,16 @@ const SubtaskDrawerCard = React.memo(
             <li
                 ref={ref as unknown as React.RefObject<HTMLLIElement>}
                 key={subtask._id}
+                className={`p-2 rounded-lg my-0 transition-colors duration-200 shadow-md border-2 relative`}
                 style={{
                     opacity: isDragging ? 0.5 : 1,
                     cursor: 'move',
+                    backgroundColor: `var(--${currentTheme}-background-100)`, // Use theme color
+                    borderColor:
+                        isOver && !isDragging
+                            ? `var(--${currentTheme}-accent-blue)` // Use theme color
+                            : `var(--${currentTheme}-background-300)`, // Use theme color
                 }}
-                className={`p-2 rounded-lg my-0 bg-base-100 transition-colors duration-200 shadow-md shadow-black/20 border-2 relative ${
-                    isOver && !isDragging
-                        ? 'filter brightness-110 border-blue-900'
-                        : 'border-transparent'
-                }`}
             >
                 <SubtaskTopBar
                     subtask={subtask}
@@ -224,11 +226,17 @@ const SubtaskDrawerCard = React.memo(
                         isEditing === 'taskName'
                             ? 'border-slate-400'
                             : 'border-transparent'
-                    } ${
-                        localSubtask.taskName === 'New Subtask'
-                            ? 'text-neutral-500'
-                            : ''
-                    } font-semibold rounded-lg p-2 px-4 mb-2 bg-base-300 transition-colors duration-200 border-2`}
+                    } font-semibold rounded-lg p-2 px-4 mb-2 transition-colors duration-200 border-2`}
+                    style={{
+                        backgroundColor: `var(--${currentTheme}-background-200)`, // Use theme color
+                        borderColor:
+                            isEditing === 'taskName'
+                                ? `var(--${currentTheme}-accent-grey)` // Use theme color
+                                : localSubtask.taskName === 'New Subtask'
+                                ? `var(--${currentTheme}-accent-red)`
+                                : 'transparent',
+                        color: `var(--${currentTheme}-text-default)`,
+                    }}
                 >
                     {isEditing === 'taskName' ? (
                         <input
@@ -254,6 +262,19 @@ const SubtaskDrawerCard = React.memo(
                             onClick={() => startEditing('taskName')}
                         >
                             {localSubtask.taskName}
+                            {localSubtask.taskName === 'New Subtask' && (
+                                <>
+                                    <p
+                                        className="text-xs"
+                                        style={{
+                                            color: `var(--${currentTheme}-text-subtle)`,
+                                            opacity: 0.5,
+                                        }}
+                                    >
+                                        Click to change name
+                                    </p>
+                                </>
+                            )}
                         </h1>
                     )}
                 </div>
@@ -262,7 +283,14 @@ const SubtaskDrawerCard = React.memo(
                         isEditing === 'taskDescription'
                             ? 'border-slate-400'
                             : 'border-transparent'
-                    } font-normal rounded-lg p-2 px-4 mb-2 transition-all duration-200 bg-base-300 border-2`}
+                    } font-normal rounded-lg p-2 px-4 mb-2 transition-all duration-200 border-2`}
+                    style={{
+                        backgroundColor: `var(--${currentTheme}-background-200)`, // Use theme color
+                        borderColor:
+                            isEditing === 'taskDescription'
+                                ? `var(--${currentTheme}-accent-grey)` // Use theme color
+                                : 'transparent',
+                    }}
                 >
                     {isEditing === 'taskDescription' ? (
                         <textarea
@@ -287,10 +315,19 @@ const SubtaskDrawerCard = React.memo(
                     ) : (
                         <p
                             className="text-sm cursor-pointer"
+                            style={{
+                                color: `var(--${currentTheme}-text-default)`, // Use theme color
+                            }}
                             onClick={() => startEditing('taskDescription')}
                         >
                             {localSubtask.taskDescription || (
-                                <span className="text-neutral-500">
+                                <span
+                                    className="text-xs"
+                                    style={{
+                                        color: `var(--${currentTheme}-text-subtle)`,
+                                        opacity: 0.5,
+                                    }}
+                                >
                                     + Add description
                                 </span>
                             )}

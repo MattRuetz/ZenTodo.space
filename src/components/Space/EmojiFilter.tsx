@@ -7,6 +7,7 @@ import { AppDispatch, RootState } from '@/store/store';
 import { updateSpaceSelectedEmojis } from '@/store/spaceSlice';
 import { fetchTasks } from '@/store/tasksSlice';
 import { Tooltip } from 'react-tooltip';
+import { useTheme } from '@/hooks/useTheme';
 
 interface EmojiFilterProps {
     clearSelectedEmojis: () => void;
@@ -18,6 +19,7 @@ export const EmojiFilter: React.FC<EmojiFilterProps> = ({
     spaceId,
 }) => {
     const dispatch = useDispatch<AppDispatch>();
+    const currentTheme = useTheme();
     const selectedEmojis = useSelector(
         (state: RootState) => state.spaces.currentSpace?.selectedEmojis || []
     );
@@ -82,16 +84,22 @@ export const EmojiFilter: React.FC<EmojiFilterProps> = ({
                         setIsOpen(!isOpen);
                     }
                 }}
-                className={`flex items-center justify-center w-8 h-8 bg-base-200 hover:bg-base-300 rounded-full transition-colors duration-200 ${
-                    selectedEmojis.length > 0
-                        ? 'bg-primary text-primary-content hover:bg-primary-focus'
-                        : ''
-                }`}
+                className={`flex items-center justify-center w-8 h-8 rounded-md transition-colors duration-200 border border-black`}
+                style={{
+                    backgroundColor:
+                        selectedEmojis.length > 0
+                            ? `var(--${currentTheme}-accent-blue)`
+                            : `var(--${currentTheme}-background-200)`,
+                    color:
+                        selectedEmojis.length > 0
+                            ? `var(--${currentTheme}-text-default)`
+                            : `var(--${currentTheme}-text-subtle)`,
+                }}
             >
                 <FaFilter />
             </button>
             <Tooltip id="emoji-filter-tooltip">
-                <div className="bg-transparent font-normal text-sm text-white text-left">
+                <div className="bg-transparent font-normal text-sm text-left text-white">
                     {availableEmojis.length === 0
                         ? 'No emojis in this space'
                         : 'Filter by emoji'}
@@ -100,13 +108,14 @@ export const EmojiFilter: React.FC<EmojiFilterProps> = ({
 
             {isOpen && (
                 <div
-                    className="absolute top-0 left-full ml-2 p-2 rounded-lg bg-sky-950 shadow-lg z-50 max-w-96"
+                    className="absolute top-0 left-full ml-2 p-2 rounded-lg shadow-lg z-50 max-w-96"
                     style={{
                         top: buttonRef.current
                             ? buttonRef.current.offsetTop
                             : 0,
                         maxHeight: '80vh',
                         overflowY: 'auto',
+                        backgroundColor: `var(--${currentTheme}-background-300)`,
                     }}
                 >
                     <div className="flex gap-2 flex-row w-full">
@@ -114,25 +123,45 @@ export const EmojiFilter: React.FC<EmojiFilterProps> = ({
                             <button
                                 key={index}
                                 onClick={() => toggleEmoji(emoji)}
-                                className={`text-2xl hover:bg-black/25 rounded p-1 transition-colors duration-200 w-full ${
-                                    selectedEmojis.includes(emoji)
-                                        ? 'bg-primary text-primary-content'
-                                        : ''
-                                }`}
+                                className={`text-2xl rounded p-1 transition-colors duration-200 w-full`}
+                                style={{
+                                    backgroundColor: selectedEmojis.includes(
+                                        emoji
+                                    )
+                                        ? `var(--${currentTheme}-accent-blue)`
+                                        : 'transparent',
+                                    color: selectedEmojis.includes(emoji)
+                                        ? `var(--${currentTheme}-text-default)`
+                                        : `var(--${currentTheme}-text-subtle)`,
+                                }}
                             >
                                 {emoji}
                             </button>
                         ))}
                     </div>
                     {selectedEmojis.length > 0 && (
-                        <div className="mt-2 pt-2 border-t border-base-300">
-                            <div className="flex justify-between items-center mb-1">
-                                <p className="text-sm font-semibold">
+                        <div
+                            className="mt-2 pt-2"
+                            style={{
+                                borderTop: `1px solid var(--${currentTheme}-accent-grey)`,
+                            }}
+                        >
+                            <div className="flex justify-between items-center mb-1 gap-2">
+                                <p
+                                    className="text-sm font-semibold"
+                                    style={{
+                                        color: `var(--${currentTheme}-text-default)`,
+                                    }}
+                                >
                                     Selected:
                                 </p>
                                 <button
                                     onClick={clearSelectedEmojis}
-                                    className="text-xs bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded transition-colors duration-200"
+                                    className="text-xs px-2 py-1 rounded transition-colors duration-200"
+                                    style={{
+                                        backgroundColor: `var(--${currentTheme}-accent-red)`,
+                                        color: `var(--${currentTheme}-text-default)`,
+                                    }}
                                 >
                                     Clear
                                 </button>

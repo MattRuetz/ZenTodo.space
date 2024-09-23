@@ -64,6 +64,40 @@ export const useChangeHierarchy = () => {
             updatedGrandparentTask,
         };
 
+        if (task.ancestors && task.ancestors.length >= 2) {
+            showAlert(
+                'Task cannot be made a subtask because it would exceed the maximum depth of 2.',
+                'error'
+            );
+            return;
+        }
+
+        const taskSubtasks = taskMap.get(task._id)?.subtasks;
+        const hasChildren = taskSubtasks && taskSubtasks.length > 0;
+        if (task.parentTask && hasChildren) {
+            showAlert(
+                'Task cannot be made a subtask because it would exceed the maximum depth of 2.',
+                'error'
+            );
+            return;
+        }
+
+        const childTaskIds = taskMap.get(task._id)?.subtasks || [];
+        const hasGrandchildren = childTaskIds.some((childId) => {
+            const childTask = taskMap.get(childId);
+            return (
+                childTask && childTask.subtasks && childTask.subtasks.length > 0
+            );
+        });
+
+        if (hasGrandchildren) {
+            showAlert(
+                'Task cannot be made a subtask because it already has grandchildren.',
+                'error'
+            );
+            return;
+        }
+
         dispatch(convertTaskToSubtaskOptimistic(optimisticUpdate));
 
         try {

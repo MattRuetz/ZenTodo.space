@@ -8,6 +8,8 @@ import {
     FaTrash,
 } from 'react-icons/fa';
 import { TaskDueDatePicker } from './TaskDueDatePicker';
+import { useRef } from 'react';
+import useClickOutside from '@/hooks/useClickOutside';
 
 interface TaskMenuProps {
     isMenuOpen: boolean;
@@ -21,7 +23,6 @@ interface TaskMenuProps {
     onDelete: () => void;
     showDatePicker: boolean;
     showMoveOptions: boolean;
-    moveOptionsRef: React.RefObject<HTMLDivElement>;
     spaces: SpaceData[];
     task: Task;
     onSetDueDate: (dueDate: Date | undefined) => void;
@@ -40,16 +41,26 @@ export default function TaskMenu({
     onDelete,
     showDatePicker,
     showMoveOptions,
-    moveOptionsRef,
     spaces,
     task,
     onSetDueDate,
     handleMoveTask,
 }: TaskMenuProps) {
+    const menuRef = useRef<HTMLDivElement>(null);
+    const datePickerRef = useRef<HTMLDivElement>(null);
+    const moveOptionsRef = useRef<HTMLDivElement>(null);
+
+    useClickOutside([menuRef, datePickerRef, moveOptionsRef], () => {
+        setIsMenuOpen(false);
+        setShowDatePicker(false);
+        setShowMoveOptions(false);
+    });
+
     return (
         <>
             {isMenuOpen && (
                 <div
+                    ref={menuRef}
                     className="absolute right-0 mt-2 w-48 rounded-md shadow-lg z-50"
                     style={{
                         backgroundColor: `var(--${currentTheme}-background-200)`,
@@ -149,11 +160,14 @@ export default function TaskMenu({
                 </div>
             )}
             {showDatePicker && (
-                <TaskDueDatePicker
-                    onSetDueDate={onSetDueDate}
-                    setShowDatePicker={setShowDatePicker}
-                    setIsMenuOpen={setIsMenuOpen}
-                />
+                <div ref={datePickerRef}>
+                    <TaskDueDatePicker
+                        datePickerRef={datePickerRef}
+                        onSetDueDate={onSetDueDate}
+                        setShowDatePicker={setShowDatePicker}
+                        setIsMenuOpen={setIsMenuOpen}
+                    />
+                </div>
             )}
             {showMoveOptions && (
                 <div
