@@ -22,6 +22,7 @@
     --buji-emphasis-light: #ffffff;
     --buji-emphasis-dark: #000000;
     --buji-controlpanel-background: #020617;
+    --buji-card-border-color: transparent;
     /* Subtask Progress Colors */
     --buji-not-started-text: #b3b3b3;
     --buji-in-progress-text: #ffcc00;
@@ -33,8 +34,8 @@
     --buji-blocked-background: transparent;
 
     --daigo-space-background: #f4f4f5;
-    --daigo-background-100: #a1a1aa;
-    --daigo-background-200: #fafafa;
+    --daigo-background-100: #ffffff;
+    --daigo-background-200: #f4f4f5;
     --daigo-background-300: #d4d4d8;
     --daigo-text-default: #000000;
     --daigo-text-subtle: #333333;
@@ -51,6 +52,7 @@
     --daigo-emphasis-light: #000000;
     --daigo-emphasis-dark: #ffffff;
     --daigo-controlpanel-background: #71717a;
+    --daigo-card-border-color: #999999;
     /* Subtask Progress Colors */
     --daigo-not-started-text: #333333;
     --daigo-in-progress-text: #333333;
@@ -62,7 +64,7 @@
     --daigo-blocked-background: #ff9292;
 
     --enzu-space-background: #fefce8;
-    --enzu-background-100: #166534;
+    --enzu-background-100: #62ae5d;
     --enzu-background-200: #fefce8;
     --enzu-background-300: #ecfccb;
     --enzu-text-default: #3a3a3a;
@@ -80,6 +82,7 @@
     --enzu-emphasis-light: #f5f5dc;
     --enzu-emphasis-dark: #3a3a3a;
     --enzu-controlpanel-background: #4a8046;
+    --enzu-card-border-color: transparent;
     /* Subtask Progress Colors */
     --enzu-not-started-text: #747474;
     --enzu-in-progress-text: #d49100;

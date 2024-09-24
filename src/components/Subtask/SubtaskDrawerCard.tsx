@@ -219,7 +219,7 @@ const SubtaskDrawerCard = React.memo(
                     borderColor:
                         isOver && !isDragging
                             ? `var(--${currentTheme}-accent-blue)` // Use theme color
-                            : `transparent`, // Use theme color
+                            : `var(--${currentTheme}-card-border-color)`, // Use theme color
                 }}
             >
                 <SubtaskTopBar

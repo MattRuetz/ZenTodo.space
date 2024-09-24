@@ -18,7 +18,7 @@ export const useAlert = () => {
             autoClose: duration,
             hideProgressBar: true,
             closeOnClick: true,
-            pauseOnHover: true,
+            pauseOnHover: false,
             draggable: true,
             progress: undefined,
         };

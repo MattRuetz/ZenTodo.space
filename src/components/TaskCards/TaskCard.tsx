@@ -385,7 +385,7 @@ const TaskCard = React.memo(
                         color: `var(--${currentTheme}-text-default)`,
                         borderColor: isDraggingOver
                             ? `var(--${currentTheme}-accent-blue)`
-                            : `transparent`,
+                            : `var(--${currentTheme}-card-border-color)`,
                     }}
                     onMouseDown={handleMouseDown}
                     onMouseEnter={() => setIsHovering(true)}

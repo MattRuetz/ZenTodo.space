@@ -89,6 +89,7 @@ const ControlPanelContent: React.FC<ControlPanelContentProps> = React.memo(
                                 className="p-1 rounded-full w-8 h-8 flex items-center justify-center"
                                 style={{
                                     backgroundColor: `${contrastColor}`,
+                                    color: `${contrastInvertedColor}`,
                                 }}
                             >
                                 {currentSpace?.emoji || <FaTag />}
