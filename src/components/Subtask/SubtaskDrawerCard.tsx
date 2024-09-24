@@ -58,6 +58,13 @@ const SubtaskDrawerCard = React.memo(
             () => ({
                 type: 'SUBTASK',
                 item: () => {
+                    // Check if the click originated from an input or textarea
+                    if (
+                        document.activeElement instanceof HTMLInputElement ||
+                        document.activeElement instanceof HTMLTextAreaElement
+                    ) {
+                        return undefined; // Disable dragging
+                    }
                     return { ...localSubtask, position };
                 },
                 end: (item, monitor) => {
@@ -308,6 +315,7 @@ const SubtaskDrawerCard = React.memo(
                                 minHeight: '100px',
                                 maxHeight: '500px',
                                 overflowY: 'auto',
+                                color: `var(--${currentTheme}-text-default)`,
                             }}
                             maxLength={500}
                             autoFocus
@@ -317,6 +325,7 @@ const SubtaskDrawerCard = React.memo(
                             className="text-sm cursor-pointer"
                             style={{
                                 color: `var(--${currentTheme}-text-default)`, // Use theme color
+                                whiteSpace: 'pre-wrap', // Preserve whitespace and newlines
                             }}
                             onClick={() => startEditing('taskDescription')}
                         >
