@@ -435,8 +435,26 @@ export const tasksSlice = createSlice({
             state.tasks.push(...action.payload);
         },
         deleteTaskOptimistic: (state, action: PayloadAction<string[]>) => {
+            const tasksToDelete = action.payload;
+
+            state.tasks = state.tasks.map((task) => {
+                if (
+                    task.subtasks.some((subtaskId) =>
+                        tasksToDelete.includes(subtaskId)
+                    )
+                ) {
+                    return {
+                        ...task,
+                        subtasks: task.subtasks.filter(
+                            (subtaskId) => !tasksToDelete.includes(subtaskId)
+                        ),
+                    };
+                }
+                return task;
+            });
+
             state.tasks = state.tasks.filter(
-                (task) => !action.payload.includes(task._id as string)
+                (task) => !tasksToDelete.includes(task._id as string)
             );
         },
         convertTaskToSubtaskOptimistic: (

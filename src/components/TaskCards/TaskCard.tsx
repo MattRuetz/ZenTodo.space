@@ -222,7 +222,7 @@ const TaskCard = React.memo(
         }, [isGlobalDragging, draggingCardId, task._id, isDraggingOver]);
 
         const opacity = useFadeOutEffect(
-            localTask,
+            task,
             isHovering,
             isFocused,
             initiateDeleteTask
@@ -288,8 +288,6 @@ const TaskCard = React.memo(
 
         const handleSetDueDate = (date: Date | undefined) => {
             setLocalTask((prevTask) => ({ ...prevTask, dueDate: date }));
-
-            console.log('date in handleSetDueDate', date);
             debouncedUpdate({ dueDate: date || null });
         };
 
@@ -303,7 +301,6 @@ const TaskCard = React.memo(
         };
 
         const handleDuplicateTask = () => {
-            console.log('task in handleDuplicateTask', task);
             duplicateTask(task, tasksState);
         };
 

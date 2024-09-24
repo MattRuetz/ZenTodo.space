@@ -17,7 +17,12 @@ export const useFadeOutEffect = (
             !isFocused &&
             !task.emoji &&
             !task.taskName &&
-            !task.taskDescription;
+            !task.taskDescription &&
+            task.subtasks.length === 0;
+
+        console.log('task to fadeout', task);
+
+        console.log('subtasks', task.subtasks);
 
         const animate = (time: number) => {
             if (startTimeRef.current === undefined) {
@@ -60,6 +65,7 @@ export const useFadeOutEffect = (
         task.taskDescription,
         task.emoji,
         task._id,
+        task.subtasks,
         onDelete,
     ]);
 
