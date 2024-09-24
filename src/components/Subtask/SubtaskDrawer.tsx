@@ -192,12 +192,12 @@ const SubtaskDrawer = React.memo(
                         </div>
                         <div className="flex flex-row gap-2 w-full pt-2">
                             <p
-                                className="uppercase text-xs"
+                                className="uppercase text-xs font-bold"
                                 style={{
                                     color: `var(--${currentTheme}-text-default)`,
                                 }}
                             >
-                                Main Task:
+                                Parent Tasks:
                             </p>
                         </div>
                         <div
@@ -210,9 +210,10 @@ const SubtaskDrawer = React.memo(
                                 {grandparentTask && (
                                     <>
                                         <p
-                                            className="p-2 shadow-sm rounded-md cursor-pointer w-full max-w-32 break-words overflow-wrap-anywhere border-2 hover:bg-slate-500/20"
+                                            className="p-2 shadow-sm rounded-md cursor-pointer w-full max-w-32 break-words overflow-wrap-anywhere border-2 hover:brightness-110"
                                             style={{
                                                 backgroundColor: `var(--${currentTheme}-background-100)`, // Use theme color
+                                                borderColor: `var(--${currentTheme}-background-100)`,
                                                 color: `var(--${currentTheme}-emphasis-light)`, // Use theme color
                                             }}
                                             onClick={() =>
@@ -234,14 +235,14 @@ const SubtaskDrawer = React.memo(
                                 )}
                                 <>
                                     <p
-                                        className="p-2 rounded-md cursor-default max-w-32 w-full break-words overflow-wrap-anywhere"
+                                        className="p-2 rounded-md cursor-default max-w-32 w-full break-words overflow-wrap-anywhere border-2"
                                         onClick={() =>
                                             handleSwitchParentTask(
                                                 parentTask as Task
                                             )
                                         }
                                         style={{
-                                            backgroundColor: `var(--${currentTheme}-background-300)`, // Use theme color
+                                            borderColor: `var(--${currentTheme}-background-100)`,
                                             color: `var(--${currentTheme}-text-default)`, // Use theme color
                                         }}
                                     >

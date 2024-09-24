@@ -6,7 +6,7 @@ import { useSession } from 'next-auth/react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
 import { setTheme } from '@/store/themeSlice';
-
+import { ThemeName } from '@/types';
 interface ControlPanelContentProps {
     isOpen: boolean;
 }
@@ -18,7 +18,7 @@ const ControlPanelContent: React.FC<ControlPanelContentProps> = React.memo(
             (state: RootState) => state.theme.currentTheme
         );
 
-        const handleThemeChange = (theme: 'buji' | 'daigo' | 'enzu') => {
+        const handleThemeChange = (theme: ThemeName) => {
             dispatch(setTheme(theme));
         };
 

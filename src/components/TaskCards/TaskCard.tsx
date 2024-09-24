@@ -376,7 +376,7 @@ const TaskCard = React.memo(
             >
                 <div
                     ref={cardRef}
-                    className={`task-card absolute shadow cursor-move flex flex-col space-y-2 rounded-xl transition-all duration-200 ${
+                    className={`task-card absolute shadow-md cursor-move flex flex-col space-y-2 rounded-xl transition-all duration-200 ${
                         isDraggingOver
                             ? 'filter brightness-110' // Keep this for visual feedback
                             : '' // Keep this for visual feedback
@@ -387,8 +387,8 @@ const TaskCard = React.memo(
                         backgroundColor: `var(--${currentTheme}-background-100)`,
                         color: `var(--${currentTheme}-text-default)`,
                         borderColor: isDraggingOver
-                            ? `var(--${currentTheme}-accent-blue)` // Replace with your theme color
-                            : `var(--${currentTheme}-background-200)`, // Replace with your theme color
+                            ? `var(--${currentTheme}-accent-blue)`
+                            : `transparent`,
                     }}
                     onMouseDown={handleMouseDown}
                     onMouseEnter={() => setIsHovering(true)}
