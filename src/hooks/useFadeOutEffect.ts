@@ -20,10 +20,6 @@ export const useFadeOutEffect = (
             !task.taskDescription &&
             task.subtasks.length === 0;
 
-        console.log('task to fadeout', task);
-
-        console.log('subtasks', task.subtasks);
-
         const animate = (time: number) => {
             if (startTimeRef.current === undefined) {
                 startTimeRef.current = time;

@@ -18,6 +18,37 @@ export async function POST(req: NextRequest) {
             );
         }
 
+        // **Task limit check**
+        // Collect spaces involved
+        const spacesInvolved = new Set<string>();
+        tasks.forEach((task: any) => {
+            if (task.space) {
+                spacesInvolved.add(task.space);
+            }
+        });
+
+        // Check task limits for each space
+        for (const spaceId of Array.from(spacesInvolved)) {
+            const tasksInSpace = tasks.filter(
+                (task: any) => task.space === spaceId
+            );
+            const existingTaskCount = await Task.countDocuments({
+                user: userId,
+                space: spaceId,
+            });
+            const totalTasksAfterDuplication =
+                existingTaskCount + tasksInSpace.length;
+
+            if (totalTasksAfterDuplication > 50) {
+                return NextResponse.json(
+                    {
+                        error: `Task limit reached in space ${spaceId}. Cannot duplicate tasks because it would exceed the limit of 50 tasks in the space.`,
+                    },
+                    { status: 400 }
+                );
+            }
+        }
+
         const tempIdToObjectIdMap = new Map<string, mongoose.Types.ObjectId>();
         const duplicatedTasks: any[] = [];
 

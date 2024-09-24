@@ -6,18 +6,24 @@ import ControlPanelToggle from './ControlPanelToggle';
 import ControlPanelContent from './ControlPanelContent';
 import { EmojiFilter } from '../Space/EmojiFilter';
 
-const ControlPanel = React.memo(() => {
-    const [isOpen, setIsOpen] = useState(false);
-    const { data: session } = useSession();
+interface ControlPanelProps {
+    toggleZoom: () => void;
+}
 
-    if (!session) return null;
+const ControlPanel: React.FC<ControlPanelProps> = React.memo(
+    ({ toggleZoom }) => {
+        const [isOpen, setIsOpen] = useState(false);
+        const { data: session } = useSession();
 
-    return (
-        <div style={{ zIndex: 1000 }}>
-            <ControlPanelContent isOpen={isOpen} />
-            <ControlPanelToggle isOpen={isOpen} setIsOpen={setIsOpen} />
-        </div>
-    );
-});
+        if (!session) return null;
+
+        return (
+            <div style={{ zIndex: 1000 }}>
+                <ControlPanelContent isOpen={isOpen} toggleZoom={toggleZoom} />
+                <ControlPanelToggle isOpen={isOpen} setIsOpen={setIsOpen} />
+            </div>
+        );
+    }
+);
 
 export default ControlPanel;

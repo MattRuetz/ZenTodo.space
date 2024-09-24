@@ -36,7 +36,12 @@ export const addTaskAsync = createAsyncThunk(
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ...task, tempId }),
             });
-            if (!response.ok) throw new Error('Failed to add task');
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to add task');
+            }
+
             const data = await response.json();
             return { newTask: data.task, originalTempId: data.originalTempId };
         } catch (error) {
@@ -87,7 +92,8 @@ export const addNewSubtaskAsync = createAsyncThunk(
             });
 
             if (!response.ok) {
-                throw new Error('Failed to add new subtask');
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to add subtask');
             }
 
             const data = await response.json();
@@ -332,7 +338,6 @@ export const moveSubtaskWithinLevelAsync = createAsyncThunk(
                 }
 
                 const data = await response.json();
-                console.log('data', data);
                 return data;
             } catch (error) {
                 if (error instanceof Error) {
@@ -366,9 +371,12 @@ export const duplicateTasksAsync = createAsyncThunk(
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ tasks: tasksToDuplicate }),
             });
+
             if (!response.ok) {
-                throw new Error('Failed to duplicate tasks');
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to duplicate tasks');
             }
+
             const data = await response.json();
             return data.tasks.map((task: any) => ({
                 ...task,

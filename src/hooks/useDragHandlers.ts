@@ -73,7 +73,7 @@ export const useDragHandlers = ({
             dragTimer = setTimeout(() => {
                 allowDropRef.current = true;
                 setAllowDrop(true);
-            }, 200);
+            }, 300);
 
             const cancelDrag = () => {
                 clearTimeout(dragTimer);

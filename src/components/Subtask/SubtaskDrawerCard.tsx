@@ -90,7 +90,6 @@ const SubtaskDrawerCard = React.memo(
         );
 
         const handleDropOnSelf = useCallback(() => {
-            console.log('parentTask', parentTask?.taskName);
             if (parentTask && parentTask._id) {
                 commitSubtaskOrder(parentTask._id);
             }

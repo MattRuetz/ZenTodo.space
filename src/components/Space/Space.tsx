@@ -183,7 +183,6 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId, onLoaded }) => {
 
     const handleSpaceClick = useCallback(
         (e: React.MouseEvent<HTMLDivElement>) => {
-            console.log(currentSpace?.color);
             if (e.target !== e.currentTarget || isDraggingRef.current) return;
 
             if (!session) {

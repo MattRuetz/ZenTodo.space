@@ -45,7 +45,19 @@ export async function POST(req: NextRequest) {
             tempId,
         } = body;
 
-        // Get the current maxZIndex for the space and increment it
+        // **Task limit check**
+        const taskCount = await Task.countDocuments({ user: userId, space });
+
+        if (taskCount >= 50) {
+            return NextResponse.json(
+                {
+                    error: 'Task limit reached. You cannot create more than 50 tasks in this space.',
+                },
+                { status: 400 }
+            );
+        }
+
+        // Existing code for creating a new task
         const currentSpace = await Space.findById(space);
         const newZIndex = (currentSpace.maxZIndex || 0) + 1;
 
@@ -57,7 +69,7 @@ export async function POST(req: NextRequest) {
             progress,
             space,
             user: userId,
-            zIndex: newZIndex, // Set the zIndex here
+            zIndex: newZIndex,
             dueDate,
             parentTask: parentTask ?? undefined,
             ancestors: ancestors ?? [],

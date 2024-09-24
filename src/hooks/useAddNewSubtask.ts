@@ -39,6 +39,19 @@ export const useAddNewSubtask = () => {
             return;
         }
 
+        // **Task limit check**
+        const tasksInSpace = store
+            .getState()
+            .tasks.tasks.filter((t: Task) => t.space === subtask.space);
+
+        if (tasksInSpace.length >= 50) {
+            showAlert(
+                'Task limit reached. You cannot create more than 50 tasks in this space.',
+                'notice'
+            );
+            return;
+        }
+
         const tempId = generateTempId();
         const tempSubtask: Task = {
             ...subtask,

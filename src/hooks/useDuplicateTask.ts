@@ -8,15 +8,13 @@ import {
     duplicateTaskWithTempIds,
     fetchAllTasksFromState,
 } from '@/app/utils/optimisticUpdates';
-import { AppDispatch } from '@/store/store';
+import { AppDispatch, store } from '@/store/store';
 import { useAlert } from './useAlert';
 
 export const useDuplicateTask = () => {
     const dispatch = useDispatch<AppDispatch>();
     const { showAlert } = useAlert();
     const duplicateTask = async (task: Task, tasksState: Task[]) => {
-        // console.log('tasksState', tasksState);
-        // Pre-fetch all necessary task objects
         if (!task._id) {
             console.error('Task ID is undefined');
             return;
@@ -25,6 +23,20 @@ export const useDuplicateTask = () => {
 
         // Generate duplicated tasks with temporary IDs
         const { duplicatedTasks } = duplicateTaskWithTempIds(task, taskMap);
+
+        // **Task limit check**
+        const spaceId = task.space;
+        const tasksInSpace = store
+            .getState()
+            .tasks.tasks.filter((t: Task) => t.space === spaceId);
+
+        if (tasksInSpace.length + duplicatedTasks.length > 50) {
+            showAlert(
+                'Task limit reached. Cannot duplicate tasks because it would exceed the limit of 50 tasks in the space.',
+                'notice'
+            );
+            return;
+        }
 
         // Dispatch optimistic update
         dispatch(duplicateTasksOptimistic(duplicatedTasks));
@@ -36,7 +48,7 @@ export const useDuplicateTask = () => {
                 isTemp: undefined,
             }));
             await dispatch(duplicateTasksAsync(tasksToDuplicate)).unwrap();
-            // Success: IDs are updated in the fulfilled case
+            // Success
             showAlert(
                 `Duplicated task${
                     task.subtasks.length > 0
@@ -48,9 +60,13 @@ export const useDuplicateTask = () => {
                 'success'
             );
         } catch (error) {
-            // Error: rollback optimistic updates -- handled in the .rejected case in taskSlice extra reducers
-            console.error('Failed to duplicate tasks:', error);
-            showAlert('Failed to duplicate tasks', 'error');
+            if (error instanceof Error) {
+                console.error('Failed to duplicate tasks:', error);
+                showAlert(
+                    error.message || 'Failed to duplicate tasks',
+                    'error'
+                );
+            }
         }
     };
 

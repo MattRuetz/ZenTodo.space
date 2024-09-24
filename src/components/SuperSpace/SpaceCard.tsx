@@ -291,12 +291,12 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
                                 <h4 className="text-lg font-semibold mb-2">
                                     {tasks.length} Tasks
                                 </h4>
-                                <p className="text-sm grid grid-cols-2 gap-2">
+                                <p className="text-sm grid md:grid-cols-1 lg:grid-cols-2 gap-2">
                                     {tasks.filter(
                                         (task) =>
                                             task.progress === 'Not Started'
                                     ).length > 0 && (
-                                        <div className="font-medium px-2 ">
+                                        <div className="font-medium px-2 border border-gray-300 rounded-md">
                                             <span className="font-bold ">
                                                 {
                                                     tasks.filter(
@@ -313,7 +313,7 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
                                         (task) =>
                                             task.progress === 'In Progress'
                                     ).length > 0 && (
-                                        <div className="font-medium px-2">
+                                        <div className="font-medium px-2 border border-yellow-500 rounded-md">
                                             <span className="font-bold ">
                                                 {
                                                     tasks.filter(
@@ -329,7 +329,7 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
                                     {tasks.filter(
                                         (task) => task.progress === 'Blocked'
                                     ).length > 0 && (
-                                        <div className="font-medium px-2">
+                                        <div className="font-medium px-2 border border-red-500 rounded-md">
                                             <span className="font-bold ">
                                                 {
                                                     tasks.filter(
@@ -345,7 +345,7 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
                                     {tasks.filter(
                                         (task) => task.progress === 'Complete'
                                     ).length > 0 && (
-                                        <div className="font-medium px-2">
+                                        <div className="font-medium px-2 border border-green-500 rounded-md">
                                             <span className="font-bold ">
                                                 {
                                                     tasks.filter(

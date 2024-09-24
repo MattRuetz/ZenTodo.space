@@ -33,6 +33,18 @@ export async function POST(req: NextRequest) {
             originalTempId,
         } = body;
 
+        // **Task limit check**
+        const taskCount = await Task.countDocuments({ user: userId, space });
+
+        if (taskCount >= 50) {
+            return NextResponse.json(
+                {
+                    error: 'Task limit reached. You cannot create more than 50 tasks in this space.',
+                },
+                { status: 400 }
+            );
+        }
+
         const newTask = new Task({
             taskName: taskName,
             taskDescription: taskDescription,
