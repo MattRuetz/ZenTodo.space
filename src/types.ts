@@ -44,6 +44,8 @@ export type SortOption =
     | 'lastEdited'
     | 'custom';
 
+export type ThemeName = 'buji' | 'daigo' | 'enzu';
+
 // NextAuth type extensions
 declare module 'next-auth' {
     interface User {

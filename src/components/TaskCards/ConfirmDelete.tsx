@@ -24,7 +24,7 @@ const ConfirmDelete = ({
 
     return (
         <motion.div
-            className="absolute inset-0 z-50"
+            className="absolute inset-0 z-50 w-full h-full flex justify-center items-center"
             style={{
                 backgroundColor: `var(--${currentTheme}-accent-black)`, // Use theme color for background
                 opacity: 0.5,
@@ -116,13 +116,12 @@ const ConfirmDelete = ({
                             Delete Space?
                         </h3>
                         <p
-                            className="mb-6 p-2"
+                            className="mb-6 p-2 bg-red-500/10 ring-2 ring-red-500 rounded-md"
                             style={{
-                                backgroundColor: `var(--${currentTheme}-accent-grey)`,
                                 color: `var(--${currentTheme}-text-default)`,
                             }}
                         >
-                            Are you sure you want to delete this space? This
+                            All tasks in the space will also be deleted. This
                             action cannot be undone.
                         </p>
                         <div className="flex justify-end space-x-4">
@@ -138,7 +137,7 @@ const ConfirmDelete = ({
                             <button
                                 className="btn btn-error"
                                 style={{
-                                    color: `var(--${currentTheme}-accent-red)`,
+                                    color: `var(--${currentTheme}-text-default)`,
                                 }} // Use theme color
                                 onClick={(e) => {
                                     e.stopPropagation();
