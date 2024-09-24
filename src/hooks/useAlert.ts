@@ -1,10 +1,13 @@
 import React from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { useTheme } from './useTheme';
 
-type AlertType = 'error' | 'notice' | 'success';
+type AlertType = 'error' | 'notice' | 'success' | 'welcome';
 
 export const useAlert = () => {
+    const theme = useTheme();
+
     const showAlert = (
         message: string,
         type: AlertType = 'notice',
@@ -23,21 +26,27 @@ export const useAlert = () => {
         const styles = {
             error: {
                 border: '2px solid',
-                backgroundColor: '#721c2433',
-                borderColor: '#721c24',
-                color: 'white',
+                backgroundColor: `var(--${theme}-accent-red-low-opacity)`,
+                borderColor: `var(--${theme}-accent-red)`,
+                color: `var(--${theme}-text-default)`,
             },
             notice: {
                 border: '2px solid',
-                backgroundColor: '#383d4133',
-                borderColor: '#383d41',
-                color: 'white',
+                backgroundColor: `var(--${theme}-accent-grey-low-opacity)`,
+                borderColor: `var(--${theme}-accent-grey)`,
+                color: `var(--${theme}-text-default)`,
             },
             success: {
                 border: '2px solid',
-                backgroundColor: '#15572433',
-                borderColor: '#155724',
-                color: 'white',
+                backgroundColor: `var(--${theme}-accent-green-low-opacity)`,
+                borderColor: `var(--${theme}-accent-green)`,
+                color: `var(--${theme}-text-default)`,
+            },
+            welcome: {
+                border: '2px solid',
+                backgroundColor: `var(--${theme}-accent-blue-low-opacity)`,
+                borderColor: `var(--${theme}-accent-blue)`,
+                color: `var(--${theme}-text-default)`,
             },
         };
 
@@ -45,6 +54,7 @@ export const useAlert = () => {
             error: toast.error,
             notice: toast.info,
             success: toast.success,
+            welcome: toast.success,
         };
 
         toastFunction[type](message, {

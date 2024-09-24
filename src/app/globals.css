@@ -10,12 +10,18 @@
     --buji-text-default: #ffffff;
     --buji-text-subtle: #cccccc;
     --buji-accent-red: #ff4d4d;
+    --buji-accent-red-low-opacity: #ff4d4d1a;
     --buji-accent-yellow: #ffcc00;
+    --buji-accent-yellow-low-opacity: #ffcc001a;
     --buji-accent-green: #66ff66;
+    --buji-accent-green-low-opacity: #66ff661a;
     --buji-accent-blue: #0e7490;
+    --buji-accent-blue-low-opacity: #0e74901a;
     --buji-accent-grey: #b3b3b3;
+    --buji-accent-grey-low-opacity: #b3b3b31a;
     --buji-emphasis-light: #ffffff;
     --buji-emphasis-dark: #000000;
+    --buji-controlpanel-background: #020617;
     /* Subtask Progress Colors */
     --buji-not-started-text: #b3b3b3;
     --buji-in-progress-text: #ffcc00;
@@ -26,19 +32,25 @@
     --buji-complete-background: transparent;
     --buji-blocked-background: transparent;
 
-    --daigo-space-background: #e4e4e7;
-    --daigo-background-100: #fafaf9;
-    --daigo-background-200: #e7e5e4;
-    --daigo-background-300: #d6d3d1;
+    --daigo-space-background: #f4f4f5;
+    --daigo-background-100: #a1a1aa;
+    --daigo-background-200: #fafafa;
+    --daigo-background-300: #d4d4d8;
     --daigo-text-default: #000000;
     --daigo-text-subtle: #333333;
     --daigo-accent-red: #ff6666;
+    --daigo-accent-red-low-opacity: #1e04041a;
     --daigo-accent-yellow: #faac03;
+    --daigo-accent-yellow-low-opacity: #faac031a;
     --daigo-accent-green: #66ff66;
+    --daigo-accent-green-low-opacity: #66ff661a;
     --daigo-accent-blue: #0ea5e9;
+    --daigo-accent-blue-low-opacity: #0ea5e91a;
     --daigo-accent-grey: #999999;
+    --daigo-accent-grey-low-opacity: #9999991a;
     --daigo-emphasis-light: #000000;
     --daigo-emphasis-dark: #ffffff;
+    --daigo-controlpanel-background: #71717a;
     /* Subtask Progress Colors */
     --daigo-not-started-text: #333333;
     --daigo-in-progress-text: #333333;
@@ -56,12 +68,18 @@
     --enzu-text-default: #3a3a3a;
     --enzu-text-subtle: #6a6a6a;
     --enzu-accent-red: #ff9999;
+    --enzu-accent-red-low-opacity: #ff99991a;
     --enzu-accent-yellow: #f8ff95;
+    --enzu-accent-yellow-low-opacity: #f8ff951a;
     --enzu-accent-green: #99ff99;
+    --enzu-accent-green-low-opacity: #99ff991a;
     --enzu-accent-blue: #7dd3fc;
+    --enzu-accent-blue-low-opacity: #7dd3fc1a;
     --enzu-accent-grey: #cccccc;
+    --enzu-accent-grey-low-opacity: #cccccc1a;
     --enzu-emphasis-light: #f5f5dc;
     --enzu-emphasis-dark: #3a3a3a;
+    --enzu-controlpanel-background: #4a8046;
     /* Subtask Progress Colors */
     --enzu-not-started-text: #747474;
     --enzu-in-progress-text: #d49100;

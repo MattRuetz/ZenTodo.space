@@ -2,9 +2,10 @@ import type { Config } from 'tailwindcss';
 
 const config: Config = {
     content: [
-        './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
-        './src/components/**/*.{js,ts,jsx,tsx,mdx}',
-        './src/app/**/*.{js,ts,jsx,tsx,mdx}',
+        './src/**/*.{js,cjs,ts,tsx,jsx,mdx}',
+        './src/pages/**/*.{js,cjs,ts,tsx,jsx,mdx}',
+        './src/components/**/*.{js,cjs,ts,tsx,jsx,mdx}',
+        './src/app/**/*.{js,cjs,ts,tsx,jsx,mdx}',
     ],
     theme: {
         extend: {
@@ -13,8 +14,20 @@ const config: Config = {
                 'gradient-conic':
                     'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
             },
+            animation: {
+                fadeOut: 'fadeOut 0.5s ease-in-out forwards',
+            },
+            keyframes: {
+                fadeOut: {
+                    '0%': { opacity: '1' },
+                    '100%': { opacity: '0' },
+                },
+            },
         },
     },
-    plugins: [],
+    plugins: [require('@tailwindcss/typography'), require('daisyui')],
+    daisyui: {
+        themes: ['light', 'dark', 'cupcake'],
+    },
 };
 export default config;

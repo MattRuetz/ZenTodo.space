@@ -28,6 +28,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useAlert } from '@/hooks/useAlert';
 import { useTheme } from '@/hooks/useTheme';
 import { fetchTheme, setTheme } from '@/store/themeSlice';
+import { useRouter } from 'next/navigation';
 
 type ThemeName = 'buji' | 'daigo' | 'enzu';
 const SuperSpace = React.memo(() => {
@@ -38,12 +39,12 @@ const SuperSpace = React.memo(() => {
     );
 
     const [isZoomedOut, setIsZoomedOut] = useState(false);
-    // CHANGE THIS DEFAULT STATE TO TRUE WHEN WE WANT TO SHOW THE PRELOADER
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const [fadeOut, setFadeOut] = useState(false);
     const [isAdding, setIsAdding] = useState(false);
 
     const { data: session, status: sessionStatus } = useSession();
+    const router = useRouter();
 
     const { showAlert } = useAlert();
 
@@ -63,16 +64,14 @@ const SuperSpace = React.memo(() => {
     }, [spaces, dispatch]);
 
     useEffect(() => {
-        if (sessionStatus === 'authenticated' && status === 'idle') {
-            dispatch(fetchSpaces()).then(() => {
-                setFadeOut(true);
-                setTimeout(() => setIsLoading(false), 500);
-            });
-
-            dispatch(fetchTheme());
-        } else if (sessionStatus === 'unauthenticated') {
-            setFadeOut(true);
-            setTimeout(() => setIsLoading(false), 500);
+        if (typeof window !== 'undefined') {
+            if (sessionStatus === 'authenticated' && status === 'idle') {
+                dispatch(fetchSpaces()).then(() => {
+                    setFadeOut(true);
+                    setTimeout(() => setIsLoading(false), 500);
+                });
+                dispatch(fetchTheme());
+            }
         }
     }, [sessionStatus, status, dispatch]);
 
@@ -194,7 +193,7 @@ const SuperSpace = React.memo(() => {
                         </AnimatePresence>
                     </>
                 ) : (
-                    (currentSpace || !session) && (
+                    currentSpace && (
                         <>
                             <Space
                                 spaceId={currentSpace?._id ?? ''}

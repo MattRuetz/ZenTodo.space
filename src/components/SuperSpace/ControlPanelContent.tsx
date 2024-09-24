@@ -10,6 +10,7 @@ import { Task, ThemeName } from '@/types';
 import { getComplementaryColor, getContrastingColor } from '@/app/utils/utils';
 import { FaTag } from 'react-icons/fa';
 import { FaPaintbrush, FaUserAstronaut } from 'react-icons/fa6';
+import { useTheme } from '@/hooks/useTheme';
 interface ControlPanelContentProps {
     isOpen: boolean;
     toggleZoom: () => void;
@@ -17,6 +18,7 @@ interface ControlPanelContentProps {
 
 const ControlPanelContent: React.FC<ControlPanelContentProps> = React.memo(
     ({ isOpen, toggleZoom }) => {
+        const theme = useTheme();
         const dispatch = useDispatch<AppDispatch>();
         const currentTheme = useSelector(
             (state: RootState) => state.theme.currentTheme
@@ -58,10 +60,13 @@ const ControlPanelContent: React.FC<ControlPanelContentProps> = React.memo(
 
         return (
             <div
-                className={`fixed left-0 top-0 h-full w-64 bg-base-200 bg-opacity-80 p-4 flex flex-col transform ${
+                className={`fixed left-0 top-0 h-full w-64 bg-black bg-opacity-80 p-4 flex flex-col transform ${
                     isOpen ? 'translate-x-0' : '-translate-x-full'
                 } transition-transform duration-300 ease-in-out pt-20`}
-                style={{ zIndex: 9999 }}
+                style={{
+                    zIndex: 9999,
+                    backgroundColor: `var(--${theme}-controlpanel-background)`,
+                }}
             >
                 <div className="my-2">
                     <div className="text-lg mb-2 flex items-center gap-2">
@@ -151,7 +156,11 @@ const ControlPanelContent: React.FC<ControlPanelContentProps> = React.memo(
                 </div>
                 <button
                     onClick={() => signOut()}
-                    className="btn btn-primary w-full"
+                    className="btn w-full border border-white hover:border-transparent"
+                    style={{
+                        backgroundColor: `var(--${currentTheme}-background-100)`,
+                        color: `var(--${currentTheme}-emphasis-light)`,
+                    }}
                 >
                     Log out
                 </button>
