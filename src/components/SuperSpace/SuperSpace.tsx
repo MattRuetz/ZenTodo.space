@@ -31,6 +31,7 @@ import { fetchTheme, setTheme } from '@/store/themeSlice';
 import { useRouter } from 'next/navigation';
 import { FaArrowLeft } from 'react-icons/fa6';
 import { FaPlusCircle } from 'react-icons/fa';
+import { fetchTasks } from '@/store/tasksSlice';
 
 type ThemeName = 'buji' | 'daigo' | 'enzu';
 const SuperSpace = React.memo(() => {
@@ -42,7 +43,6 @@ const SuperSpace = React.memo(() => {
 
     const [isZoomedOut, setIsZoomedOut] = useState(true);
     const [isLoading, setIsLoading] = useState(true);
-    const [fadeOut, setFadeOut] = useState(false);
     const [isAdding, setIsAdding] = useState(false);
 
     const { data: session, status: sessionStatus } = useSession();
@@ -65,18 +65,6 @@ const SuperSpace = React.memo(() => {
         dispatch(reorderSpaces(spaces));
     }, [spaces, dispatch]);
 
-    useEffect(() => {
-        if (typeof window !== 'undefined') {
-            if (sessionStatus === 'authenticated' && status === 'idle') {
-                dispatch(fetchSpaces()).then(() => {
-                    setFadeOut(true);
-                    setTimeout(() => setIsLoading(false), 500);
-                });
-                dispatch(fetchTheme());
-            }
-        }
-    }, [sessionStatus, status, dispatch]);
-
     const addSpace = () => {
         if (spaces.length >= 9) {
             showAlert('You can only have 9 spaces');
@@ -98,10 +86,6 @@ const SuperSpace = React.memo(() => {
         dispatch(setSubtaskDrawerParentId(null));
         dispatch(setSubtaskDrawerOpen(false));
     };
-
-    if (isLoading) {
-        return <Preloader fadeOut={fadeOut} />;
-    }
 
     const container = {
         hidden: { opacity: 1, scale: 0 },
@@ -192,7 +176,7 @@ const SuperSpace = React.memo(() => {
                                     </motion.div>
                                 )}
                                 {spaces.length === 0 && (
-                                    <div className="text-white text-center w-5/12 flex items-center justify-center h-[150px] gap-2 text-slate-400">
+                                    <div className="text-center w-5/12 flex items-center justify-center h-[150px] gap-2 text-slate-400">
                                         <FaArrowLeft className="text-4xl mb-4" />
                                         <span className="text-xl">
                                             Click the{' '}
@@ -207,10 +191,7 @@ const SuperSpace = React.memo(() => {
                 ) : (
                     currentSpace && (
                         <>
-                            <Space
-                                spaceId={currentSpace?._id ?? ''}
-                                onLoaded={() => setIsLoading(false)}
-                            />
+                            <Space spaceId={currentSpace?._id ?? ''} />
                             {session && (
                                 <ControlPanel toggleZoom={toggleZoom} />
                             )}

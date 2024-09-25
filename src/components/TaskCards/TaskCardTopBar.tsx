@@ -37,6 +37,8 @@ interface TaskCardTopBarProps {
     onSetEmoji: (emoji: string) => void;
     onMoveTask: (spaceId: string) => void;
     onDuplicateTask: () => void;
+    setIsMenuOpen: (isMenuOpen: boolean) => void;
+    isMenuOpen: boolean;
 }
 
 const TaskCardTopBar: React.FC<TaskCardTopBarProps> = React.memo(
@@ -50,12 +52,13 @@ const TaskCardTopBar: React.FC<TaskCardTopBarProps> = React.memo(
         onSetEmoji,
         onMoveTask,
         onDuplicateTask,
+        setIsMenuOpen,
+        isMenuOpen,
     }) => {
         const dispatch = useDispatch<AppDispatch>();
         const spaces = useSelector((state: RootState) => state.spaces.spaces);
         const currentTheme = useTheme();
 
-        const [isMenuOpen, setIsMenuOpen] = useState(false);
         const [showDatePicker, setShowDatePicker] = useState(false);
         const [showMoveOptions, setShowMoveOptions] = useState(false);
 

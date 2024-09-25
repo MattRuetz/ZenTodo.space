@@ -26,7 +26,6 @@ import { useTheme } from '@/hooks/useTheme';
 
 interface SpaceProps {
     spaceId: string;
-    onLoaded: () => void;
 }
 
 export const selectSelectedEmojis = createSelector(
@@ -34,7 +33,7 @@ export const selectSelectedEmojis = createSelector(
     (currentSpace) => currentSpace?.selectedEmojis || []
 );
 
-const Space: React.FC<SpaceProps> = React.memo(({ spaceId, onLoaded }) => {
+const Space: React.FC<SpaceProps> = React.memo(({ spaceId }) => {
     const dispatch = useDispatch<AppDispatch>();
     const currentTheme = useTheme();
 
@@ -110,7 +109,6 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId, onLoaded }) => {
 
     useEffect(() => {
         dispatch(fetchSpaceMaxZIndex(spaceId));
-        dispatch(fetchTasks());
     }, [spaceId, dispatch]);
 
     const handleCloseDrawer = () => dispatch(setSubtaskDrawerOpen(false));

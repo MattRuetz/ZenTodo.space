@@ -38,6 +38,8 @@ const TaskCard = React.memo(
         const dispatch = useDispatch<AppDispatch>();
         const currentTheme = useTheme();
 
+        const [isMenuOpen, setIsMenuOpen] = useState(false);
+
         const isGlobalDragging = useSelector(
             (state: RootState) => state.ui.isGlobalDragging
         );
@@ -330,6 +332,11 @@ const TaskCard = React.memo(
                 position: 'start',
             });
         };
+        // Right click card opens the menu
+        const handleContextMenu = useCallback((e: React.MouseEvent) => {
+            e.preventDefault();
+            setIsMenuOpen(true);
+        }, []);
 
         const cardStyle: React.CSSProperties = useMemo(
             () => ({
@@ -390,6 +397,7 @@ const TaskCard = React.memo(
                     onMouseDown={handleMouseDown}
                     onMouseEnter={() => setIsHovering(true)}
                     onMouseLeave={() => setIsHovering(false)}
+                    onContextMenu={handleContextMenu}
                     data-task-id={task._id}
                 >
                     <>
@@ -413,6 +421,8 @@ const TaskCard = React.memo(
                                     onAddSubtask={handleAddSubtask}
                                     onMoveTask={handleMoveTask}
                                     onDuplicateTask={handleDuplicateTask}
+                                    setIsMenuOpen={setIsMenuOpen}
+                                    isMenuOpen={isMenuOpen}
                                 />
                                 <input
                                     ref={taskNameRef}

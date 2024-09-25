@@ -1,4 +1,3 @@
-import { FaInfoCircle } from 'react-icons/fa';
 import { FaX } from 'react-icons/fa6';
 import { useDateString, useDateTimeString } from '@/hooks/useDateString';
 import { Task } from '@/types';
