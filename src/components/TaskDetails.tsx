@@ -13,7 +13,7 @@ export const TaskDetails = ({ task, setShowDetails }: TaskDetailsProps) => {
     const currentTheme = useTheme();
     return (
         <div
-            className="absolute overflow-y-auto top-0 left-0 w-full h-full z-10 rounded-xl backdrop-blur-sm p-4 z-50"
+            className="absolute overflow-y-auto top-0 left-0 w-full h-full rounded-lg backdrop-blur-sm p-4 z-50"
             style={{
                 border: `1px solid var(--${currentTheme}-accent-grey)`, // Use theme color for border
                 backgroundColor: `var(--${currentTheme}-background-200)`, // Use theme color for background

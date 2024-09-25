@@ -42,16 +42,7 @@ const TaskCardBottomBar: React.FC<TaskCardBottomBarProps> = React.memo(
                 >
                     <Icon
                         name="resize"
-                        color={`rgba(${parseInt(
-                            `var(--${currentTheme}-text-default)`.slice(1, 3),
-                            16
-                        )}, ${parseInt(
-                            `var(--${currentTheme}-text-default)`.slice(3, 5),
-                            16
-                        )}, ${parseInt(
-                            `var(--${currentTheme}-text-default)`.slice(5, 7),
-                            16
-                        )}, 0.3)`} // Use theme color with opacity
+                        color={`var(--${currentTheme}-background-200)`}
                         size={21}
                     />
                 </div>

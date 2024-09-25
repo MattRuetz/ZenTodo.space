@@ -1,6 +1,7 @@
 import { useTheme } from '@/hooks/useTheme';
 import { Task } from '@/types';
-import { FaClock } from 'react-icons/fa';
+import { FaClock, FaExclamationCircle, FaHourglassHalf } from 'react-icons/fa';
+import { FaHourglassEnd, FaHourglassStart } from 'react-icons/fa6';
 import { Tooltip } from 'react-tooltip';
 
 export const DueDateIndicator = ({
@@ -11,11 +12,22 @@ export const DueDateIndicator = ({
     handleDueDateClick: () => void;
 }) => {
     const currentTheme = useTheme();
+    const dueDateIsPast =
+        new Date(task.dueDate as Date).getTime() < new Date().getTime() &&
+        new Date(task.dueDate as Date).toLocaleDateString() !==
+            new Date().toLocaleDateString();
+
     const dueDateIsToday =
         new Date(task.dueDate as Date).toLocaleDateString() ===
         new Date().toLocaleDateString();
 
-    let dueDateIsThisWeek = false;
+    const dueDateIsTomorrow =
+        new Date(task.dueDate as Date).toLocaleDateString() ===
+        new Date(
+            new Date().setDate(new Date().getDate() + 1)
+        ).toLocaleDateString();
+
+    let dueDateIsWithin7Days = false;
     if (!dueDateIsToday) {
         const dueDate = new Date(task.dueDate as Date);
         const today = new Date();
@@ -23,8 +35,22 @@ export const DueDateIndicator = ({
         startOfWeek.setDate(today.getDate() - today.getDay());
         const endOfWeek = new Date(startOfWeek);
         endOfWeek.setDate(startOfWeek.getDate() + 6);
-        dueDateIsThisWeek = dueDate >= startOfWeek && dueDate <= endOfWeek;
+        dueDateIsWithin7Days =
+            dueDate.getTime() - today.getTime() <= 6 * 24 * 60 * 60 * 1000;
     }
+
+    const dayOfWeek = (date: Date) => {
+        const daysOfWeek = [
+            'Sunday',
+            'Monday',
+            'Tuesday',
+            'Wednesday',
+            'Thursday',
+            'Friday',
+            'Saturday',
+        ];
+        return daysOfWeek[date.getDay()];
+    };
 
     return (
         <>
@@ -34,24 +60,58 @@ export const DueDateIndicator = ({
                     className="cursor-pointer"
                     onClick={handleDueDateClick}
                 >
-                    <FaClock
-                        className="hover:filter-saturate-150 transition-colors duration-200"
-                        style={{
-                            color: dueDateIsToday
-                                ? `var(--${currentTheme}-accent-red)` // Use theme color for due today
-                                : dueDateIsThisWeek
-                                ? `var(--${currentTheme}-accent-yellow)` // Use theme color for due this week
-                                : `var(--${currentTheme}-text-subtle)`, // Use theme color for default
-                        }}
-                    />
+                    {dueDateIsPast ? (
+                        <FaHourglassEnd
+                            className="hover:saturate-150 transition-colors duration-200"
+                            style={{
+                                color: `var(--${currentTheme}-accent-red)`,
+                            }}
+                        />
+                    ) : dueDateIsWithin7Days ? (
+                        <FaHourglassHalf
+                            className="hover:saturate-150 transition-colors duration-200"
+                            style={{
+                                color: `var(--${currentTheme}-accent-yellow)`, // Use theme color for due this week
+                            }}
+                        />
+                    ) : dueDateIsToday ? (
+                        <FaHourglassEnd
+                            className="hover:saturate-150 transition-colors duration-200"
+                            style={{
+                                color: `var(--${currentTheme}-accent-yellow)`,
+                            }}
+                        />
+                    ) : (
+                        <FaHourglassStart
+                            className="hover:saturate-150 transition-colors duration-200"
+                            style={{
+                                color: `var(--${currentTheme}-text-subtle)`,
+                            }}
+                        />
+                    )}
                 </div>
-                <Tooltip id={`due-date-tooltip-${task._id}`} place="top">
-                    {dueDateIsToday
-                        ? 'Due Today'
-                        : `Due ${new Date(
-                              task.dueDate as Date
-                          ).toLocaleDateString()}`}
-                </Tooltip>
+                <div className="text-base">
+                    <Tooltip id={`due-date-tooltip-${task._id}`} place="top">
+                        {dueDateIsToday ? (
+                            'Due Today'
+                        ) : dueDateIsWithin7Days ? (
+                            <>
+                                Due{' '}
+                                {dueDateIsTomorrow
+                                    ? 'Tomorrow'
+                                    : dayOfWeek(new Date(task.dueDate as Date))}
+                                <br />
+                                {new Date(
+                                    task.dueDate as Date
+                                ).toLocaleDateString()}
+                            </>
+                        ) : (
+                            `Due ${new Date(
+                                task.dueDate as Date
+                            ).toLocaleDateString()}`
+                        )}
+                    </Tooltip>
+                </div>
             </div>
         </>
     );

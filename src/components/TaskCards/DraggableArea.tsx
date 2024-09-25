@@ -5,14 +5,6 @@ import { Task } from '@/types';
 interface DraggableAreaProps {
     children: React.ReactNode;
     className: String;
-    onDelete: () => void;
-    onDetails: () => void;
-    onSetDueDate: (date: Date | undefined) => void;
-    onAddSubtask: () => void;
-    onMoveTask: (spaceId: string) => void;
-    onCreateSpaceAndMoveTask: () => void;
-    onDuplicateTask: () => void;
-    task: Task;
 }
 
 const DraggableArea: React.FC<DraggableAreaProps> = React.memo(

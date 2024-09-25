@@ -394,21 +394,7 @@ const TaskCard = React.memo(
                 >
                     <>
                         <div className="flex flex-col h-full">
-                            <DraggableArea
-                                className="flex flex-col h-full p-4 pt-2 pb-0"
-                                onDelete={() =>
-                                    initiateDeleteTask(task._id ?? '')
-                                }
-                                onDetails={handleShowDetails}
-                                onSetDueDate={handleSetDueDate}
-                                onMoveTask={handleMoveTask}
-                                onCreateSpaceAndMoveTask={
-                                    handleCreateSpaceAndMoveTask
-                                }
-                                onDuplicateTask={handleDuplicateTask}
-                                onAddSubtask={handleAddSubtask}
-                                task={task}
-                            >
+                            <DraggableArea className="flex flex-col h-full p-4 pt-2 pb-0">
                                 {showDetails && (
                                     <TaskDetails
                                         task={task}
@@ -426,9 +412,6 @@ const TaskCard = React.memo(
                                     onSetEmoji={handleSetEmoji}
                                     onAddSubtask={handleAddSubtask}
                                     onMoveTask={handleMoveTask}
-                                    onCreateSpaceAndMoveTask={
-                                        handleCreateSpaceAndMoveTask
-                                    }
                                     onDuplicateTask={handleDuplicateTask}
                                 />
                                 <input

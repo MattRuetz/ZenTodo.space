@@ -166,6 +166,7 @@ export default function TaskMenu({
                         onSetDueDate={onSetDueDate}
                         setShowDatePicker={setShowDatePicker}
                         setIsMenuOpen={setIsMenuOpen}
+                        task={task}
                     />
                 </div>
             )}

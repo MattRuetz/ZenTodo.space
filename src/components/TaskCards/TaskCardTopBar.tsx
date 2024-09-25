@@ -36,7 +36,6 @@ interface TaskCardTopBarProps {
     onAddSubtask: () => void;
     onSetEmoji: (emoji: string) => void;
     onMoveTask: (spaceId: string) => void;
-    onCreateSpaceAndMoveTask: () => void;
     onDuplicateTask: () => void;
 }
 
@@ -50,7 +49,6 @@ const TaskCardTopBar: React.FC<TaskCardTopBarProps> = React.memo(
         onAddSubtask,
         onSetEmoji,
         onMoveTask,
-        onCreateSpaceAndMoveTask,
         onDuplicateTask,
     }) => {
         const dispatch = useDispatch<AppDispatch>();
@@ -95,12 +93,6 @@ const TaskCardTopBar: React.FC<TaskCardTopBarProps> = React.memo(
 
         const handleMoveTask = (spaceId: string) => {
             onMoveTask(spaceId);
-            setShowMoveOptions(false);
-            setIsMenuOpen(false);
-        };
-
-        const handleMoveTaskToNewSpace = () => {
-            onCreateSpaceAndMoveTask();
             setShowMoveOptions(false);
             setIsMenuOpen(false);
         };

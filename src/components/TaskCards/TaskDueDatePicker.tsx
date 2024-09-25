@@ -3,12 +3,14 @@ import ReactDatePicker from 'react-datepicker';
 import { useTheme } from '@/hooks/useTheme';
 import { FaTrash } from 'react-icons/fa';
 import { Tooltip } from 'react-tooltip';
+import { Task } from '@/types';
 
 interface TaskDueDatePickerProps {
     onSetDueDate: (dueDate: Date | undefined) => void;
     setShowDatePicker: (showDatePicker: boolean) => void;
     setIsMenuOpen: (isMenuOpen: boolean) => void;
     datePickerRef: React.RefObject<HTMLDivElement>;
+    task: Task;
 }
 
 export const TaskDueDatePicker = ({
@@ -16,8 +18,9 @@ export const TaskDueDatePicker = ({
     setShowDatePicker,
     setIsMenuOpen,
     datePickerRef,
+    task,
 }: TaskDueDatePickerProps) => {
-    const [dueDate, setDueDate] = useState<Date | null>(null);
+    const [dueDate, setDueDate] = useState<Date | null>(task.dueDate || null);
     const currentTheme = useTheme();
     const handleSetDueDate = (dueDate: Date | undefined) => {
         onSetDueDate(dueDate || undefined);

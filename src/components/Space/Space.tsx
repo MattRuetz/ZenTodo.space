@@ -183,7 +183,12 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId, onLoaded }) => {
 
     const handleSpaceClick = useCallback(
         (e: React.MouseEvent<HTMLDivElement>) => {
-            if (e.target !== e.currentTarget || isDraggingRef.current) return;
+            if (
+                e.target !== e.currentTarget ||
+                isDraggingRef.current ||
+                e.button !== 0 // only left click
+            )
+                return;
 
             if (!session) {
                 setFormPosition({ x: e.clientX, y: e.clientY });
