@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Task } from '@/types';
 
 export const useFadeOutEffect = (
@@ -7,9 +7,8 @@ export const useFadeOutEffect = (
     isFocused: boolean,
     onDelete: (taskId: string) => void
 ) => {
-    const opacityRef = useRef(1);
-    const requestRef = useRef<number>();
-    const startTimeRef = useRef<number>();
+    const [shouldDelete, setShouldDelete] = useState(false);
+    const timerRef = useRef<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
         const shouldFadeOut =
@@ -20,38 +19,22 @@ export const useFadeOutEffect = (
             !task.taskDescription &&
             task.subtasks.length === 0;
 
-        const animate = (time: number) => {
-            if (startTimeRef.current === undefined) {
-                startTimeRef.current = time;
-            }
-            const elapsed = time - startTimeRef.current;
-
-            if (elapsed > 3000) {
-                // Start fading after 3 seconds
-                opacityRef.current = Math.max(1 - (elapsed - 3000) / 1000, 0);
-
-                if (opacityRef.current <= 0) {
-                    onDelete(task._id ?? '');
-                    return;
-                }
-            }
-
-            requestRef.current = requestAnimationFrame(animate);
-        };
-
         if (shouldFadeOut) {
-            requestRef.current = requestAnimationFrame(animate);
+            // Start a timer for 4 seconds (3 seconds delay + 1 second fade out)
+            timerRef.current = setTimeout(() => {
+                setShouldDelete(true);
+            }, 4000);
         } else {
-            if (requestRef.current) {
-                cancelAnimationFrame(requestRef.current);
+            // Clear the timer if conditions change
+            if (timerRef.current) {
+                clearTimeout(timerRef.current);
             }
-            opacityRef.current = 1;
-            startTimeRef.current = undefined;
+            setShouldDelete(false);
         }
 
         return () => {
-            if (requestRef.current) {
-                cancelAnimationFrame(requestRef.current);
+            if (timerRef.current) {
+                clearTimeout(timerRef.current);
             }
         };
     }, [
@@ -60,10 +43,19 @@ export const useFadeOutEffect = (
         task.taskName,
         task.taskDescription,
         task.emoji,
-        task._id,
-        task.subtasks,
-        onDelete,
+        task.subtasks.length,
     ]);
 
-    return opacityRef.current;
+    useEffect(() => {
+        if (shouldDelete) {
+            // Trigger the delete after the exit animation completes
+            const deleteTimer = setTimeout(() => {
+                onDelete(task._id ?? '');
+            }, 300); // Adjust this to match your exit animation duration
+
+            return () => clearTimeout(deleteTimer);
+        }
+    }, [shouldDelete, onDelete, task._id]);
+
+    return shouldDelete;
 };

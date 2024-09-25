@@ -18,16 +18,19 @@ interface SubtaskTopBarProps {
     subtask: any;
     handleProgressChange: (TaskProgress: TaskProgress) => void;
     handleSetDueDate: (dueDate: Date | undefined) => void;
+    isSubtaskMenuOpen: boolean;
+    setIsSubtaskMenuOpen: (isSubtaskMenuOpen: boolean) => void;
 }
 
 export const SubtaskTopBar = ({
     subtask,
     handleProgressChange,
     handleSetDueDate,
+    isSubtaskMenuOpen,
+    setIsSubtaskMenuOpen,
 }: SubtaskTopBarProps) => {
     const currentTheme = useTheme();
     const dispatch = useDispatch<AppDispatch>();
-    const [isSubtaskMenuOpen, setIsSubtaskMenuOpen] = useState(false);
     const [showDetails, setShowDetails] = useState(false);
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [deletingTasks, setDeletingTasks] = useState<Set<string>>(new Set());
@@ -101,6 +104,7 @@ export const SubtaskTopBar = ({
                     setShowDatePicker={setShowDatePicker}
                     setIsMenuOpen={setIsSubtaskMenuOpen}
                     datePickerRef={datePickerRef}
+                    task={subtask}
                 />
             )}
             {isSubtaskMenuOpen && (

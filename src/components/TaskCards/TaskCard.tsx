@@ -25,6 +25,7 @@ import ConfirmDelete from './ConfirmDelete';
 import { useAlert } from '@/hooks/useAlert';
 import { useTheme } from '@/hooks/useTheme';
 import { useFadeOutEffect } from '@/hooks/useFadeOutEffect';
+import { motion } from 'framer-motion';
 
 interface TaskCardProps {
     task: Task;
@@ -66,13 +67,15 @@ const TaskCard = React.memo(
             isHovering,
             isFocused,
             cardSize,
+            isDraggingOverRef,
+            isHoveringRef,
             isDraggingOver,
+            setIsDraggingOver,
             isDropped,
             setLocalTask,
             setIsHovering,
             setIsFocused,
             setCardSize,
-            setIsDraggingOver,
             setIsDropped,
             showDetails,
             setShowDetails,
@@ -181,8 +184,8 @@ const TaskCard = React.memo(
             allowDrop,
         });
 
-        useEffect(() => {
-            const handleGlobalMouseMove = (e: MouseEvent) => {
+        const handleGlobalMouseMove = useCallback(
+            (e: MouseEvent) => {
                 if (
                     isGlobalDragging &&
                     draggingCardId !== task._id &&
@@ -195,51 +198,56 @@ const TaskCard = React.memo(
                     const cardsUnderCursor = elementsUnderCursor.filter((el) =>
                         el.classList.contains('task-card')
                     );
-                    setIsDraggingOver(
+                    const isDraggingOver =
                         cardsUnderCursor.length > 0 &&
-                            cardsUnderCursor[1] === cardRef.current
-                    );
+                        cardsUnderCursor[1] === cardRef.current;
+                    if (isDraggingOver !== isDraggingOverRef.current) {
+                        isDraggingOverRef.current = isDraggingOver;
+                        setIsDraggingOver(isDraggingOver);
+                    }
                 }
-            };
+            },
+            [isGlobalDragging, draggingCardId, task._id]
+        );
 
-            const handleGlobalMouseUp = () => {
-                if (isDraggingOver) {
-                    setIsDropped(true);
-                    // Something that happens when you drop a card
-                    setTimeout(() => setIsDropped(false), 400);
-                }
-                setIsDraggingOver(false);
-            };
+        const handleGlobalMouseUp = useCallback(() => {
+            if (isDraggingOverRef.current) {
+                setIsDropped(true);
+                setTimeout(() => setIsDropped(false), 400);
+            }
+            isDraggingOverRef.current = false;
+            setIsDraggingOver(false);
+        }, []);
 
-            document.addEventListener('mousemove', handleGlobalMouseMove);
-            document.addEventListener('mouseup', handleGlobalMouseUp);
+        const eventListeners = useMemo(
+            () => ({
+                handleGlobalMouseMove,
+                handleGlobalMouseUp,
+            }),
+            [handleGlobalMouseMove, handleGlobalMouseUp]
+        );
+
+        useEffect(() => {
+            document.addEventListener(
+                'mousemove',
+                eventListeners.handleGlobalMouseMove
+            );
+            document.addEventListener(
+                'mouseup',
+                eventListeners.handleGlobalMouseUp
+            );
 
             return () => {
                 document.removeEventListener(
                     'mousemove',
-                    handleGlobalMouseMove
+                    eventListeners.handleGlobalMouseMove
                 );
-                document.removeEventListener('mouseup', handleGlobalMouseUp);
+                document.removeEventListener(
+                    'mouseup',
+                    eventListeners.handleGlobalMouseUp
+                );
             };
-        }, [isGlobalDragging, draggingCardId, task._id, isDraggingOver]);
-
-        const opacity = useFadeOutEffect(
-            task,
-            isHovering,
-            isFocused,
-            initiateDeleteTask
-        );
-
-        // Force re-render every animation frame
-        const [, forceUpdate] = useState({});
-        useEffect(() => {
-            const animate = () => {
-                forceUpdate({});
-                requestAnimationFrame(animate);
-            };
-            const animationId = requestAnimationFrame(animate);
-            return () => cancelAnimationFrame(animationId);
-        }, [opacity]);
+        }, [eventListeners]);
 
         const throttledSetCardSize = useThrottle(setCardSize, 50);
 
@@ -298,10 +306,6 @@ const TaskCard = React.memo(
             showAlert('Task moved successfully', 'notice');
         };
 
-        const handleCreateSpaceAndMoveTask = () => {
-            // Implement logic to create a new space and move the task
-        };
-
         const handleDuplicateTask = () => {
             duplicateTask(task, tasksState);
         };
@@ -338,9 +342,8 @@ const TaskCard = React.memo(
             setIsMenuOpen(true);
         }, []);
 
-        const cardStyle: React.CSSProperties = useMemo(
+        const baseCardStyle: React.CSSProperties = useMemo(
             () => ({
-                opacity,
                 zIndex: localTask.zIndex,
                 width: `${task.width || cardSize.width}px`,
                 height: `${task.height || cardSize.height}px`,
@@ -351,9 +354,9 @@ const TaskCard = React.memo(
                 minHeight: '250px',
                 maxHeight: '500px',
                 overflow: 'visible',
+                border: '2px solid',
             }),
             [
-                opacity,
                 localTask.zIndex,
                 task.width,
                 task.height,
@@ -362,9 +365,48 @@ const TaskCard = React.memo(
             ]
         );
 
+        const cardClassName = useMemo(() => {
+            return `task-card absolute shadow-md cursor-move flex flex-col space-y-2 rounded-xl transition-all duration-200 ${
+                isDraggingOver ? 'filter brightness-110' : ''
+            } ${isResizing ? 'select-none' : ''}`;
+        }, [isDraggingOver, isResizing]);
+
+        const cardStyle = useMemo(
+            () => ({
+                ...baseCardStyle,
+                backgroundColor: `var(--${currentTheme}-background-100)`,
+                color: `var(--${currentTheme}-text-default)`,
+                borderColor: isDraggingOver
+                    ? `var(--${currentTheme}-accent-blue)`
+                    : `var(--${currentTheme}-card-border-color)`,
+            }),
+            [isDraggingOver, currentTheme, baseCardStyle]
+        );
+
         useEffect(() => {
             setLocalTask((prevTask) => ({ ...prevTask, zIndex: task.zIndex }));
         }, [task.zIndex]);
+
+        const shouldDelete = useFadeOutEffect(
+            task,
+            isHovering,
+            isFocused,
+            initiateDeleteTask
+        );
+
+        const handleMouseEnter = useCallback(() => {
+            isHoveringRef.current = true;
+            if (isHoveringRef.current !== isHovering) {
+                setIsHovering(true);
+            }
+        }, []);
+
+        const handleMouseLeave = useCallback(() => {
+            isHoveringRef.current = false;
+            if (isHoveringRef.current !== isHovering) {
+                setIsHovering(false);
+            }
+        }, []);
 
         return (
             <Draggable
@@ -378,25 +420,17 @@ const TaskCard = React.memo(
                     handleDragStop(e, data);
                 }}
             >
-                <div
+                <motion.div
                     ref={cardRef}
-                    className={`task-card absolute shadow-md cursor-move flex flex-col space-y-2 rounded-xl transition-all duration-200 ${
-                        isDraggingOver
-                            ? 'filter brightness-110' // Keep this for visual feedback
-                            : '' // Keep this for visual feedback
-                    } ${isResizing ? 'select-none' : ''}`}
-                    style={{
-                        ...cardStyle,
-                        border: '2px solid',
-                        backgroundColor: `var(--${currentTheme}-background-100)`,
-                        color: `var(--${currentTheme}-text-default)`,
-                        borderColor: isDraggingOver
-                            ? `var(--${currentTheme}-accent-blue)`
-                            : `var(--${currentTheme}-card-border-color)`,
-                    }}
+                    className={cardClassName}
+                    style={cardStyle}
+                    initial={{ opacity: 1 }}
+                    animate={{ opacity: shouldDelete ? 0 : 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.6 }}
                     onMouseDown={handleMouseDown}
-                    onMouseEnter={() => setIsHovering(true)}
-                    onMouseLeave={() => setIsHovering(false)}
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
                     onContextMenu={handleContextMenu}
                     data-task-id={task._id}
                 >
@@ -477,7 +511,7 @@ const TaskCard = React.memo(
                             spaceOrTask={'task'}
                         />
                     )}
-                </div>
+                </motion.div>
             </Draggable>
         );
     }

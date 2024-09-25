@@ -3,6 +3,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { TaskProgress } from '@/types';
 import React, { useEffect, useRef, useState } from 'react';
 import { FaCheck, FaChevronDown } from 'react-icons/fa';
+import { FaBoxArchive } from 'react-icons/fa6';
 import { Tooltip } from 'react-tooltip';
 
 interface ProgressDropdownProps {
@@ -56,9 +57,12 @@ export const ProgressDropdown: React.FC<ProgressDropdownProps> = React.memo(
         }, [shouldOpenDropdown]);
 
         return (
-            <div data-tooltip-id={`${taskId}-progress-tooltip`}>
-                <div className="flex flex-col w-full justify-start gap-2 items-center">
-                    <div className="flex justify-between gap-2 items-center w-full">
+            <div>
+                <div className="flex flex-row w-full justify-start gap-2 items-center">
+                    <div
+                        data-tooltip-id={`${taskId}-progress-tooltip`}
+                        className="flex justify-between gap-2 items-center w-full"
+                    >
                         <div
                             ref={progressCardRef}
                             className="progress-card no-drag cursor-pointer p-2 flex items-center justify-center gap-2 rounded-md"
@@ -96,6 +100,38 @@ export const ProgressDropdown: React.FC<ProgressDropdownProps> = React.memo(
                             />
                         </div>
                     </div>
+                    {progress === 'Complete' && (
+                        <div className="inline-block">
+                            <button
+                                data-tooltip-id={`${taskId}-archive-tooltip`}
+                                className="p-2 rounded-md text-sm flex items-center gap-2"
+                                style={{
+                                    backgroundColor: `var(--${currentTheme}-background-200)`, // Use theme color
+                                    color: `var(--${currentTheme}-text-default)`, // Use theme color
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.stopPropagation();
+                                    e.currentTarget.style.backgroundColor = `var(--${currentTheme}-accent-green)`;
+                                    e.currentTarget.style.color = 'black';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.stopPropagation();
+                                    e.currentTarget.style.backgroundColor = `var(--${currentTheme}-background-200)`;
+                                    e.currentTarget.style.color = `var(--${currentTheme}-text-default)`;
+                                }}
+                            >
+                                <FaBoxArchive />
+                            </button>
+                            <Tooltip
+                                id={`${taskId}-archive-tooltip`}
+                                place="top"
+                            >
+                                <div className="progressLabel">
+                                    <span>Send to Archive</span>
+                                </div>
+                            </Tooltip>
+                        </div>
+                    )}
                 </div>
                 <div
                     ref={dropdownRef}

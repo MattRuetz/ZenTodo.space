@@ -27,6 +27,8 @@ const SubtaskDrawerCard = React.memo(
 
         const [localSubtask, setLocalSubtask] = useState(subtask || {});
         const [isEditing, setIsEditing] = useState<string | null>(null);
+        const [isSubtaskMenuOpen, setIsSubtaskMenuOpen] = useState(false);
+
         const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
         const currentTaskNameRef = useRef(subtask?.taskName || '');
         const ref = useRef<HTMLLIElement>(null);
@@ -189,6 +191,12 @@ const SubtaskDrawerCard = React.memo(
             dispatch(updateTask({ _id: subtask._id, dueDate: date || null }));
         };
 
+        // Right click card opens the menu
+        const handleContextMenu = useCallback((e: React.MouseEvent) => {
+            e.preventDefault();
+            setIsSubtaskMenuOpen(true);
+        }, []);
+
         const handleInputChange = useCallback(
             (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
                 const { name, value } = e.target;
@@ -211,6 +219,7 @@ const SubtaskDrawerCard = React.memo(
             <li
                 ref={ref as unknown as React.RefObject<HTMLLIElement>}
                 key={subtask._id}
+                onContextMenu={handleContextMenu}
                 className={`p-2 rounded-lg my-0 transition-colors duration-200 shadow-md border-2 relative`}
                 style={{
                     opacity: isDragging ? 0.5 : 1,
@@ -226,6 +235,8 @@ const SubtaskDrawerCard = React.memo(
                     subtask={subtask}
                     handleProgressChange={handleProgressChange}
                     handleSetDueDate={handleSetDueDate}
+                    isSubtaskMenuOpen={isSubtaskMenuOpen}
+                    setIsSubtaskMenuOpen={setIsSubtaskMenuOpen}
                 />
                 <div
                     className={`${

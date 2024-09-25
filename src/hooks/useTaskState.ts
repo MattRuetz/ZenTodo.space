@@ -25,7 +25,9 @@ export const useTaskState = (task: Task) => {
         width: 0,
         height: 0,
     });
+    const isDraggingOverRef = useRef(false);
     const allowDropRef = useRef(false); // Use ref for allowDrop
+    const isHoveringRef = useRef(false);
 
     return {
         localTask,
@@ -55,5 +57,7 @@ export const useTaskState = (task: Task) => {
         allowDropRef,
         allowDrop, // Return the state
         setAllowDrop, // Return the setter
+        isDraggingOverRef,
+        isHoveringRef,
     };
 };
