@@ -244,7 +244,6 @@ export const convertSubtaskToTaskAsync = createAsyncThunk(
     }
 );
 
-// Update the `deleteTaskAsync` thunk
 export const deleteTaskAsync = createAsyncThunk(
     'tasks/deleteTaskAsync',
     async (

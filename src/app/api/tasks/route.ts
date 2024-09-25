@@ -142,8 +142,6 @@ export async function DELETE(req: NextRequest) {
             const url = new URL(req.url);
             const taskId = url.searchParams.get('id');
             const parentTaskId = url.searchParams.get('parentId');
-            console.log('taskId', taskId);
-            console.log('parentTaskId', parentTaskId);
 
             if (!taskId) {
                 return NextResponse.json(
