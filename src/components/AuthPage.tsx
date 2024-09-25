@@ -8,9 +8,18 @@ const AuthPage = () => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showInvalidCredentials, setShowInvalidCredentials] = useState(false);
+
     const { showAlert } = useAlert();
 
     const quote = getQuoteForDay();
+
+    const handleShowInvalidCredentials = () => {
+        setShowInvalidCredentials(true);
+        setTimeout(() => {
+            setShowInvalidCredentials(false);
+        }, 3000);
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -21,6 +30,10 @@ const AuthPage = () => {
                 password,
             });
             if (result?.error) {
+                if (result.error === 'CredentialsSignin') {
+                    handleShowInvalidCredentials();
+                    return;
+                }
                 showAlert(result.error, 'error');
             } else {
                 showAlert('Welcome back!', 'welcome');
@@ -33,7 +46,17 @@ const AuthPage = () => {
             });
             if (response.ok) {
                 showAlert('Account created successfully!', 'success');
-                setIsLogin(true);
+                // Sign in the user after successful signup
+                const result = await signIn('credentials', {
+                    redirect: false,
+                    email,
+                    password,
+                });
+                if (result?.error) {
+                    showAlert(result.error, 'error');
+                } else {
+                    showAlert('Welcome to ZenTodo!', 'welcome');
+                }
             } else {
                 const data = await response.json();
                 showAlert(data.message || 'Failed to create account', 'error');
@@ -99,6 +122,14 @@ const AuthPage = () => {
                                 required
                             />
                         </div>
+                        {showInvalidCredentials && isLogin && (
+                            <div
+                                id="error-message"
+                                className="text-red-500 text-center mb-4"
+                            >
+                                Invalid email or password - try again.
+                            </div>
+                        )}
                         <button
                             type="submit"
                             className="w-full py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-300"
@@ -126,6 +157,7 @@ const AuthPage = () => {
                     width={600} // Specify width
                     height={200} // Specify height
                     className="mb-10" // Optional styling
+                    priority={true}
                 />
                 {/* Quote of the day */}
                 <p className="mt-2 text-md text-neutral-content italic max-w-md text-center">

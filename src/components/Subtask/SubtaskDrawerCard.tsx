@@ -321,7 +321,7 @@ const SubtaskDrawerCard = React.memo(
                         />
                     ) : (
                         <p
-                            className="text-sm cursor-pointer"
+                            className="text-sm cursor-pointer max-h-[200px] overflow-y-auto"
                             style={{
                                 color: `var(--${currentTheme}-text-default)`, // Use theme color
                                 whiteSpace: 'pre-wrap', // Preserve whitespace and newlines

@@ -29,6 +29,8 @@ import { useAlert } from '@/hooks/useAlert';
 import { useTheme } from '@/hooks/useTheme';
 import { fetchTheme, setTheme } from '@/store/themeSlice';
 import { useRouter } from 'next/navigation';
+import { FaArrowLeft } from 'react-icons/fa6';
+import { FaPlusCircle } from 'react-icons/fa';
 
 type ThemeName = 'buji' | 'daigo' | 'enzu';
 const SuperSpace = React.memo(() => {
@@ -38,7 +40,7 @@ const SuperSpace = React.memo(() => {
         (state: RootState) => state.spaces
     );
 
-    const [isZoomedOut, setIsZoomedOut] = useState(false);
+    const [isZoomedOut, setIsZoomedOut] = useState(true);
     const [isLoading, setIsLoading] = useState(true);
     const [fadeOut, setFadeOut] = useState(false);
     const [isAdding, setIsAdding] = useState(false);
@@ -177,7 +179,7 @@ const SuperSpace = React.memo(() => {
                                                     isAdding ? 'invisible' : ''
                                                 }`}
                                             >
-                                                +
+                                                <FaPlusCircle />
                                             </span>
                                             <span
                                                 className={`${
@@ -188,6 +190,16 @@ const SuperSpace = React.memo(() => {
                                             ></span>
                                         </div>
                                     </motion.div>
+                                )}
+                                {spaces.length === 0 && (
+                                    <div className="text-white text-center w-5/12 flex items-center justify-center h-[150px] gap-2 text-slate-400">
+                                        <FaArrowLeft className="text-4xl mb-4" />
+                                        <span className="text-xl">
+                                            Click the{' '}
+                                            <FaPlusCircle className="inline-block" />{' '}
+                                            to add a space
+                                        </span>
+                                    </div>
                                 )}
                             </motion.div>
                         </AnimatePresence>
@@ -205,7 +217,7 @@ const SuperSpace = React.memo(() => {
                         </>
                     )
                 )}
-                {session && (
+                {session && currentSpace && (
                     <>
                         <button
                             data-tooltip-id={`go-to-super-space-tooltip`}
