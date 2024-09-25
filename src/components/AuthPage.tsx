@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useAlert } from '@/hooks/useAlert';
-import { useTheme } from '@/hooks/useTheme';
+import { getQuoteForDay } from '@/hooks/useQuoteForDay';
+import Image from 'next/image';
 const AuthPage = () => {
     const [isLogin, setIsLogin] = useState(true);
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const { showAlert } = useAlert();
-    // const theme = useTheme();
+
+    const quote = getQuoteForDay();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -40,10 +42,10 @@ const AuthPage = () => {
     };
 
     return (
-        <div className="h-screen flex items-center justify-start bg-gradient-to-br from-slate-900 to-slate-700">
-            <div className="bg-sky-50 p-3 shadow-md w-4/12 h-full">
+        <div className="h-screen flex items-center justify-start bg-gradient-to-br from-slate-100 to-slate-200">
+            <div className="bg-gradient-to-b from-slate-900 to-slate-700 p-3 shadow-md w-4/12 h-full">
                 <div className="flex flex-col items-center justify-center h-full">
-                    <h2 className="text-2xl font-bold mb-6 text-center text-slate-900">
+                    <h2 className="text-3xl font-bold mb-6 text-center text-slate-100">
                         {isLogin ? 'Log In' : 'Sign Up'}
                     </h2>
                     <form onSubmit={handleSubmit} className="w-8/12">
@@ -51,7 +53,7 @@ const AuthPage = () => {
                             <div className="mb-4">
                                 <label
                                     htmlFor="name"
-                                    className="block mb-2 text-slate-900"
+                                    className="block mb-2 text-slate-100"
                                 >
                                     Name
                                 </label>
@@ -60,7 +62,7 @@ const AuthPage = () => {
                                     id="name"
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
-                                    className="w-full px-3 py-2 border rounded-md"
+                                    className="w-full p-3 border rounded-md bg-slate-200 text-slate-900 border-slate-900"
                                     required
                                 />
                             </div>
@@ -68,7 +70,7 @@ const AuthPage = () => {
                         <div className="mb-4">
                             <label
                                 htmlFor="email"
-                                className="block mb-2 text-slate-900"
+                                className="block mb-2 text-slate-100"
                             >
                                 Email
                             </label>
@@ -77,14 +79,14 @@ const AuthPage = () => {
                                 id="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="w-full px-3 py-2 border rounded-md"
+                                className="w-full p-3 border rounded-md bg-slate-200 text-slate-900 border-slate-900"
                                 required
                             />
                         </div>
                         <div className="mb-6">
                             <label
                                 htmlFor="password"
-                                className="block mb-2 text-slate-900"
+                                className="block mb-2 text-slate-100"
                             >
                                 Password
                             </label>
@@ -93,7 +95,7 @@ const AuthPage = () => {
                                 id="password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="w-full px-3 py-2 border rounded-md"
+                                className="w-full p-3 border rounded-md bg-slate-200 text-slate-900 border-slate-900"
                                 required
                             />
                         </div>
@@ -104,7 +106,7 @@ const AuthPage = () => {
                             {isLogin ? 'Log In' : 'Sign Up'}
                         </button>
                     </form>
-                    <p className="mt-4 text-center text-slate-900">
+                    <p className="mt-4 text-center text-slate-100">
                         {isLogin
                             ? "Don't have an account?"
                             : 'Already have an account?'}
@@ -116,6 +118,19 @@ const AuthPage = () => {
                         </button>
                     </p>
                 </div>
+            </div>
+            <div className="p-3 w-8/12 h-full flex flex-col items-center justify-center">
+                <Image
+                    src="/images/ZenTodo_Log_slate900.webp" // Path relative to the public directory
+                    alt="ZenTodo Logo"
+                    width={600} // Specify width
+                    height={200} // Specify height
+                    className="mb-10" // Optional styling
+                />
+                {/* Quote of the day */}
+                <p className="mt-2 text-md text-neutral-content italic max-w-md text-center">
+                    {quote}
+                </p>
             </div>
         </div>
     );
