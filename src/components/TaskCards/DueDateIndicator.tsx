@@ -92,7 +92,15 @@ export const DueDateIndicator = ({
                 </div>
                 <div className="text-base">
                     <Tooltip id={`due-date-tooltip-${task._id}`} place="top">
-                        {dueDateIsToday ? (
+                        {dueDateIsPast ? (
+                            <>
+                                <strong className="underline">Past Due</strong>
+                                <br />
+                                {new Date(
+                                    task.dueDate as Date
+                                ).toLocaleDateString()}
+                            </>
+                        ) : dueDateIsToday ? (
                             'Due Today'
                         ) : dueDateIsWithin7Days ? (
                             <>
