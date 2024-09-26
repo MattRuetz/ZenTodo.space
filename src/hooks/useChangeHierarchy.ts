@@ -152,6 +152,7 @@ export const useChangeHierarchy = () => {
             x: dropPosition?.x || subtask.x,
             y: dropPosition?.y || subtask.y,
             isTemp: true,
+            zIndex: subtask.zIndex,
         };
 
         const updatedParentTask: Task = {

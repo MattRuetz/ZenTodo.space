@@ -124,13 +124,13 @@ export const fetchSpaceMaxZIndex = createAsyncThunk(
 
 export const updateSpaceSelectedEmojis = createAsyncThunk(
     'spaces/updateSelectedEmojis',
-    async (
-        {
-            spaceId,
-            selectedEmojis,
-        }: { spaceId: string; selectedEmojis: string[] },
-        { getState, dispatch }
-    ) => {
+    async ({
+        spaceId,
+        selectedEmojis,
+    }: {
+        spaceId: string;
+        selectedEmojis: string[];
+    }) => {
         const response = await fetch(`/api/spaces/${spaceId}`, {
             method: 'PATCH',
             headers: {
@@ -142,7 +142,6 @@ export const updateSpaceSelectedEmojis = createAsyncThunk(
             throw new Error('Failed to update space selectedEmojis');
         }
         const data = await response.json();
-        console.log('updateSpaceSelectedEmojis', data);
 
         return data;
     }
@@ -211,6 +210,12 @@ const spaceSlice = createSlice({
                 );
                 if (space) {
                     space.maxZIndex = action.payload.maxZIndex;
+                }
+                if (
+                    state.currentSpace &&
+                    state.currentSpace._id === action.payload.spaceId
+                ) {
+                    state.currentSpace.maxZIndex = action.payload.maxZIndex;
                 }
             })
             .addCase(fetchSpaceMaxZIndex.fulfilled, (state, action) => {

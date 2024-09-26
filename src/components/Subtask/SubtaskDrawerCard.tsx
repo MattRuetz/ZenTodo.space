@@ -17,10 +17,11 @@ import { useTheme } from '@/hooks/useTheme';
 interface SubtaskDrawerCardProps {
     subtask: Task;
     position: string;
+    maxZIndex: number;
 }
 
 const SubtaskDrawerCard = React.memo(
-    ({ subtask, position }: SubtaskDrawerCardProps) => {
+    ({ subtask, position, maxZIndex }: SubtaskDrawerCardProps) => {
         const dispatch = useDispatch<AppDispatch>();
         const currentTheme = useTheme();
         const { showAlert } = useAlert();
@@ -53,7 +54,15 @@ const SubtaskDrawerCard = React.memo(
             subtask: Task,
             dropPosition: { x: number; y: number } | undefined
         ) => {
-            convertSubtaskToTask(subtask, dropPosition);
+            // Pass updated highest zIndex in space
+            console.log('maxZIndex', maxZIndex);
+            convertSubtaskToTask(
+                {
+                    ...subtask,
+                    zIndex: maxZIndex ? maxZIndex + 1 : 0,
+                },
+                dropPosition
+            );
         };
 
         const [{ isDragging }, drag] = useDrag(
