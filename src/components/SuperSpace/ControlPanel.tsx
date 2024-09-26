@@ -8,10 +8,11 @@ import { EmojiFilter } from '../Space/EmojiFilter';
 
 interface ControlPanelProps {
     toggleZoom: () => void;
+    setIsProfilePageOpen: (isProfilePageOpen: boolean) => void;
 }
 
 const ControlPanel: React.FC<ControlPanelProps> = React.memo(
-    ({ toggleZoom }) => {
+    ({ toggleZoom, setIsProfilePageOpen }) => {
         const [isOpen, setIsOpen] = useState(false);
         const { data: session } = useSession();
 
@@ -19,7 +20,11 @@ const ControlPanel: React.FC<ControlPanelProps> = React.memo(
 
         return (
             <div style={{ zIndex: 1000 }}>
-                <ControlPanelContent isOpen={isOpen} toggleZoom={toggleZoom} />
+                <ControlPanelContent
+                    isOpen={isOpen}
+                    toggleZoom={toggleZoom}
+                    setIsProfilePageOpen={setIsProfilePageOpen}
+                />
                 <ControlPanelToggle isOpen={isOpen} setIsOpen={setIsOpen} />
             </div>
         );

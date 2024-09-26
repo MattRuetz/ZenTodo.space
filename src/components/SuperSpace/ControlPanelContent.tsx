@@ -14,10 +14,11 @@ import { useTheme } from '@/hooks/useTheme';
 interface ControlPanelContentProps {
     isOpen: boolean;
     toggleZoom: () => void;
+    setIsProfilePageOpen: (isProfilePageOpen: boolean) => void;
 }
 
 const ControlPanelContent: React.FC<ControlPanelContentProps> = React.memo(
-    ({ isOpen, toggleZoom }) => {
+    ({ isOpen, toggleZoom, setIsProfilePageOpen }) => {
         const theme = useTheme();
         const dispatch = useDispatch<AppDispatch>();
         const currentTheme = useSelector(
@@ -155,16 +156,39 @@ const ControlPanelContent: React.FC<ControlPanelContentProps> = React.memo(
                         ))}
                     </select>
                 </div>
-                <button
+                <div className="flex items-center gap-2 mb-4">
+                    <img
+                        src="placeholder-profile-pic.jpg" // Placeholder for user's profile picture
+                        alt="Profile"
+                        className="w-10 h-10 rounded-full"
+                    />
+                    <div>
+                        <p className="font-medium">User Name</p>{' '}
+                        {/* Placeholder for user's name */}
+                        <p className="text-sm text-gray-500">
+                            # Tasks Completed: 0
+                        </p>{' '}
+                        <button
+                            className="bg-white/10 hover:bg-transparent hover:border-white/25 px-2 py-1 text-xs"
+                            style={{
+                                color: `var(--${currentTheme}-emphasis-light)`,
+                            }}
+                            onClick={() => setIsProfilePageOpen(true)}
+                        >
+                            View Profile
+                        </button>
+                        {/* Placeholder for tasks completed */}
+                    </div>
+                </div>
+                <div
                     onClick={() => signOut()}
-                    className="btn w-full border border-white hover:border-transparent"
+                    className="btn btn-sm bg-white/10 hover:bg-transparent hover:border-white/25 px-2 py-1 text-xs"
                     style={{
-                        backgroundColor: `var(--${currentTheme}-background-100)`,
                         color: `var(--${currentTheme}-emphasis-light)`,
                     }}
                 >
                     Log out
-                </button>
+                </div>
             </div>
         );
     }
