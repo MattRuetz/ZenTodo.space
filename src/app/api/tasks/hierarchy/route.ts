@@ -42,6 +42,7 @@ export async function PUT(req: NextRequest) {
                 oldParentTaskIdString,
                 x,
                 y,
+                zIndex,
             } = requestBody;
             const subtaskId = new ObjectId(subtaskIdString);
             const parentTaskId = parentTaskIdString
@@ -95,8 +96,9 @@ export async function PUT(req: NextRequest) {
                     ? [...(parentTask?.ancestors || []), parentTaskId]
                     : [];
 
-                // If converting to top-level task, update x and y
+                // If converting to top-level task, update x and y and zIndex
                 if (!parentTaskId && x !== undefined && y !== undefined) {
+                    subtask.zIndex = zIndex;
                     subtask.x = x;
                     subtask.y = y;
                 }

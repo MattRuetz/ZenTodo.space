@@ -226,6 +226,7 @@ export const convertSubtaskToTaskAsync = createAsyncThunk(
                     oldParentTaskIdString: subtask.parentTask,
                     x: dropPosition?.x,
                     y: dropPosition?.y,
+                    zIndex: subtask.zIndex,
                 }),
             });
 

@@ -104,9 +104,11 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId }) => {
     const getNewZIndex = useCallback(() => {
         const newZIndex = maxZIndex + 1;
         setMaxZIndex(newZIndex);
+        dispatch(updateSpaceMaxZIndex({ spaceId, maxZIndex: newZIndex }));
         return newZIndex;
     }, [maxZIndex, spaceId, dispatch]);
 
+    // Use this effect to fetch the maxZIndex from the database
     useEffect(() => {
         dispatch(fetchSpaceMaxZIndex(spaceId));
     }, [spaceId, dispatch]);
@@ -351,6 +353,7 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId }) => {
                 ref={subtaskDrawerRef}
                 isOpen={isDrawerOpen as boolean}
                 onClose={handleCloseDrawer}
+                maxZIndex={maxZIndex}
             />
         </motion.div>
     );

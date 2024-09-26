@@ -20,12 +20,13 @@ import { useTheme } from '@/hooks/useTheme';
 interface SubtaskDrawerProps {
     isOpen: boolean;
     onClose: () => void;
+    maxZIndex: number;
 }
 
 const SubtaskDrawer = React.memo(
     forwardRef<HTMLDivElement, SubtaskDrawerProps>(
         (
-            { isOpen, onClose }: SubtaskDrawerProps,
+            { isOpen, onClose, maxZIndex }: SubtaskDrawerProps,
             ref: ForwardedRef<HTMLDivElement>
         ) => {
             const currentTheme = useTheme();
@@ -269,6 +270,7 @@ const SubtaskDrawer = React.memo(
                                     <SubtaskDrawerCard
                                         subtask={subtask as Task}
                                         position={subtask._id as string}
+                                        maxZIndex={maxZIndex}
                                     />
                                     <SubtaskDropZone
                                         position={`after_${subtask._id}`}
