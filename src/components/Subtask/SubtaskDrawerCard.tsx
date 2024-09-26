@@ -55,7 +55,6 @@ const SubtaskDrawerCard = React.memo(
             dropPosition: { x: number; y: number } | undefined
         ) => {
             // Pass updated highest zIndex in space
-            console.log('maxZIndex', maxZIndex);
             convertSubtaskToTask(
                 {
                     ...subtask,

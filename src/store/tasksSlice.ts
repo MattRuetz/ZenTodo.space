@@ -358,7 +358,7 @@ export const moveTaskToSpace = createAsyncThunk(
             body: JSON.stringify({ spaceId }),
         });
         const data = await response.json();
-        return data.task;
+        return data.tasks;
     }
 );
 
@@ -761,12 +761,15 @@ export const tasksSlice = createSlice({
                 state.error = action.payload as string;
             })
             .addCase(moveTaskToSpace.fulfilled, (state, action) => {
-                const index = state.tasks.findIndex(
-                    (t) => t._id === action.payload._id
-                );
-                if (index !== -1) {
-                    state.tasks[index] = action.payload;
-                }
+                const updatedTasks = action.payload;
+                updatedTasks.forEach((updatedTask: Task) => {
+                    const index = state.tasks.findIndex(
+                        (t) => t._id === updatedTask._id
+                    );
+                    if (index !== -1) {
+                        state.tasks[index] = updatedTask;
+                    }
+                });
             })
             .addCase(duplicateTasksAsync.fulfilled, (state, action) => {
                 const duplicatedTasks = action.payload;
