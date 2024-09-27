@@ -8,14 +8,17 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { EdgeStoreProvider } from '@/lib/edgestore';
 
 export default function Providers({ children }: { children: React.ReactNode }) {
     return (
         <DndProvider backend={HTML5Backend}>
-            <SessionProvider>
-                <ToastContainer />
-                <Provider store={store}>{children}</Provider>
-            </SessionProvider>
+            <EdgeStoreProvider>
+                <SessionProvider>
+                    <ToastContainer />
+                    <Provider store={store}>{children}</Provider>
+                </SessionProvider>
+            </EdgeStoreProvider>
         </DndProvider>
     );
 }

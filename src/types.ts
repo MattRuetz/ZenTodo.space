@@ -37,6 +37,14 @@ export interface SpaceData {
     selectedEmojis: string[];
 }
 
+export interface User {
+    _id?: string;
+    name: string;
+    profilePicture: string;
+    email: string;
+    password: string;
+    themePreference: string;
+}
 export type SortOption =
     | 'name'
     | 'progress'

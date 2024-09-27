@@ -33,6 +33,7 @@ import { FaArrowLeft } from 'react-icons/fa6';
 import { FaPlusCircle } from 'react-icons/fa';
 import { fetchTasks } from '@/store/tasksSlice';
 import ProfileArchivePage from '../Profile_Archive/ProfileArchivePage';
+import { setUser } from '@/store/userSlice';
 
 type ThemeName = 'buji' | 'daigo' | 'enzu';
 const SuperSpace = React.memo(() => {
@@ -107,6 +108,23 @@ const SuperSpace = React.memo(() => {
             opacity: 1,
         },
     };
+
+    // Make sure the user is set in the redux store
+    useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                const response = await fetch('/api/user');
+                if (response.ok) {
+                    const userData = await response.json();
+                    dispatch(setUser(userData));
+                }
+            } catch (error) {
+                console.error('Error fetching user data:', error);
+            }
+        };
+
+        fetchUserData();
+    }, [dispatch]);
 
     return (
         <>

@@ -1,6 +1,6 @@
 // src/app/components/ControlPanelContent.tsx
 'use client';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { signOut } from 'next-auth/react';
 import { useSession } from 'next-auth/react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -8,9 +8,11 @@ import { AppDispatch, RootState } from '@/store/store';
 import { setTheme } from '@/store/themeSlice';
 import { Task, ThemeName } from '@/types';
 import { getComplementaryColor, getContrastingColor } from '@/app/utils/utils';
-import { FaTag } from 'react-icons/fa';
+import { FaArchive, FaSignOutAlt, FaTag } from 'react-icons/fa';
 import { FaPaintbrush, FaUserAstronaut } from 'react-icons/fa6';
 import { useTheme } from '@/hooks/useTheme';
+import { setUser } from '@/store/userSlice';
+import { ComponentSpinner } from '../ComponentSpinner';
 interface ControlPanelContentProps {
     isOpen: boolean;
     toggleZoom: () => void;
@@ -24,6 +26,8 @@ const ControlPanelContent: React.FC<ControlPanelContentProps> = React.memo(
         const currentTheme = useSelector(
             (state: RootState) => state.theme.currentTheme
         );
+        const user = useSelector((state: RootState) => state.user.user);
+        const [isLoadingUser, setIsLoadingUser] = useState(false);
 
         const handleThemeChange = (theme: ThemeName) => {
             dispatch(setTheme(theme));
@@ -48,6 +52,10 @@ const ControlPanelContent: React.FC<ControlPanelContentProps> = React.memo(
             (task: Task) => task.space === currentSpace._id
         );
 
+        // const archivedTasks = tasks.filter(
+        //     (task: Task) => task.space === currentSpace._id && task.archived
+        // );
+
         const taskProgressCounts = {
             'Not Started': 0,
             'In Progress': 0,
@@ -58,6 +66,30 @@ const ControlPanelContent: React.FC<ControlPanelContentProps> = React.memo(
         tasksInSpace.forEach((task: Task) => {
             taskProgressCounts[task.progress]++;
         });
+
+        // Make sure the user is set in the redux store
+        useEffect(() => {
+            if (!user) {
+                const fetchUserData = async () => {
+                    try {
+                        setIsLoadingUser(true);
+                        const response = await fetch('/api/user');
+                        if (response.ok) {
+                            const userData = await response.json();
+                            dispatch(setUser(userData));
+                        }
+                    } catch (error) {
+                        console.error('Error fetching user data:', error);
+                    } finally {
+                        setIsLoadingUser(false);
+                    }
+                };
+
+                fetchUserData();
+            } else {
+                setIsLoadingUser(false);
+            }
+        }, [dispatch, user]);
 
         return (
             <div
@@ -70,8 +102,8 @@ const ControlPanelContent: React.FC<ControlPanelContentProps> = React.memo(
                 }}
             >
                 <div className="my-2">
-                    <div className="text-lg mb-2 flex items-center gap-2">
-                        <FaUserAstronaut /> Current Space:
+                    <div className="text-sm mb-2 flex items-center gap-2">
+                        Current Space:
                     </div>
                     <div
                         className="current-space-card p-4 rounded-lg cursor-pointer shadow-md border-2 border-transparent hover:border-white hover:rotate-1 transition-all duration-300"
@@ -127,9 +159,14 @@ const ControlPanelContent: React.FC<ControlPanelContentProps> = React.memo(
                         </table>
                     </div>
                 </div>
-                <hr className="my-6" />
+                <hr
+                    className="my-6"
+                    style={{
+                        borderColor: `var(--${currentTheme}-background-100)`,
+                    }}
+                />
                 <div className="flex-grow">
-                    <h2 className="text-lg my-2 flex items-center gap-2">
+                    <h2 className="text-sm my-2 flex items-center gap-2">
                         <FaPaintbrush /> Select Theme:
                     </h2>
                     <select
@@ -139,7 +176,7 @@ const ControlPanelContent: React.FC<ControlPanelContentProps> = React.memo(
                                 e.target.value as 'buji' | 'daigo' | 'enzu'
                             )
                         }
-                        className="p-2 border rounded-lg cursor-pointer w-full"
+                        className="text-sm p-2 border rounded-lg cursor-pointer w-full"
                     >
                         {['buji', 'daigo', 'enzu'].map((theme) => (
                             <option
@@ -156,38 +193,43 @@ const ControlPanelContent: React.FC<ControlPanelContentProps> = React.memo(
                         ))}
                     </select>
                 </div>
-                <div className="flex items-center gap-2 mb-4">
-                    <img
-                        src="placeholder-profile-pic.jpg" // Placeholder for user's profile picture
-                        alt="Profile"
-                        className="w-10 h-10 rounded-full"
-                    />
-                    <div>
-                        <p className="font-medium">User Name</p>{' '}
-                        {/* Placeholder for user's name */}
-                        <p className="text-sm text-gray-500">
-                            # Tasks Completed: 0
-                        </p>{' '}
-                        <button
-                            className="bg-white/10 hover:bg-transparent hover:border-white/25 px-2 py-1 text-xs"
-                            style={{
-                                color: `var(--${currentTheme}-emphasis-light)`,
-                            }}
-                            onClick={() => setIsProfilePageOpen(true)}
-                        >
-                            View Profile
-                        </button>
-                        {/* Placeholder for tasks completed */}
-                    </div>
+                {/* TODO: Add archive functionality */}
+                <div className="my-2">
+                    <h2 className="text-sm my-2 flex items-center gap-2">
+                        <FaArchive /> Archive: {tasksInSpace.length} task
+                        {tasksInSpace.length > 1 && 's'}
+                    </h2>
                 </div>
-                <div
-                    onClick={() => signOut()}
-                    className="btn btn-sm bg-white/10 hover:bg-transparent hover:border-white/25 px-2 py-1 text-xs"
-                    style={{
-                        color: `var(--${currentTheme}-emphasis-light)`,
-                    }}
-                >
-                    Log out
+                <hr className="my-6" />
+                <div className="grid grid-cols-3 gap-4 items-center">
+                    {isLoadingUser ? (
+                        <ComponentSpinner />
+                    ) : (
+                        <>
+                            <img
+                                src={user.profilePicture} // Placeholder for user's profile picture
+                                alt="Profile"
+                                className="rounded-full col-span-1"
+                            />
+                            <div className="col-span-2">
+                                <p className="font-medium text-lg truncate">
+                                    {user.name}
+                                </p>{' '}
+                                <p className="text-sm text-gray-500 truncate">
+                                    {user.email}
+                                </p>
+                                <button
+                                    className="btn btn-sm bg-white/10 hover:bg-transparent hover:border-white/25 px-2 py-1 text-sm mt-2"
+                                    style={{
+                                        color: `var(--${currentTheme}-emphasis-light)`,
+                                    }}
+                                    onClick={() => setIsProfilePageOpen(true)}
+                                >
+                                    View Profile
+                                </button>
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
         );
