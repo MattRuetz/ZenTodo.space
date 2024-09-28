@@ -27,7 +27,7 @@ const ProfileArchivePage: React.FC<ProfileArchivePageProps> = ({
             <div className="mb-4 relative">
                 <button
                     data-tooltip-id="return-to-super-space-tooltip"
-                    className="btn btn-ghost px-3 py-2 sm:px-4 sm:py-2 rounded-full flex items-center hover:scale-105 hover:brightness-125 transition-all duration-300"
+                    className="btn btn-circle px-3 py-2 sm:px-4 sm:py-2 rounded-full flex items-center hover:scale-105 hover:brightness-125 transition-all duration-300"
                     style={{
                         color: `var(--${theme}-emphasis-light)`,
                         backgroundColor: `var(--${theme}-background-100)`,
