@@ -7,12 +7,14 @@ import { Tooltip } from 'react-tooltip';
 
 interface ProfileArchivePageProps {
     setIsProfilePageOpen: (isProfilePageOpen: boolean) => void;
+    activeTabStart: string;
 }
 
 const ProfileArchivePage: React.FC<ProfileArchivePageProps> = ({
     setIsProfilePageOpen,
+    activeTabStart,
 }) => {
-    const [activeTab, setActiveTab] = useState('profile');
+    const [activeTab, setActiveTab] = useState(activeTabStart);
     const theme = useTheme();
     return (
         <div

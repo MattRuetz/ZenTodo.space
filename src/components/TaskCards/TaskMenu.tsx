@@ -173,7 +173,7 @@ export default function TaskMenu({
             {showMoveOptions && (
                 <div
                     ref={moveOptionsRef}
-                    className="absolute right-0 mt-2 w-48"
+                    className="absolute right-0 mt-2 w-48 rounded"
                     style={{
                         backgroundColor: `var(--${currentTheme}-background-200)`,
                         border: `1px solid var(--${currentTheme}-accent-grey)`,
@@ -188,10 +188,7 @@ export default function TaskMenu({
                             .map((space: SpaceData) => (
                                 <li
                                     key={space._id}
-                                    className="flex items-center gap-2 px-4 py-2 hover:bg-black cursor-pointer"
-                                    style={{
-                                        backgroundColor: `transparent`,
-                                    }}
+                                    className="flex items-center gap-2 px-4 py-2 hover:bg-black/20 cursor-pointer"
                                     onClick={() =>
                                         handleMoveTask(space._id || '')
                                     }

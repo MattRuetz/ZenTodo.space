@@ -14,7 +14,6 @@ import { useDragHandlers } from '@/hooks/useDragHandlers';
 import { useTaskState } from '@/hooks/useTaskState';
 import { useDeleteTask } from '@/hooks/useDeleteTask';
 import { useResizeHandle } from '@/hooks/useResizeHandle';
-import { toast } from 'react-toastify';
 import TaskCardTopBar from './TaskCardTopBar';
 import { TaskDetails } from '../TaskDetails';
 import { useAddNewSubtask } from '@/hooks/useAddNewSubtask';
@@ -25,7 +24,10 @@ import ConfirmDelete from './ConfirmDelete';
 import { useAlert } from '@/hooks/useAlert';
 import { useTheme } from '@/hooks/useTheme';
 import { useFadeOutEffect } from '@/hooks/useFadeOutEffect';
+import { useArchiveTask } from '@/hooks/useArchiveTask';
 import { motion } from 'framer-motion';
+import { ComponentSpinner } from '../ComponentSpinner';
+import { setSubtaskDrawerOpen } from '@/store/uiSlice';
 
 interface TaskCardProps {
     task: Task;
@@ -61,6 +63,7 @@ const TaskCard = React.memo(
         } = useDeleteTask();
         const { addNewSubtask } = useAddNewSubtask();
         const { showAlert } = useAlert();
+        const archiveTask = useArchiveTask();
 
         const {
             localTask,
@@ -92,12 +95,20 @@ const TaskCard = React.memo(
             allowDropRef,
             setAllowDrop,
             allowDrop,
+            isLoading,
+            setIsLoading,
         } = useTaskState(task);
 
         const updateTaskInStore = useCallback(
-            (updatedFields: Partial<Task>) => {
+            async (updatedFields: Partial<Task>) => {
                 if (task._id) {
-                    dispatch(updateTask({ _id: task._id, ...updatedFields }));
+                    // setTimeout(() => {
+                    //     setIsLoading(true);
+                    // }, 1000);
+                    await dispatch(
+                        updateTask({ _id: task._id, ...updatedFields })
+                    );
+                    // setIsLoading(false);
                 }
             },
             [dispatch, task._id]
@@ -336,6 +347,12 @@ const TaskCard = React.memo(
                 position: 'start',
             });
         };
+
+        const handleArchiveTask = useCallback(() => {
+            archiveTask(task);
+            dispatch(setSubtaskDrawerOpen(false));
+        }, [archiveTask, task, dispatch]);
+
         // Right click card opens the menu
         const handleContextMenu = useCallback((e: React.MouseEvent) => {
             e.preventDefault();
@@ -403,9 +420,7 @@ const TaskCard = React.memo(
 
         const handleMouseLeave = useCallback(() => {
             isHoveringRef.current = false;
-            if (isHoveringRef.current !== isHovering) {
-                setIsHovering(false);
-            }
+            setIsHovering(false);
         }, []);
 
         return (
@@ -500,6 +515,7 @@ const TaskCard = React.memo(
                                     onProgressChange={handleProgressChange}
                                     handleResizeStart={handleResizeStart}
                                     currentTheme={currentTheme}
+                                    onArchive={handleArchiveTask}
                                 />
                             </DraggableArea>
                         </div>
@@ -511,9 +527,11 @@ const TaskCard = React.memo(
                             spaceOrTask={'task'}
                         />
                     )}
+                    {isLoading && <ComponentSpinner />}
                 </motion.div>
             </Draggable>
         );
     }
 );
+
 export default React.memo(TaskCard);

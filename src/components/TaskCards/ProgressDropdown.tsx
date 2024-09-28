@@ -1,20 +1,24 @@
 import useClickOutside from '@/hooks/useClickOutside';
 import { useTheme } from '@/hooks/useTheme';
+import { updateTask } from '@/store/tasksSlice';
 import { TaskProgress } from '@/types';
 import React, { useEffect, useRef, useState } from 'react';
 import { FaCheck, FaChevronDown } from 'react-icons/fa';
 import { FaBoxArchive } from 'react-icons/fa6';
 import { Tooltip } from 'react-tooltip';
+import { useDispatch } from 'react-redux';
 
 interface ProgressDropdownProps {
     progress: TaskProgress;
     onProgressChange: (progress: TaskProgress) => void;
     isSubtask?: boolean;
     taskId: string;
+    onArchive: () => void;
 }
 
 export const ProgressDropdown: React.FC<ProgressDropdownProps> = React.memo(
-    ({ progress, onProgressChange, isSubtask, taskId }) => {
+    ({ progress, onProgressChange, onArchive, isSubtask, taskId }) => {
+        const dispatch = useDispatch();
         const currentTheme = useTheme();
         const dropdownRef = useRef<HTMLDivElement>(null);
         const progressCardRef = useRef<HTMLDivElement>(null);
@@ -51,6 +55,10 @@ export const ProgressDropdown: React.FC<ProgressDropdownProps> = React.memo(
         useClickOutside([dropdownRef, progressCardRef], () =>
             setShouldOpenDropdown(false)
         );
+
+        const handleArchiveClick = () => {
+            onArchive();
+        };
 
         useEffect(() => {
             setIsDropdownOpen(shouldOpenDropdown);
@@ -119,6 +127,7 @@ export const ProgressDropdown: React.FC<ProgressDropdownProps> = React.memo(
                                     e.currentTarget.style.backgroundColor = `var(--${currentTheme}-background-200)`;
                                     e.currentTarget.style.color = `var(--${currentTheme}-text-default)`;
                                 }}
+                                onClick={handleArchiveClick}
                             >
                                 <FaBoxArchive />
                             </button>

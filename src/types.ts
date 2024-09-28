@@ -15,7 +15,7 @@ export interface Task {
     width: number;
     height: number;
     progress: TaskProgress;
-    space: string;
+    space: string | null;
     zIndex: number;
     subtasks: string[];
     parentTask?: string;
@@ -25,6 +25,8 @@ export interface Task {
     dueDate?: Date | null;
     emoji?: string;
     isTemp?: boolean;
+    isArchived?: boolean;
+    archivedAt?: Date;
 }
 
 export interface SpaceData {

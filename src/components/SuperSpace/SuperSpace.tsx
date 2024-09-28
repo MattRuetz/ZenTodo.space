@@ -46,6 +46,7 @@ const SuperSpace = React.memo(() => {
     const [isZoomedOut, setIsZoomedOut] = useState(true);
     const [isAdding, setIsAdding] = useState(false);
     const [isProfilePageOpen, setIsProfilePageOpen] = useState(false);
+    const [activeTabStart, setActiveTabStart] = useState('archive');
 
     const { data: session, status: sessionStatus } = useSession();
     const router = useRouter();
@@ -131,6 +132,7 @@ const SuperSpace = React.memo(() => {
             {isProfilePageOpen ? (
                 <ProfileArchivePage
                     setIsProfilePageOpen={setIsProfilePageOpen}
+                    activeTabStart={activeTabStart}
                 />
             ) : (
                 <DndProvider backend={HTML5Backend}>
@@ -235,6 +237,9 @@ const SuperSpace = React.memo(() => {
                                             toggleZoom={toggleZoom}
                                             setIsProfilePageOpen={
                                                 setIsProfilePageOpen
+                                            }
+                                            setActiveTabStart={
+                                                setActiveTabStart
                                             }
                                         />
                                     )}

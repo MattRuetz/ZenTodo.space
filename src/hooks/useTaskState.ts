@@ -15,6 +15,7 @@ export const useTaskState = (task: Task) => {
     const [deletingTasks, setDeletingTasks] = useState<Set<string>>(new Set());
     const [showDetails, setShowDetails] = useState(false);
     const [allowDrop, setAllowDrop] = useState(false); // Add state for allowDrop
+    const [isLoading, setIsLoading] = useState(false);
 
     const cardRef = useRef<HTMLDivElement>(null);
     const taskNameRef = useRef<HTMLInputElement>(null);
@@ -59,5 +60,7 @@ export const useTaskState = (task: Task) => {
         setAllowDrop, // Return the setter
         isDraggingOverRef,
         isHoveringRef,
+        isLoading,
+        setIsLoading,
     };
 };

@@ -351,7 +351,7 @@ export const moveSubtaskWithinLevelAsync = createAsyncThunk(
 
 export const moveTaskToSpace = createAsyncThunk(
     'tasks/moveTaskToSpace',
-    async ({ taskId, spaceId }: { taskId: string; spaceId: string }) => {
+    async ({ taskId, spaceId }: { taskId: string; spaceId: string | null }) => {
         const response = await fetch(`/api/tasks/${taskId}/move`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
@@ -387,6 +387,30 @@ export const duplicateTasksAsync = createAsyncThunk(
                 return rejectWithValue(error.message);
             }
             return rejectWithValue('An unknown error occurred');
+        }
+    }
+);
+
+export const archiveTaskAsync = createAsyncThunk(
+    'tasks/archiveTask',
+    async (taskId: string, { rejectWithValue }) => {
+        try {
+            const response = await fetch(`/api/tasks/archive`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ taskId }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to archive task');
+            }
+
+            const data = await response.json();
+            return data.tasks;
+        } catch (error) {
+            return rejectWithValue((error as Error).message);
         }
     }
 );
@@ -833,6 +857,25 @@ export const tasksSlice = createSlice({
                 );
             })
             .addCase(deleteTasksInSpace.rejected, (state, action) => {
+                state.status = 'failed';
+                state.error = action.error.message || null;
+            })
+            .addCase(archiveTaskAsync.pending, (state) => {
+                state.status = 'loading';
+            })
+            .addCase(archiveTaskAsync.fulfilled, (state, action) => {
+                state.status = 'idle';
+                const updatedTasks = action.payload;
+                updatedTasks.forEach((updatedTask: Task) => {
+                    const index = state.tasks.findIndex(
+                        (t) => t._id === updatedTask._id
+                    );
+                    if (index !== -1) {
+                        state.tasks[index] = updatedTask;
+                    }
+                });
+            })
+            .addCase(archiveTaskAsync.rejected, (state, action) => {
                 state.status = 'failed';
                 state.error = action.error.message || null;
             });

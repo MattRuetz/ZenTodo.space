@@ -179,7 +179,7 @@ const ProfileSettings = () => {
                             />
                             {isUploadingPhoto && (
                                 <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full w-[200px] h-[200px]">
-                                    <span className="loading loading-ring text-slate-200 loading-lg h-12 w-12"></span>
+                                    <span className="loading loading-ring text-slate-200 h-12 w-12"></span>
                                 </div>
                             )}
                         </div>

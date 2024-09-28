@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useTheme } from '@/hooks/useTheme';
 import {
     FaCheckCircle,
@@ -9,6 +9,15 @@ import {
 } from 'react-icons/fa';
 import { Icon } from '../Icon';
 import { motion } from 'framer-motion';
+import { SpaceData, Task } from '@/types';
+import { AppDispatch, RootState } from '@/store/store';
+import { useSelector } from 'react-redux';
+import { FaMagnifyingGlass, FaTrash } from 'react-icons/fa6';
+import { useDeleteTask } from '@/hooks/useDeleteTask';
+import { moveTaskToSpace } from '@/store/tasksSlice';
+import { useDispatch } from 'react-redux';
+import { ComponentSpinner } from '../ComponentSpinner';
+import ArchivedTaskCard from './ArchivedTaskCard';
 
 // Temporary type for archived tasks
 type ArchivedTask = {
@@ -20,46 +29,12 @@ type ArchivedTask = {
 };
 
 const ArchivedTasks: React.FC = () => {
-    const theme = useTheme();
+    const currentTheme = useTheme();
 
-    // Temporary array of archived tasks
-    const archivedTasks: ArchivedTask[] = [
-        {
-            id: '1',
-            name: 'Complete project proposal',
-            completedDate: '2023-05-15',
-            space: 'Work',
-            emoji: '🚀',
-        },
-        {
-            id: '2',
-            name: 'Buy groceries',
-            completedDate: '2023-05-14',
-            space: 'Personal',
-            emoji: '🛍️',
-        },
-        {
-            id: '3',
-            name: 'Plan vacation',
-            completedDate: '2023-05-13',
-            space: 'Travel',
-            emoji: '🌴',
-        },
-        {
-            id: '4',
-            name: 'Finish reading book',
-            completedDate: '2023-05-12',
-            space: 'Personal',
-            emoji: '📚',
-        },
-        {
-            id: '5',
-            name: 'Prepare presentation',
-            completedDate: '2023-05-11',
-            space: 'Work',
-            emoji: '📝',
-        },
-    ];
+    const archivedTasks = useSelector((state: RootState) =>
+        state.tasks.tasks.filter((task: Task) => task.isArchived)
+    );
+    const spaces = useSelector((state: RootState) => state.spaces.spaces);
 
     return (
         <div className="p-6 h-full w-full rounded-lg py-12 max-w-screen-md mx-auto">
@@ -68,62 +43,27 @@ const ArchivedTasks: React.FC = () => {
                 Archived Tasks
             </h2>
             <div className="space-y-4 pb-10">
-                {archivedTasks.map((task) => (
-                    <div
-                        key={task.id}
-                        className="p-4 rounded-lg shadow-md"
-                        style={{
-                            backgroundColor: `var(--${theme}-background-200)`,
-                        }}
-                    >
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <div
-                                    className="flex items-center justify-center w-12 h-12 rounded-full"
-                                    style={{
-                                        backgroundColor: `var(--${theme}-background-100)`,
-                                    }}
-                                >
-                                    <span className="text-2xl">
-                                        {task.emoji || <FaTag />}
-                                    </span>
-                                </div>
-                                <div className="flex flex-col space-y-2">
-                                    <span className="font-semibold text-lg">
-                                        {task.name}
-                                    </span>
-                                    <div
-                                        className="flex items-center space-x-2 text-sm py-1 px-2 rounded-lg w-fit"
-                                        style={{
-                                            backgroundColor: `var(--${theme}-background-100)`,
-                                        }}
-                                    >
-                                        <span>{task.space}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="grid grid-rows-2 gap-2">
-                                <div className="p-1 flex items-center space-x-2 text-sm">
-                                    <FaCalendarAlt
-                                        style={{
-                                            color: `var(--${theme}-text-default)`,
-                                        }}
-                                    />
-                                    <span>{task.completedDate}</span>
-                                </div>
-                                <button
-                                    className="p-1 rounded-lg btn-ghost text-sm flex items-center align-start gap-2"
-                                    style={{
-                                        color: `var(--${theme}-text-subtle)`,
-                                    }}
-                                >
-                                    <FaUndo />
-                                    Recover Task
-                                </button>
-                            </div>
+                {archivedTasks.length === 0 ? (
+                    <div className="flex flex-col items-center gap-4 min-h-[200px] justify-center">
+                        <FaMagnifyingGlass className="text-4xl" />
+                        <div
+                            className="text-center text-sm"
+                            style={{
+                                color: `var(--${currentTheme}-text-subtle)`,
+                            }}
+                        >
+                            No archived tasks found.
                         </div>
                     </div>
-                ))}
+                ) : (
+                    archivedTasks.map((task: Task) => (
+                        <ArchivedTaskCard
+                            key={task._id}
+                            task={task}
+                            spaces={spaces}
+                        />
+                    ))
+                )}
             </div>
         </div>
     );
