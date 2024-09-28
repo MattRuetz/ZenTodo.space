@@ -46,6 +46,10 @@ export interface User {
     email: string;
     password: string;
     themePreference: string;
+    spacesCount: number;
+    totalTasksCreated: number;
+    tasksCompleted: number;
+    tasksInProgress: number;
 }
 export type SortOption =
     | 'name'

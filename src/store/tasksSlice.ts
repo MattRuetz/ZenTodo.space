@@ -419,7 +419,6 @@ export const tasksSlice = createSlice({
     name: 'tasks',
     initialState,
     reducers: {
-        // Optimistic duplication of tasks
         addTaskOptimistic: (state, action: PayloadAction<Task>) => {
             state.tasks.push(action.payload);
         },

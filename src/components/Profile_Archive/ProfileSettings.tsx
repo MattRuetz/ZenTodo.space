@@ -7,13 +7,26 @@ import { AppDispatch, RootState } from '@/store/store';
 import { setUser, updateUserData } from '@/store/userSlice';
 import { User } from '@/types';
 import { useEdgeStore } from '@/lib/edgestore';
-import Preloader from '../SuperSpace/Preloader';
-import { FaEnvelope, FaPencil } from 'react-icons/fa6';
+import { getQuoteForDay } from '@/hooks/useQuoteForDay';
+import {
+    FaChampagneGlasses,
+    FaEnvelope,
+    FaPencil,
+    FaSpinner,
+} from 'react-icons/fa6';
 import { ComponentSpinner } from '../ComponentSpinner';
-import { FaSignOutAlt } from 'react-icons/fa';
+import {
+    FaAward,
+    FaCalendarAlt,
+    FaCheckCircle,
+    FaList,
+    FaSignOutAlt,
+    FaSpaceShuttle,
+} from 'react-icons/fa';
+import { formatUserSince } from '@/app/utils/dateUtils';
 
 const ProfileSettings = () => {
-    const theme = useTheme();
+    const currentTheme = useTheme();
     const { data: session, update } = useSession();
     const dispatch = useDispatch<AppDispatch>();
     const user = useSelector((state: RootState) => state.user.user);
@@ -28,6 +41,8 @@ const ProfileSettings = () => {
     const [confirmPassword, setConfirmPassword] = useState('');
     const fileInputRef = useRef<HTMLInputElement>(null);
     const { edgestore } = useEdgeStore();
+
+    const quote = getQuoteForDay();
 
     // Make sure the user is set in the redux store
     useEffect(() => {
@@ -162,32 +177,34 @@ const ProfileSettings = () => {
     }
 
     return (
-        <div className="flex flex-col items-center justify-center p-6 h-full w-full rounded-lg">
-            <div className="flex flex-col sm:items-center md:items-start md:w-6/12 justify-center">
-                <div className="relative grid sm:grid-cols-1 md:grid-cols-2 gap-8">
-                    <div className="relative">
-                        <div className="w-[200px] h-[200px]">
+        <div className="flex flex-col items-center justify-center p-4 sm:p-6 w-full max-w-4xl mx-auto">
+            <div className="w-full">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="relative flex flex-col items-center">
+                        <div className="w-48 h-48 sm:w-64 sm:h-64 relative">
                             <Image
                                 src={profilePicture}
                                 alt="Profile Picture"
-                                width={200}
-                                height={200}
-                                className="rounded-full object-cover"
+                                layout="fill"
+                                objectFit="cover"
+                                className="rounded-full"
                                 style={{
-                                    backgroundColor: `var(--${theme}-emphasis-light)`,
+                                    backgroundColor: `var(--${currentTheme}-background-300)`,
+                                    border: `1px solid var(--${currentTheme}-card-border-color)`,
                                 }}
                             />
                             {isUploadingPhoto && (
-                                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full w-[200px] h-[200px]">
+                                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full">
                                     <span className="loading loading-ring text-slate-200 h-12 w-12"></span>
                                 </div>
                             )}
                         </div>
                         <button
-                            className="absolute top-1 left-0 btn text-white p-2 rounded-full w-12 h-12"
+                            className="absolute top-1 left-1 btn p-2 rounded-full w-12 h-12"
                             style={{
-                                border: `3px solid var(--${theme}-background-100)`,
-                                backgroundColor: `var(--${theme}-background-200)`,
+                                color: `var(--${currentTheme}-text-default)`,
+                                border: `3px solid var(--${currentTheme}-background-100)`,
+                                backgroundColor: `var(--${currentTheme}-background-200)`,
                             }}
                             onClick={() => fileInputRef.current?.click()}
                             disabled={isUploadingPhoto}
@@ -203,96 +220,169 @@ const ProfileSettings = () => {
                             disabled={isUploadingPhoto}
                         />
                     </div>
-                    {isEditing ? (
-                        <form
-                            onSubmit={handleSubmit}
-                            className="flex flex-col items-start justify-start gap-2 mt-4"
-                        >
-                            <input
-                                type="text"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                                placeholder="Name"
-                                className="w-full p-2 rounded"
-                            />
-                            <input
-                                type="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                placeholder="New Password"
-                                className="w-full p-2 rounded"
-                                autoComplete="new-password"
-                            />
-                            <input
-                                type="password"
-                                value={confirmPassword}
-                                onChange={(e) =>
-                                    setConfirmPassword(e.target.value)
-                                }
-                                placeholder="Confirm New Password"
-                                className="w-full p-2 rounded"
-                                autoComplete="new-password"
-                            />
-                            <button
-                                type="submit"
-                                className="btn btn-sm p-2 rounded flex flex-row items-center justify-center gap-2 text-xs"
-                                style={{
-                                    backgroundColor: `var(--${theme}-background-200)`,
-                                    color: `var(--${theme}-text-subtle)`,
-                                }}
-                            >
-                                Update Profile
-                            </button>
-                        </form>
-                    ) : (
-                        <div className="flex flex-col items-start justify-start gap-2 mt-4 space-y-2">
-                            <h3 className="font-semibold text-lg">{name}</h3>
-                            <h3 className="font-semibold text-sm flex flex-row items-center justify-center gap-2">
-                                <FaEnvelope className="w-4 h-4" /> {user?.email}
-                            </h3>
-                            <button
-                                className="btn btn-sm p-2 rounded flex flex-row items-center justify-center gap-2 text-xs"
-                                style={{
-                                    backgroundColor: `var(--${theme}-background-200)`,
-                                    color: `var(--${theme}-text-subtle)`,
-                                }}
-                                onClick={() => setIsEditing(true)}
-                            >
-                                <FaPencil className="w-4 h-4 text-sm" />
-                                Name / Password
-                            </button>
-                        </div>
-                    )}
+                    <div className="flex flex-col justify-center space-y-4">
+                        {isEditing ? (
+                            <form onSubmit={handleSubmit} className="space-y-4">
+                                <input
+                                    type="text"
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                    placeholder="Name"
+                                    className="w-full p-2 rounded"
+                                />
+                                <input
+                                    type="password"
+                                    value={password}
+                                    onChange={(e) =>
+                                        setPassword(e.target.value)
+                                    }
+                                    placeholder="New Password"
+                                    className="w-full p-2 rounded"
+                                    autoComplete="new-password"
+                                />
+                                <input
+                                    type="password"
+                                    value={confirmPassword}
+                                    onChange={(e) =>
+                                        setConfirmPassword(e.target.value)
+                                    }
+                                    placeholder="Confirm New Password"
+                                    className="w-full p-2 rounded"
+                                    autoComplete="new-password"
+                                />
+                                <button
+                                    type="submit"
+                                    className="btn btn-sm p-2 rounded flex items-center justify-center gap-2 text-xs w-full"
+                                    style={{
+                                        backgroundColor: `var(--${currentTheme}-background-200)`,
+                                        color: `var(--${currentTheme}-text-subtle)`,
+                                    }}
+                                >
+                                    Update Profile
+                                </button>
+                            </form>
+                        ) : (
+                            <div className="space-y-4">
+                                <h3
+                                    className="font-semibold text-lg"
+                                    style={{
+                                        color: `var(--${currentTheme}-text-default)`,
+                                    }}
+                                >
+                                    {name}
+                                </h3>
+                                <h3
+                                    className="font-semibold text-sm flex items-center gap-2"
+                                    style={{
+                                        color: `var(--${currentTheme}-text-default)`,
+                                    }}
+                                >
+                                    <FaEnvelope className="w-4 h-4" />{' '}
+                                    {user?.email}
+                                </h3>
+                                {user.createdAt && (
+                                    <p
+                                        className="text-sm flex items-center p-2 rounded"
+                                        style={{
+                                            color: `var(--${currentTheme}-text-subtle)`,
+                                            backgroundColor: `var(--${currentTheme}-background-300)`,
+                                        }}
+                                    >
+                                        <FaAward className="mr-2" />
+                                        User since{' '}
+                                        {formatUserSince(
+                                            new Date(user.createdAt)
+                                        )}
+                                    </p>
+                                )}
+                                <button
+                                    className="btn btn-sm p-2 hover:border-white/25 flex items-center justify-center gap-2 text-xs w-full"
+                                    style={{
+                                        backgroundColor: `var(--${currentTheme}-background-200)`,
+                                        color: `var(--${currentTheme}-text-default)`,
+                                    }}
+                                    onClick={() => setIsEditing(true)}
+                                >
+                                    <FaPencil className="w-4 h-4 text-sm" />
+                                    Edit Name / Password
+                                </button>
+                                <button
+                                    className="btn btn-sm btn-ghost p-2 hover:border-white/25 flex items-center justify-center gap-2 text-xs w-full"
+                                    style={{
+                                        color: `var(--${currentTheme}-text-default)`,
+                                    }}
+                                    onClick={() => signOut()}
+                                >
+                                    <FaSignOutAlt /> Log out
+                                </button>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
             <hr
-                className="w-full h-px my-8 border-0 rounded"
-                style={{ backgroundColor: `var(--${theme}-background-200)` }}
+                className="w-full h-px my-6 border-0 rounded"
+                style={{
+                    backgroundColor: `var(--${currentTheme}-background-200)`,
+                }}
             />
-            <div className="w-6/12 min-w-64 flex flex-col items-start justify-center">
-                <h3 className="text-xl font-bold mb-4 bg-transparent">
-                    Stats:
-                </h3>
-                <div className="flex flex-row items-center justify-between gap-2 w-full">
-                    <p>Spaces: {/* Add number of spaces */}</p>
-                </div>
-                <div className="flex flex-row items-center justify-between gap-2 w-full">
-                    <p>Tasks Completed: {/* Add completed tasks count */}</p>
-                    <p>
-                        Tasks In Progress: {/* Add in-progress tasks count */}
-                    </p>
-                    <p>Tasks To Do: {/* Add to-do tasks count */}</p>
+            <div className="quote-of-the-day p-4 text-center max-w-md text-xs mb-4 w-full">
+                <div className="text-sm mb-2">Quote of the day:</div>
+                <blockquote
+                    className="text-md italic hover:scale-105 transition-all duration-300"
+                    style={{ color: `var(--${currentTheme}-text-subtle)` }}
+                >
+                    {quote}
+                </blockquote>
+            </div>
+            <div
+                className="flex flex-col items-center justify-between space-y-4 p-4 rounded-lg w-full"
+                style={{
+                    backgroundColor: `var(--${currentTheme}-background-200)`,
+                }}
+            >
+                <div
+                    className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full text-lg"
+                    style={{ color: `var(--${currentTheme}-text-default)` }}
+                >
+                    <div className="flex items-center justify-center gap-4">
+                        <FaSpaceShuttle className="w-6 h-6" />
+                        <div>
+                            <strong>Spaces:</strong>
+                            <span className="ml-2">
+                                {user?.spacesCount || 0}/9
+                            </span>
+                        </div>
+                    </div>
+                    <div className="flex items-center justify-center gap-4">
+                        <FaList className="w-6 h-6" />
+                        <div>
+                            <strong>Total Tasks:</strong>
+                            <span className="ml-2">
+                                {user?.totalTasksCreated || 0}
+                            </span>
+                        </div>
+                    </div>
+                    <div className="flex items-center justify-center gap-4">
+                        <FaCheckCircle className="w-6 h-6" />
+                        <div>
+                            <strong>Completed:</strong>
+                            <span className="ml-2">
+                                {user?.tasksCompleted || 0}
+                            </span>
+                        </div>
+                    </div>
+                    <div className="flex items-center justify-center gap-4">
+                        <FaSpinner className="w-6 h-6" />
+                        <div>
+                            <strong>In Progress:</strong>
+                            <span className="ml-2">
+                                {user?.tasksInProgress || 0}
+                            </span>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <button
-                className="btn btn-sm bg-white/10 hover:bg-transparent hover:border-white/25 px-2 py-1 text-sm mt-2"
-                style={{
-                    color: `var(--${theme}-emphasis-light)`,
-                }}
-                onClick={() => signOut()}
-            >
-                <FaSignOutAlt /> Log out
-            </button>
         </div>
     );
 };

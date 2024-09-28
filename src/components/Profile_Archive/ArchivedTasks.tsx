@@ -37,7 +37,12 @@ const ArchivedTasks: React.FC = () => {
     const spaces = useSelector((state: RootState) => state.spaces.spaces);
 
     return (
-        <div className="p-6 h-full w-full rounded-lg py-12 max-w-screen-md mx-auto">
+        <div
+            className="p-6 h-full w-full rounded-lg py-12 max-w-screen-md mx-auto"
+            style={{
+                color: `var(--${currentTheme}-text-default)`,
+            }}
+        >
             <h2 className="text-2xl font-bold mb-6 bg-transparent flex items-center gap-2">
                 <FaArchive className="mr-2" />
                 Archived Tasks

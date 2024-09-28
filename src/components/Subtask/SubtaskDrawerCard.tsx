@@ -6,7 +6,7 @@ import { updateTask } from '@/store/tasksSlice';
 import { Task, TaskProgress } from '@/types';
 import { useDrag, useDrop } from 'react-dnd';
 import { store } from '@/store/store';
-import { setSimplicityModalOpen } from '@/store/uiSlice';
+import { setSimplicityModalOpen, setSubtaskDrawerOpen } from '@/store/uiSlice';
 import { SubtaskTopBar } from './SubtaskTopBar';
 import { SubtaskBottomBar } from './SubtaskBottomBar';
 import { useChangeHierarchy } from '@/hooks/useChangeHierarchy';
@@ -14,6 +14,7 @@ import { useMoveSubtask } from '@/hooks/useMoveSubtask';
 import { useAlert } from '@/hooks/useAlert';
 import useClickOutside from '@/hooks/useClickOutside';
 import { useTheme } from '@/hooks/useTheme';
+import { useArchiveTask } from '@/hooks/useArchiveTask';
 interface SubtaskDrawerCardProps {
     subtask: Task;
     position: string;
@@ -25,6 +26,7 @@ const SubtaskDrawerCard = React.memo(
         const dispatch = useDispatch<AppDispatch>();
         const currentTheme = useTheme();
         const { showAlert } = useAlert();
+        const archiveTask = useArchiveTask();
 
         const [localSubtask, setLocalSubtask] = useState(subtask || {});
         const [isEditing, setIsEditing] = useState<string | null>(null);
@@ -63,6 +65,11 @@ const SubtaskDrawerCard = React.memo(
                 dropPosition
             );
         };
+
+        const handleArchive = useCallback(() => {
+            archiveTask(subtask);
+            dispatch(setSubtaskDrawerOpen(false));
+        }, [archiveTask, subtask, dispatch]);
 
         const [{ isDragging }, drag] = useDrag(
             () => ({
@@ -365,6 +372,7 @@ const SubtaskDrawerCard = React.memo(
                     subtask={subtask}
                     handleProgressChange={handleProgressChange}
                     handleSetDueDate={handleSetDueDate}
+                    handleArchive={handleArchive}
                 />
             </li>
         );

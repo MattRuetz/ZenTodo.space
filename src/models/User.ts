@@ -11,13 +11,18 @@ interface IUser extends Document {
         enum: ['buji', 'daigo', 'enzu'];
         default: 'buji';
     };
+    createdAt: Date;
+    spacesCount: number;
+    totalTasksCreated: number;
+    tasksCompleted: number;
+    tasksInProgress: number;
 }
 
 const UserSchema = new Schema({
     name: { type: String, required: true },
     profilePicture: {
         type: String,
-        default: '/images/profile_picture_default.png',
+        default: '/images/profile_picture_default.webp',
     },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
@@ -26,6 +31,11 @@ const UserSchema = new Schema({
         enum: ['buji', 'daigo', 'enzu'],
         default: 'buji',
     },
+    createdAt: { type: Date, default: Date.now },
+    spacesCount: { type: Number, default: 0 },
+    totalTasksCreated: { type: Number, default: 0 },
+    tasksCompleted: { type: Number, default: 0 },
+    tasksInProgress: { type: Number, default: 0 },
 });
 
 export default mongoose.models.User ||

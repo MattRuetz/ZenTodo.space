@@ -4,6 +4,7 @@ import ArchivedTasks from './ArchivedTasks';
 import { useTheme } from '@/hooks/useTheme';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Tooltip } from 'react-tooltip';
+import { FaArchive, FaArrowLeft, FaUser } from 'react-icons/fa';
 
 interface ProfileArchivePageProps {
     setIsProfilePageOpen: (isProfilePageOpen: boolean) => void;
@@ -18,15 +19,15 @@ const ProfileArchivePage: React.FC<ProfileArchivePageProps> = ({
     const theme = useTheme();
     return (
         <div
-            className="mx-auto p-4 w-full min-h-screen"
+            className="mx-auto p-2 sm:p-4 w-full min-h-screen flex flex-col"
             style={{
                 backgroundColor: `var(--${theme}-space-background)`,
             }}
         >
-            <div className="justify-start mb-4 relative">
+            <div className="mb-4 relative">
                 <button
                     data-tooltip-id="return-to-super-space-tooltip"
-                    className="btn btn-ghost px-4 py-2 rounded-full flex items-center hover:scale-105 hover:brightness-125 transition-all duration-300"
+                    className="btn btn-ghost px-3 py-2 sm:px-4 sm:py-2 rounded-full flex items-center hover:scale-105 hover:brightness-125 transition-all duration-300"
                     style={{
                         color: `var(--${theme}-emphasis-light)`,
                         backgroundColor: `var(--${theme}-background-100)`,
@@ -34,7 +35,7 @@ const ProfileArchivePage: React.FC<ProfileArchivePageProps> = ({
                     onClick={() => setIsProfilePageOpen(false)}
                     aria-label="Return"
                 >
-                    <span className="text-xl">↩</span>
+                    <FaArrowLeft className="text-lg sm:text-xl" />
                 </button>
                 <Tooltip
                     id="return-to-super-space-tooltip"
@@ -48,52 +49,50 @@ const ProfileArchivePage: React.FC<ProfileArchivePageProps> = ({
             </div>
 
             <div
-                className="container max-w-screen-lg mx-auto rounded-lg overflow-hidden"
+                className="container max-w-screen-lg mx-auto rounded-lg overflow-hidden shadow-xl flex-grow flex flex-col mb-12"
                 style={{
                     backgroundColor: `var(--${theme}-background-100)`,
                     border: `2px solid var(--${theme}-card-border-color)`,
                 }}
             >
                 <div
-                    className="grid grid-cols-2 gap-0"
+                    className="grid grid-cols-2 gap-0 font-bold"
                     style={{
                         backgroundColor: `var(--${theme}-background-100)`,
+                        color: `var(--${theme}-text-default)`,
                     }}
                 >
-                    <div
-                        className="px-4 py-2 text-center cursor-pointer"
-                        style={
-                            activeTab === 'profile'
-                                ? {
-                                      backgroundColor: `var(--${theme}-background-200)`,
-                                  }
-                                : {
-                                      backgroundColor: `var(--${theme}-background-100)`,
-                                      borderBottom: `2px solid var(--${theme}-background-200)`,
-                                  }
-                        }
-                        onClick={() => setActiveTab('profile')}
-                    >
-                        Profile Settings
-                    </div>
-                    <div
-                        className="px-4 py-2 text-center cursor-pointer"
-                        style={
-                            activeTab === 'archive'
-                                ? {
-                                      backgroundColor: `var(--${theme}-background-200)`,
-                                  }
-                                : {
-                                      backgroundColor: `var(--${theme}-background-100)`,
-                                      borderBottom: `2px solid var(--${theme}-background-200)`,
-                                  }
-                        }
-                        onClick={() => setActiveTab('archive')}
-                    >
-                        Archived Tasks
-                    </div>
+                    {['profile', 'archive'].map((tab) => (
+                        <div
+                            key={tab}
+                            className="px-2 sm:px-4 py-2 text-center cursor-pointer flex items-center justify-center text-sm sm:text-base"
+                            style={
+                                activeTab === tab
+                                    ? {
+                                          backgroundColor: `var(--${theme}-background-200)`,
+                                      }
+                                    : {
+                                          backgroundColor: `var(--${theme}-background-100)`,
+                                          borderBottom: `2px solid var(--${theme}-background-200)`,
+                                      }
+                            }
+                            onClick={() => setActiveTab(tab)}
+                        >
+                            {tab === 'profile' ? (
+                                <>
+                                    <FaUser className="mr-1 sm:mr-2" /> My
+                                    Profile
+                                </>
+                            ) : (
+                                <>
+                                    <FaArchive className="mr-1 sm:mr-2" />{' '}
+                                    Archived Tasks
+                                </>
+                            )}
+                        </div>
+                    ))}
                 </div>
-                <div className="w-full h-full">
+                <div className="w-full flex-grow overflow-hidden">
                     <AnimatePresence mode="wait">
                         <motion.div
                             key={activeTab}
@@ -101,7 +100,7 @@ const ProfileArchivePage: React.FC<ProfileArchivePageProps> = ({
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: -50 }}
                             transition={{ duration: 0.2 }}
-                            className="h-[600px] overflow-y-auto"
+                            className="h-full overflow-y-auto"
                         >
                             {activeTab === 'profile' ? (
                                 <ProfileSettings />

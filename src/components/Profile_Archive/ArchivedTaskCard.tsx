@@ -1,17 +1,40 @@
 import { Task, SpaceData } from '@/types';
 import { useTheme } from '@/hooks/useTheme';
-import { FaTag, FaCalendarAlt, FaUndo, FaTrash } from 'react-icons/fa';
+import {
+    FaTag,
+    FaCalendarAlt,
+    FaUndo,
+    FaTrash,
+    FaExclamationTriangle,
+} from 'react-icons/fa';
 import { useEffect, useRef, useState } from 'react';
 import { moveTaskToSpace } from '@/store/tasksSlice';
 import { useDispatch } from 'react-redux';
 import { useDeleteTask } from '@/hooks/useDeleteTask';
 import { ComponentSpinner } from '../ComponentSpinner';
 import { useAlert } from '@/hooks/useAlert';
+import { Tooltip } from 'react-tooltip';
 
 interface ArchivedTaskCardProps {
     task: Task;
     spaces: SpaceData[];
 }
+
+const getDaysUntilDeletion = (archivedAt: string) => {
+    const archiveDate = new Date(archivedAt);
+    const deleteDate = new Date(
+        archiveDate.getTime() + 30 * 24 * 60 * 60 * 1000
+    );
+    const now = new Date();
+    return Math.ceil(
+        (deleteDate.getTime() - now.getTime()) / (1000 * 3600 * 24)
+    );
+};
+
+const isApproachingDeletion = (archivedAt: string) => {
+    const daysUntilDeletion = getDaysUntilDeletion(archivedAt);
+    return daysUntilDeletion <= 7;
+};
 
 const ArchivedTaskCard: React.FC<ArchivedTaskCardProps> = ({
     task,
@@ -62,6 +85,7 @@ const ArchivedTaskCard: React.FC<ArchivedTaskCardProps> = ({
             className="p-4 rounded-lg shadow-md"
             style={{
                 backgroundColor: `var(--${currentTheme}-background-200)`,
+                border: `1px solid var(--${currentTheme}-card-border-color)`,
             }}
         >
             {isLoading && (
@@ -102,18 +126,42 @@ const ArchivedTaskCard: React.FC<ArchivedTaskCardProps> = ({
                     </div>
                 </div>
                 <div className="grid grid-rows-2 gap-2 col-span-2">
-                    <div className="flex items-center justify-center gap-2 text-sm">
-                        <FaCalendarAlt
-                            style={{
-                                color: `var(--${currentTheme}-text-default)`,
-                            }}
-                        />
-                        Archived:
-                        <span>
-                            {task.archivedAt
-                                ? new Date(task.archivedAt).toLocaleDateString()
-                                : 'N/A'}
-                        </span>
+                    <div className="flex flex-col">
+                        <div
+                            className="flex items-center justify-center gap-2 text-sm font-semibold"
+                            data-tooltip-id="archived-task-card-date"
+                            data-tooltip-place="top"
+                        >
+                            {isApproachingDeletion(
+                                task.archivedAt?.toString() || ''
+                            ) ? (
+                                <>
+                                    <FaExclamationTriangle
+                                        style={{
+                                            color: `var(--${currentTheme}-accent-red)`,
+                                        }}
+                                    />
+                                    <Tooltip id="archived-task-card-date">
+                                        {getDaysUntilDeletion(
+                                            task.archivedAt?.toString() || ''
+                                        )}{' '}
+                                        days until deletion
+                                    </Tooltip>
+                                </>
+                            ) : (
+                                <FaCalendarAlt />
+                            )}
+                            Archived:
+                            <span>
+                                <span>
+                                    {task.archivedAt
+                                        ? new Date(
+                                              task.archivedAt
+                                          ).toLocaleDateString()
+                                        : 'N/A'}
+                                </span>
+                            </span>
+                        </div>
                     </div>
                     <div className="relative flex flex-row justify-end gap-2">
                         <button

@@ -6,11 +6,13 @@ interface SubtaskBottomBarProps {
     subtask: Task;
     handleProgressChange: (TaskProgress: TaskProgress) => void;
     handleSetDueDate: (dueDate: Date | undefined) => void;
+    handleArchive: () => void;
 }
 
 export const SubtaskBottomBar = ({
     subtask,
     handleProgressChange,
+    handleArchive,
 }: SubtaskBottomBarProps) => {
     return (
         <div className="flex justify-between items-top gap-2 relative">
@@ -19,6 +21,7 @@ export const SubtaskBottomBar = ({
                 onProgressChange={handleProgressChange}
                 isSubtask={true}
                 taskId={subtask._id ?? ''}
+                onArchive={handleArchive}
             />
             <SubtaskProgresses task={subtask} />
         </div>
