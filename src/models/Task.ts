@@ -21,6 +21,8 @@ interface ITask extends Document {
     updatedAt: Date;
     dueDate?: Date;
     emoji?: string;
+    isArchived: boolean;
+    archivedAt: Date;
 }
 
 const TaskSchema = new mongoose.Schema({
@@ -35,7 +37,7 @@ const TaskSchema = new mongoose.Schema({
     space: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Space',
-        required: true,
+        required: false,
     },
     progress: {
         type: String,
@@ -53,6 +55,8 @@ const TaskSchema = new mongoose.Schema({
     updatedAt: { type: Date, default: Date.now },
     dueDate: { type: Date, required: false },
     emoji: { type: String, required: false },
+    isArchived: { type: Boolean, default: false },
+    archivedAt: { type: Date, required: false },
 });
 
 // Add this line to create the compound index

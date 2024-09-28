@@ -1,25 +1,21 @@
-// src/app/api/tasks/[id]/move/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Task from '@/models/Task';
 import { getUserId } from '@/hooks/useGetUserId';
 import mongoose from 'mongoose';
 
-export async function PUT(
-    req: NextRequest,
-    { params }: { params: { id: string } }
-) {
+export async function PUT(req: NextRequest) {
     try {
         await dbConnect();
         const userId = await getUserId(req);
-        const { spaceId } = await req.json();
+        const { taskId } = await req.json();
 
         const session = await mongoose.startSession();
         session.startTransaction();
 
         try {
             const task = await Task.findOne({
-                _id: params.id,
+                _id: taskId,
                 user: userId,
             }).session(session);
 
@@ -32,11 +28,7 @@ export async function PUT(
             }
 
             // Update the task and all its descendants
-            const updatedTasks = await updateTaskAndDescendants(
-                task._id,
-                spaceId,
-                session
-            );
+            const updatedTasks = await archiveTaskAndDescendants(task, session);
 
             await session.commitTransaction();
 
@@ -48,39 +40,44 @@ export async function PUT(
             session.endSession();
         }
     } catch (error) {
-        console.error('Error moving or archiving task:', error);
+        console.error('Error archiving task:', error);
         return NextResponse.json(
-            { error: 'Failed to move or archive task' },
+            { error: 'Failed to archive task' },
             { status: 500 }
         );
     }
 }
 
-async function updateTaskAndDescendants(
-    taskId: string,
-    spaceId: string | null,
+async function archiveTaskAndDescendants(
+    task: any,
     session: mongoose.ClientSession
 ): Promise<any[]> {
-    const isArchiving = spaceId === null;
-    const updateData = isArchiving
-        ? { space: null, isArchived: true, archivedAt: new Date() }
-        : { space: spaceId, isArchived: false, archivedAt: null };
+    const updateData = {
+        space: null,
+        isArchived: true,
+        archivedAt: new Date(),
+        subtasks: [],
+        ancestors: [],
+        parentTask: null,
+    };
 
-    const task = await Task.findByIdAndUpdate(taskId, updateData, {
+    const updatedTask = await Task.findByIdAndUpdate(task._id, updateData, {
         new: true,
         session,
     });
 
-    let updatedTasks = [task];
+    let updatedTasks = [updatedTask];
 
-    if (task && task.subtasks && task.subtasks.length > 0) {
+    if (task.subtasks && task.subtasks.length > 0) {
         for (const subtaskId of task.subtasks) {
-            const subtaskUpdates = await updateTaskAndDescendants(
-                subtaskId,
-                spaceId,
-                session
-            );
-            updatedTasks = updatedTasks.concat(subtaskUpdates);
+            const subtask = await Task.findById(subtaskId).session(session);
+            if (subtask) {
+                const subtaskUpdates = await archiveTaskAndDescendants(
+                    subtask,
+                    session
+                );
+                updatedTasks = updatedTasks.concat(subtaskUpdates);
+            }
         }
     }
 

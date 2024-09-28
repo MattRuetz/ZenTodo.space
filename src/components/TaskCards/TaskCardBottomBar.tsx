@@ -10,12 +10,20 @@ export interface TaskCardBottomBarProps {
     task: Task;
     progress: TaskProgress;
     onProgressChange: (progress: TaskProgress) => void;
+    onArchive: () => void;
     handleResizeStart: (e: React.MouseEvent) => void;
     currentTheme: string;
 }
 
 const TaskCardBottomBar: React.FC<TaskCardBottomBarProps> = React.memo(
-    ({ task, progress, onProgressChange, handleResizeStart, currentTheme }) => {
+    ({
+        task,
+        progress,
+        onProgressChange,
+        onArchive,
+        handleResizeStart,
+        currentTheme,
+    }) => {
         return (
             <div
                 className="task-card-bottom-bar flex flex-row justify-between w-full gap-2 py-2 z-10"
@@ -30,6 +38,7 @@ const TaskCardBottomBar: React.FC<TaskCardBottomBarProps> = React.memo(
                         onProgressChange={onProgressChange}
                         isSubtask={false}
                         taskId={task._id ?? ''}
+                        onArchive={onArchive}
                     />
                 </div>
                 <SubtaskProgresses

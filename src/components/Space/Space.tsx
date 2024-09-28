@@ -8,7 +8,7 @@ import TaskCard from '../TaskCards/TaskCard';
 import SignUpForm from '../SignUpForm';
 import SubtaskDrawer from '../Subtask/SubtaskDrawer';
 import { RootState, AppDispatch } from '../../store/store';
-import { fetchTasks, updateTask } from '../../store/tasksSlice';
+import { updateTask } from '../../store/tasksSlice';
 import {
     updateSpaceMaxZIndex,
     fetchSpaceMaxZIndex,
@@ -46,7 +46,7 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId }) => {
         (state: RootState) => state.spaces.currentSpace
     );
     const selectedEmojis = useSelector(selectSelectedEmojis);
-    const isDrawerOpen = useSelector(
+    const isSubtaskDrawerOpen = useSelector(
         (state: RootState) => state.ui.isSubtaskDrawerOpen
     );
 
@@ -351,7 +351,7 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId }) => {
             )}
             <SubtaskDrawer
                 ref={subtaskDrawerRef}
-                isOpen={isDrawerOpen as boolean}
+                isOpen={isSubtaskDrawerOpen as boolean}
                 onClose={handleCloseDrawer}
                 maxZIndex={maxZIndex}
             />

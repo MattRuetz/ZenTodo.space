@@ -18,7 +18,7 @@ const Preloader: React.FC<PreloaderProps> = React.memo(({ fadeOut }) => {
             <span className="loading loading-ring text-slate-600 loading-lg"></span>
             <p className="mt-4 text-slate-600">Loading space...</p>
             <p className="mt-2 text-md text-neutral-content italic max-w-md text-center">
-                "{quote}"
+                {quote}
             </p>
         </div>
     );

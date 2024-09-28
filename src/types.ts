@@ -15,7 +15,7 @@ export interface Task {
     width: number;
     height: number;
     progress: TaskProgress;
-    space: string;
+    space: string | null;
     zIndex: number;
     subtasks: string[];
     parentTask?: string;
@@ -25,6 +25,8 @@ export interface Task {
     dueDate?: Date | null;
     emoji?: string;
     isTemp?: boolean;
+    isArchived?: boolean;
+    archivedAt?: Date;
 }
 
 export interface SpaceData {
@@ -37,6 +39,18 @@ export interface SpaceData {
     selectedEmojis: string[];
 }
 
+export interface User {
+    _id?: string;
+    name: string;
+    profilePicture: string;
+    email: string;
+    password: string;
+    themePreference: string;
+    spacesCount: number;
+    totalTasksCreated: number;
+    tasksCompleted: number;
+    tasksInProgress: number;
+}
 export type SortOption =
     | 'name'
     | 'progress'

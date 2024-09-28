@@ -15,6 +15,7 @@ export const selectTasksForSpace = createSelector(
             (task) =>
                 task.space === spaceId &&
                 !task.parentTask &&
+                !task.isArchived &&
                 (selectedEmojis.length === 0 ||
                     selectedEmojis.includes(task.emoji || ''))
         );

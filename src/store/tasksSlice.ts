@@ -351,14 +351,14 @@ export const moveSubtaskWithinLevelAsync = createAsyncThunk(
 
 export const moveTaskToSpace = createAsyncThunk(
     'tasks/moveTaskToSpace',
-    async ({ taskId, spaceId }: { taskId: string; spaceId: string }) => {
+    async ({ taskId, spaceId }: { taskId: string; spaceId: string | null }) => {
         const response = await fetch(`/api/tasks/${taskId}/move`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ spaceId }),
         });
         const data = await response.json();
-        return data.task;
+        return data.tasks;
     }
 );
 
@@ -391,11 +391,34 @@ export const duplicateTasksAsync = createAsyncThunk(
     }
 );
 
+export const archiveTaskAsync = createAsyncThunk(
+    'tasks/archiveTask',
+    async (taskId: string, { rejectWithValue }) => {
+        try {
+            const response = await fetch(`/api/tasks/archive`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ taskId }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to archive task');
+            }
+
+            const data = await response.json();
+            return data.tasks;
+        } catch (error) {
+            return rejectWithValue((error as Error).message);
+        }
+    }
+);
+
 export const tasksSlice = createSlice({
     name: 'tasks',
     initialState,
     reducers: {
-        // Optimistic duplication of tasks
         addTaskOptimistic: (state, action: PayloadAction<Task>) => {
             state.tasks.push(action.payload);
         },
@@ -761,12 +784,15 @@ export const tasksSlice = createSlice({
                 state.error = action.payload as string;
             })
             .addCase(moveTaskToSpace.fulfilled, (state, action) => {
-                const index = state.tasks.findIndex(
-                    (t) => t._id === action.payload._id
-                );
-                if (index !== -1) {
-                    state.tasks[index] = action.payload;
-                }
+                const updatedTasks = action.payload;
+                updatedTasks.forEach((updatedTask: Task) => {
+                    const index = state.tasks.findIndex(
+                        (t) => t._id === updatedTask._id
+                    );
+                    if (index !== -1) {
+                        state.tasks[index] = updatedTask;
+                    }
+                });
             })
             .addCase(duplicateTasksAsync.fulfilled, (state, action) => {
                 const duplicatedTasks = action.payload;
@@ -830,6 +856,25 @@ export const tasksSlice = createSlice({
                 );
             })
             .addCase(deleteTasksInSpace.rejected, (state, action) => {
+                state.status = 'failed';
+                state.error = action.error.message || null;
+            })
+            .addCase(archiveTaskAsync.pending, (state) => {
+                state.status = 'loading';
+            })
+            .addCase(archiveTaskAsync.fulfilled, (state, action) => {
+                state.status = 'idle';
+                const updatedTasks = action.payload;
+                updatedTasks.forEach((updatedTask: Task) => {
+                    const index = state.tasks.findIndex(
+                        (t) => t._id === updatedTask._id
+                    );
+                    if (index !== -1) {
+                        state.tasks[index] = updatedTask;
+                    }
+                });
+            })
+            .addCase(archiveTaskAsync.rejected, (state, action) => {
                 state.status = 'failed';
                 state.error = action.error.message || null;
             });
