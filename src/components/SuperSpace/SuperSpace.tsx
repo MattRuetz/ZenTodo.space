@@ -34,6 +34,7 @@ import { FaPlusCircle } from 'react-icons/fa';
 import { fetchTasks } from '@/store/tasksSlice';
 import ProfileArchivePage from '../Profile_Archive/ProfileArchivePage';
 import { setUser } from '@/store/userSlice';
+import BottomSettings from './BottomSettings';
 
 type ThemeName = 'buji' | 'daigo' | 'enzu';
 const SuperSpace = React.memo(() => {
@@ -130,10 +131,13 @@ const SuperSpace = React.memo(() => {
     return (
         <>
             {isProfilePageOpen ? (
-                <ProfileArchivePage
-                    setIsProfilePageOpen={setIsProfilePageOpen}
-                    activeTabStart={activeTabStart}
-                />
+                <>
+                    <ProfileArchivePage
+                        setIsProfilePageOpen={setIsProfilePageOpen}
+                        activeTabStart={activeTabStart}
+                    />
+                    <BottomSettings />
+                </>
             ) : (
                 <DndProvider backend={HTML5Backend}>
                     <div className="relative w-full h-full bg-gradient-to-b from-slate-900 to-slate-800 overflow-hidden">

@@ -51,6 +51,7 @@ const ProfileArchivePage: React.FC<ProfileArchivePageProps> = ({
                 className="container max-w-screen-lg mx-auto rounded-lg overflow-hidden"
                 style={{
                     backgroundColor: `var(--${theme}-background-100)`,
+                    border: `2px solid var(--${theme}-card-border-color)`,
                 }}
             >
                 <div
