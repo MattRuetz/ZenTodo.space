@@ -334,8 +334,8 @@ const TaskCard = React.memo(
                 subtask: {
                     taskName: 'New Subtask',
                     taskDescription: '',
-                    x: 0,
-                    y: 0,
+                    x: localTask.x + 20,
+                    y: localTask.y + 20,
                     width: 100,
                     height: 100,
                     subtasks: [],

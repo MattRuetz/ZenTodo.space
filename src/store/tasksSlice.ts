@@ -393,14 +393,17 @@ export const duplicateTasksAsync = createAsyncThunk(
 
 export const archiveTaskAsync = createAsyncThunk(
     'tasks/archiveTask',
-    async (taskId: string, { rejectWithValue }) => {
+    async (
+        { taskId, parentTaskId }: { taskId: string; parentTaskId?: string },
+        { rejectWithValue }
+    ) => {
         try {
             const response = await fetch(`/api/tasks/archive`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ taskId }),
+                body: JSON.stringify({ taskId, parentTaskId }),
             });
 
             if (!response.ok) {
@@ -408,9 +411,64 @@ export const archiveTaskAsync = createAsyncThunk(
             }
 
             const data = await response.json();
-            return data.tasks;
+            return data;
         } catch (error) {
             return rejectWithValue((error as Error).message);
+        }
+    }
+);
+
+export const moveTaskWithinLevelAsync = createAsyncThunk(
+    'tasks/moveTaskWithinLevelAsync',
+    async (
+        {
+            taskId,
+            parentId,
+            newPosition,
+            newOrder,
+        }: {
+            taskId: string;
+            parentId: string | null;
+            newPosition: string;
+            newOrder?: string[];
+        },
+        { rejectWithValue }
+    ) => {
+        const MAX_RETRIES = 5;
+        const INITIAL_BACKOFF = 100; // ms
+
+        for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+            try {
+                const response = await fetch('/api/tasks/move-task', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        taskId,
+                        parentId,
+                        newPosition,
+                        newOrder,
+                    }),
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to move task');
+                }
+
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                if (attempt === MAX_RETRIES - 1) {
+                    if (error instanceof Error) {
+                        return rejectWithValue(error.message);
+                    }
+                    return rejectWithValue('An unknown error occurred');
+                }
+
+                // Exponential backoff
+                await new Promise((resolve) =>
+                    setTimeout(resolve, INITIAL_BACKOFF * Math.pow(2, attempt))
+                );
+            }
         }
     }
 );
@@ -580,6 +638,31 @@ export const tasksSlice = createSlice({
             );
             if (parentIndex !== -1) {
                 state.tasks[parentIndex] = updatedParentTask;
+            }
+        },
+        moveTaskWithinLevelOptimistic: (
+            state,
+            action: PayloadAction<{
+                parentId: string | null;
+                newTaskOrder: string[];
+            }>
+        ) => {
+            const { parentId, newTaskOrder } = action.payload;
+            if (parentId === null) {
+                // Handle root-level tasks
+                state.tasks = state.tasks.sort(
+                    (a, b) =>
+                        newTaskOrder.indexOf(a._id as string) -
+                        newTaskOrder.indexOf(b._id as string)
+                );
+            } else {
+                // Handle subtasks
+                const parentTask = state.tasks.find(
+                    (task) => task._id === parentId
+                );
+                if (parentTask) {
+                    parentTask.subtasks = newTaskOrder;
+                }
             }
         },
     },
@@ -864,7 +947,7 @@ export const tasksSlice = createSlice({
             })
             .addCase(archiveTaskAsync.fulfilled, (state, action) => {
                 state.status = 'idle';
-                const updatedTasks = action.payload;
+                const { updatedTasks, updatedParentTask } = action.payload;
                 updatedTasks.forEach((updatedTask: Task) => {
                     const index = state.tasks.findIndex(
                         (t) => t._id === updatedTask._id
@@ -873,10 +956,32 @@ export const tasksSlice = createSlice({
                         state.tasks[index] = updatedTask;
                     }
                 });
+
+                console.log('updatedParentTask', updatedParentTask);
+                // Update the parent task if provided
+                if (updatedParentTask) {
+                    const parentIndex = state.tasks.findIndex(
+                        (task) => task._id === updatedParentTask._id
+                    );
+                    if (parentIndex !== -1) {
+                        state.tasks[parentIndex].subtasks =
+                            updatedParentTask.subtasks;
+                    }
+                }
             })
             .addCase(archiveTaskAsync.rejected, (state, action) => {
                 state.status = 'failed';
                 state.error = action.error.message || null;
+            })
+            .addCase(moveTaskWithinLevelAsync.fulfilled, (state, action) => {
+                const { parentId, newTaskOrder } = action.payload;
+                // Update tasks order in state based on server confirmation
+                const parentIndex = state.tasks.findIndex(
+                    (task) => task._id === parentId
+                );
+                if (parentIndex !== -1) {
+                    state.tasks[parentIndex].subtasks = newTaskOrder;
+                }
             });
     },
 });
@@ -893,6 +998,7 @@ export const {
     addNewSubtaskOptimistic,
     addTaskOptimistic,
     deleteTaskOptimistic,
+    moveTaskWithinLevelOptimistic,
 } = tasksSlice.actions;
 
 export default tasksSlice.reducer;

@@ -11,6 +11,7 @@ import Breadcrumb from './Breadcrumb';
 import SortingDropdown from '../Subtask/SortingDropdown';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSwipeable } from 'react-swipeable';
+import TaskListDropZone from './TaskListDropZone';
 
 interface TaskListViewProps {
     spaceId: string;
@@ -111,7 +112,7 @@ const TaskListView: React.FC<TaskListViewProps> = ({ spaceId }) => {
     return (
         <div
             {...handlers}
-            className="task-list-view"
+            className="task-list-view pt-16 overflow-y-auto h-full"
             style={{
                 backgroundColor: `var(--${currentTheme}-background-200)`,
                 minHeight: '100vh',
@@ -129,14 +130,32 @@ const TaskListView: React.FC<TaskListViewProps> = ({ spaceId }) => {
                     transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                 >
                     {sortedSubtasks.map((task, index) => (
-                        <TaskListItem
-                            key={task._id}
-                            task={task}
-                            onClick={() => handleTaskClick(task)}
-                            index={index}
-                            parentId={currentParent?._id || spaceId}
-                        />
+                        <React.Fragment key={task._id}>
+                            <TaskListDropZone
+                                position={
+                                    index === 0
+                                        ? 'start'
+                                        : `after_${
+                                              sortedSubtasks[index - 1]._id
+                                          }`
+                                }
+                                parentId={currentParent?._id || null}
+                            />
+                            <TaskListItem
+                                task={task}
+                                onClick={() => handleTaskClick(task)}
+                                index={index}
+                                parentId={currentParent?._id || null}
+                            />
+                        </React.Fragment>
                     ))}
+                    {/* Add a drop zone at the end */}
+                    <TaskListDropZone
+                        position={`after_${
+                            sortedSubtasks[sortedSubtasks.length - 1]?._id
+                        }`}
+                        parentId={currentParent?._id || null}
+                    />
                 </motion.ul>
             </AnimatePresence>
         </div>
