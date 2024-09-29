@@ -57,11 +57,28 @@ const TaskListView: React.FC<TaskListViewProps> = ({ spaceId }) => {
         }
     };
 
-    const currentTasks = currentParent
-        ? allTasks.filter((task) => task.parentTask === currentParent._id)
-        : allTasks.filter((task) => !task.parentTask && task.space === spaceId);
+    const currentTasks = useMemo(() => {
+        if (currentParent) {
+            // For subtasks, use the order from the parent's subtasks array
+            return currentParent.subtasks
+                .map((subtaskId) =>
+                    allTasks.find((task) => task._id === subtaskId)
+                )
+                .filter(Boolean) as Task[];
+        } else {
+            // For root-level tasks, filter as before
+            return allTasks.filter(
+                (task) => !task.parentTask && task.space === spaceId
+            );
+        }
+    }, [currentParent, allTasks, spaceId]);
 
-    const sortedSubtasks = useMemo(() => {
+    const sortedTasksAtLevel = useMemo(() => {
+        if (sortOption === 'custom' || !sortOption) {
+            // If sorting is set to custom or not set, use the current order
+            return currentTasks;
+        }
+
         let sorted = [...currentTasks];
         switch (sortOption) {
             case 'name':
@@ -84,25 +101,9 @@ const TaskListView: React.FC<TaskListViewProps> = ({ spaceId }) => {
                         new Date(a.updatedAt as Date).getTime()
                 );
                 break;
-            default:
-                break;
         }
-        if (isReversed) {
-            sorted.reverse();
-        }
-        return sorted;
+        return isReversed ? sorted.reverse() : sorted;
     }, [currentTasks, sortOption, isReversed]);
-
-    useEffect(() => {
-        // Check if there are no subtasks and close the drawer
-        if (sortedSubtasks.length === 0) {
-            if (currentParent && currentParent.parentTask) {
-                dispatch(setSubtaskDrawerParentId(currentParent.parentTask));
-            } else {
-                dispatch(setSubtaskDrawerParentId(null));
-            }
-        }
-    }, [sortedSubtasks, currentParent]);
 
     const handlers = useSwipeable({
         onSwipedRight: () => handleBack(),
@@ -129,14 +130,14 @@ const TaskListView: React.FC<TaskListViewProps> = ({ spaceId }) => {
                     exit={{ x: -300 }}
                     transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                 >
-                    {sortedSubtasks.map((task, index) => (
+                    {sortedTasksAtLevel.map((task, index) => (
                         <React.Fragment key={task._id}>
                             <TaskListDropZone
                                 position={
                                     index === 0
                                         ? 'start'
                                         : `after_${
-                                              sortedSubtasks[index - 1]._id
+                                              sortedTasksAtLevel[index - 1]._id
                                           }`
                                 }
                                 parentId={currentParent?._id || null}
@@ -152,7 +153,8 @@ const TaskListView: React.FC<TaskListViewProps> = ({ spaceId }) => {
                     {/* Add a drop zone at the end */}
                     <TaskListDropZone
                         position={`after_${
-                            sortedSubtasks[sortedSubtasks.length - 1]?._id
+                            sortedTasksAtLevel[sortedTasksAtLevel.length - 1]
+                                ?._id
                         }`}
                         parentId={currentParent?._id || null}
                     />

@@ -162,22 +162,19 @@ body {
 /* styles.css or your relevant CSS file */
 @keyframes shake {
     0% {
-        transform: translateX(0);
-    }
-    25% {
-        transform: translateX(-5px);
+        transform: rotateZ(1deg);
     }
     50% {
-        transform: translateX(5px);
-    }
-    75% {
-        transform: translateX(-5px);
+        transform: rotateZ(-1deg);
     }
     100% {
-        transform: translateX(0);
+        transform: rotateZ(1deg);
     }
 }
 
 .shake {
-    animation: shake 0.5s ease-in-out;
+    animation: shake 0.3s ease-in-out infinite;
+    transition: all 0.3s ease;
+    scale: 0.9;
+    opacity: 0.8;
 }

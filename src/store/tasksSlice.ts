@@ -648,12 +648,18 @@ export const tasksSlice = createSlice({
             }>
         ) => {
             const { parentId, newTaskOrder } = action.payload;
+            console.log(
+                'Optimistically moving task. Parent ID:',
+                parentId,
+                'New order:',
+                newTaskOrder
+            );
             if (parentId === null) {
                 // Handle root-level tasks
                 state.tasks = state.tasks.sort(
                     (a, b) =>
-                        newTaskOrder.indexOf(a._id as string) -
-                        newTaskOrder.indexOf(b._id as string)
+                        newTaskOrder.indexOf(a._id) -
+                        newTaskOrder.indexOf(b._id)
                 );
             } else {
                 // Handle subtasks
@@ -975,7 +981,12 @@ export const tasksSlice = createSlice({
             })
             .addCase(moveTaskWithinLevelAsync.fulfilled, (state, action) => {
                 const { parentId, newTaskOrder } = action.payload;
-                // Update tasks order in state based on server confirmation
+                console.log(
+                    'Confirmed move task from server. Parent ID:',
+                    parentId,
+                    'New order:',
+                    newTaskOrder
+                );
                 const parentIndex = state.tasks.findIndex(
                     (task) => task._id === parentId
                 );

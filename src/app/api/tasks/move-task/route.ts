@@ -11,8 +11,20 @@ export async function PUT(req: NextRequest) {
         const body = await req.json();
         const { taskId, parentId, newPosition, newOrder, spaceId } = body;
 
+        console.log(
+            'Received request to move task:',
+            taskId,
+            'to parent:',
+            parentId,
+            'at position:',
+            newPosition,
+            'with new order:',
+            newOrder
+        );
+
         const task = await Task.findOne({ _id: taskId, user: userId });
         if (!task) {
+            console.log('Task not found:', taskId);
             return NextResponse.json(
                 { error: 'Task not found' },
                 { status: 404 }
@@ -26,6 +38,7 @@ export async function PUT(req: NextRequest) {
                 user: userId,
             });
             if (!parentTask) {
+                console.log('Parent task not found:', parentId);
                 return NextResponse.json(
                     { error: 'Parent task not found' },
                     { status: 404 }
@@ -33,7 +46,10 @@ export async function PUT(req: NextRequest) {
             }
 
             if (newOrder) {
-                // Update the order based on the provided newOrder
+                console.log(
+                    'Updating parent task subtasks with new order:',
+                    newOrder
+                );
                 parentTask.subtasks = newOrder;
             } else {
                 // Existing logic for moving a single task within a parent
@@ -59,9 +75,11 @@ export async function PUT(req: NextRequest) {
 
             task.parentTask = parentId;
             await parentTask.save();
+            console.log('Parent task updated:', parentTask);
         } else {
             // Moving at the root level
             if (!spaceId) {
+                console.log('Space ID is required for root-level tasks');
                 return NextResponse.json(
                     { error: 'Space ID is required for root-level tasks' },
                     { status: 400 }
@@ -70,6 +88,7 @@ export async function PUT(req: NextRequest) {
 
             const space = await Space.findOne({ _id: spaceId, user: userId });
             if (!space) {
+                console.log('Space not found:', spaceId);
                 return NextResponse.json(
                     { error: 'Space not found' },
                     { status: 404 }
@@ -77,7 +96,10 @@ export async function PUT(req: NextRequest) {
             }
 
             if (newOrder) {
-                // Update the order based on the provided newOrder
+                console.log(
+                    'Updating space task order with new order:',
+                    newOrder
+                );
                 space.taskOrder = newOrder;
             } else {
                 // Existing logic for moving a single task at root level
@@ -103,9 +125,11 @@ export async function PUT(req: NextRequest) {
 
             task.parentTask = null;
             await space.save();
+            console.log('Space updated:', space);
         }
 
         await task.save();
+        console.log('Task updated:', task);
 
         return NextResponse.json({
             updatedTask: task,

@@ -14,6 +14,14 @@ export const useMoveTask = () => {
 
     const moveTaskTemporary = useCallback(
         (taskId: string, parentId: string | null, newPosition: string) => {
+            console.log(
+                'Moving task:',
+                taskId,
+                'to parent:',
+                parentId,
+                'at position:',
+                newPosition
+            );
             const tasks = parentId
                 ? tasksState.find((task) => task._id === parentId)?.subtasks ||
                   []
@@ -22,6 +30,7 @@ export const useMoveTask = () => {
                       .map((task) => task._id);
 
             const currentIndex = tasks.indexOf(taskId);
+            console.log('Current index of task:', currentIndex);
 
             if (currentIndex === -1) {
                 console.error('Task not found in current level');
@@ -46,6 +55,7 @@ export const useMoveTask = () => {
                 newTasks.push(taskId);
             }
 
+            console.log('New task order:', newTasks);
             dispatch(
                 moveTaskWithinLevelOptimistic({
                     parentId,
@@ -58,12 +68,14 @@ export const useMoveTask = () => {
 
     const commitTaskOrder = useCallback(
         async (parentId: string | null) => {
+            console.log('Committing task order for parent:', parentId);
             const tasks = store.getState().tasks.tasks;
             const tasksAtLevel = parentId
                 ? tasks.filter((task) => task.parentTask === parentId)
                 : tasks.filter((task) => !task.parentTask);
 
             const taskIds = tasksAtLevel.map((task) => task._id);
+            console.log('Task IDs at level:', taskIds);
 
             try {
                 await dispatch(
