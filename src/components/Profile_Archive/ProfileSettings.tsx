@@ -327,7 +327,12 @@ const ProfileSettings = () => {
                 }}
             />
             <div className="quote-of-the-day p-4 text-center max-w-md text-xs mb-4 w-full">
-                <div className="text-sm mb-2">Quote of the day:</div>
+                <div
+                    className="text-sm mb-2"
+                    style={{ color: `var(--${currentTheme}-text-default)` }}
+                >
+                    Quote of the day:
+                </div>
                 <blockquote
                     className="text-md italic hover:scale-105 transition-all duration-300"
                     style={{ color: `var(--${currentTheme}-text-subtle)` }}

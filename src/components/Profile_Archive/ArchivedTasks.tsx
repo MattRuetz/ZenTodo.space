@@ -58,11 +58,11 @@ const ArchivedTasks: React.FC = () => {
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="w-full p-2 pl-10 rounded-lg"
                             style={{
-                                backgroundColor: `var(--${currentTheme}-background-100)`,
+                                backgroundColor: `var(--${currentTheme}-background-200)`,
                                 border: `1px solid var(--${currentTheme}-card-border-color)`,
                             }}
                         />
-                        <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                        <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2" />
                     </div>
                     <select
                         value={sortBy}
