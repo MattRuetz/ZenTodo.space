@@ -38,8 +38,6 @@ export async function GET(req: NextRequest) {
         user.tasksInProgress = tasksInProgress;
         await user.save();
 
-        console.log('User stats updated:', user);
-
         return NextResponse.json(user);
     } catch (error) {
         console.error('Error fetching user data:', error);
