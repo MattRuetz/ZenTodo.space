@@ -13,7 +13,6 @@ import Space from '../Space/Space';
 import { AppDispatch, RootState } from '@/store/store';
 import { SpaceData, Task } from '@/types';
 import ControlPanel from './ControlPanel';
-import Preloader from './Preloader';
 import { useSession } from 'next-auth/react';
 import { Tooltip } from 'react-tooltip';
 import { generateRandomColor } from '@/app/utils/utils';
@@ -23,8 +22,11 @@ import {
     setSubtaskDrawerParentId,
 } from '@/store/uiSlice';
 import { AnimatePresence, motion } from 'framer-motion';
+// imports for dnd ----------------------------------
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import { TouchBackend } from 'react-dnd-touch-backend';
+//---------------------------------------------------
 import { useAlert } from '@/hooks/useAlert';
 import { useTheme } from '@/hooks/useTheme';
 import { fetchTheme, setTheme } from '@/store/themeSlice';
@@ -36,7 +38,6 @@ import ProfileArchivePage from '../Profile_Archive/ProfileArchivePage';
 import { setUser } from '@/store/userSlice';
 import BottomSettings from './BottomSettings';
 
-type ThemeName = 'buji' | 'daigo' | 'enzu';
 const SuperSpace = React.memo(() => {
     const dispatch = useDispatch<AppDispatch>();
     const currentTheme = useTheme();
@@ -139,7 +140,10 @@ const SuperSpace = React.memo(() => {
                     <BottomSettings />
                 </>
             ) : (
-                <DndProvider backend={HTML5Backend}>
+                <DndProvider
+                    backend={TouchBackend}
+                    options={{ enableMouseEvents: true }}
+                >
                     <div className="relative w-full h-full bg-gradient-to-b from-slate-900 to-slate-800 overflow-hidden">
                         {isZoomedOut ? (
                             <>

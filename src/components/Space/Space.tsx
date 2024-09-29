@@ -4,6 +4,8 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useSession } from 'next-auth/react';
 import { useDrop } from 'react-dnd';
+// Import the new TaskListView component
+import TaskListView from '../Mobile/TaskListView';
 import TaskCard from '../TaskCards/TaskCard';
 import SignUpForm from '../SignUpForm';
 import SubtaskDrawer from '../Subtask/SubtaskDrawer';
@@ -21,6 +23,7 @@ import { useClearEmojis } from '@/hooks/useClearEmojis';
 import { useAddTask } from '@/hooks/useAddTask';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useTheme } from '@/hooks/useTheme';
+import { useIsMobile } from '@/hooks/useIsMobile';
 
 // Memoized selectors
 
@@ -36,6 +39,7 @@ export const selectSelectedEmojis = createSelector(
 const Space: React.FC<SpaceProps> = React.memo(({ spaceId }) => {
     const dispatch = useDispatch<AppDispatch>();
     const currentTheme = useTheme();
+    const isMobile = useIsMobile();
 
     const { data: session, status: sessionStatus } = useSession();
 
@@ -270,91 +274,100 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId }) => {
             }}
             onMouseDown={handleSpaceClick}
         >
-            {!session && (
-                <div
-                    ref={cursorEffectRef}
-                    className="cursor-effect"
-                    style={{
-                        background: `radial-gradient(
-                            circle,
-                            var(--${currentTheme}-background-100) 0%,
-                            var(--${currentTheme}-background-200) 20%,
-                            var(--${currentTheme}-background-300) 30%,
-                            transparent 60%
-                        )`,
-                    }}
-                />
-            )}
-            {session ? (
-                <>
-                    {tasks.length === 0 && (
-                        <div className="flex flex-col items-center justify-center h-full pointer-events-none">
-                            <AnimatePresence>
-                                <motion.div>
-                                    <motion.div
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        exit={{ opacity: 0 }}
-                                        transition={{
-                                            duration: 3,
-                                            delay: 1,
-                                            ease: 'easeInOut',
-                                        }}
-                                    >
-                                        <h1 className="text-center text-gray-500 text-5xl font-thin">
-                                            emptiness is bliss
-                                        </h1>
-                                    </motion.div>
-                                    <motion.div
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        exit={{ opacity: 0 }}
-                                        transition={{
-                                            duration: 3,
-                                            delay: 2,
-                                            ease: 'easeInOut',
-                                        }}
-                                    >
-                                        <p className="text-center text-gray-500 text-xl font-normal p-2 mt-2">
-                                            click anywhere to add a task.
-                                        </p>
-                                    </motion.div>
-                                </motion.div>
-                            </AnimatePresence>
-                        </div>
-                    )}
-                    {tasks
-                        .filter(
-                            (task) =>
-                                // !task.parentTask &&
-                                selectedEmojis.length === 0 ||
-                                selectedEmojis.includes(task.emoji || '')
-                        )
-                        .map((task) => (
-                            <TaskCard
-                                key={task._id}
-                                task={task as unknown as Task}
-                                onDragStart={handleDragStart}
-                                onDragStop={handleDragStop}
-                                getNewZIndex={getNewZIndex}
-                            />
-                        ))}
-                </>
+            {isMobile ? (
+                <TaskListView spaceId={spaceId} />
             ) : (
-                showSignUpForm && (
-                    <SignUpForm
-                        position={formPosition}
-                        onClose={() => setShowSignUpForm(false)}
-                        onDrag={handleFormDrag}
+                <>
+                    {!session && (
+                        <div
+                            ref={cursorEffectRef}
+                            className="cursor-effect"
+                            style={{
+                                background: `radial-gradient(
+                                    circle,
+                                    var(--${currentTheme}-background-100) 0%,
+                                    var(--${currentTheme}-background-200) 20%,
+                                    var(--${currentTheme}-background-300) 30%,
+                                    transparent 60%
+                                )`,
+                            }}
+                        />
+                    )}
+                    {session ? (
+                        <>
+                            {tasks.length === 0 && (
+                                <div className="flex flex-col items-center justify-center h-full pointer-events-none">
+                                    <AnimatePresence>
+                                        <motion.div>
+                                            <motion.div
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                                exit={{ opacity: 0 }}
+                                                transition={{
+                                                    duration: 3,
+                                                    delay: 1,
+                                                    ease: 'easeInOut',
+                                                }}
+                                            >
+                                                <h1 className="text-center text-gray-500 text-5xl font-thin">
+                                                    emptiness is bliss
+                                                </h1>
+                                            </motion.div>
+                                            <motion.div
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                                exit={{ opacity: 0 }}
+                                                transition={{
+                                                    duration: 3,
+                                                    delay: 2,
+                                                    ease: 'easeInOut',
+                                                }}
+                                            >
+                                                <p className="text-center text-gray-500 text-xl font-normal p-2 mt-2">
+                                                    click anywhere to add a
+                                                    task.
+                                                </p>
+                                            </motion.div>
+                                        </motion.div>
+                                    </AnimatePresence>
+                                </div>
+                            )}
+                            {tasks
+                                .filter(
+                                    (task) =>
+                                        // !task.parentTask &&
+                                        selectedEmojis.length === 0 ||
+                                        selectedEmojis.includes(
+                                            task.emoji || ''
+                                        )
+                                )
+                                .map((task) => (
+                                    <TaskCard
+                                        key={task._id}
+                                        task={task as unknown as Task}
+                                        onDragStart={handleDragStart}
+                                        onDragStop={handleDragStop}
+                                        getNewZIndex={getNewZIndex}
+                                    />
+                                ))}
+                        </>
+                    ) : (
+                        showSignUpForm && (
+                            <SignUpForm
+                                position={formPosition}
+                                onClose={() => setShowSignUpForm(false)}
+                                onDrag={handleFormDrag}
+                            />
+                        )
+                    )}
+                    <SubtaskDrawer
+                        ref={subtaskDrawerRef}
+                        isOpen={isSubtaskDrawerOpen as boolean}
+                        onClose={handleCloseDrawer}
+                        maxZIndex={maxZIndex}
                     />
-                )
+                </>
             )}
-            <SubtaskDrawer
-                ref={subtaskDrawerRef}
-                isOpen={isSubtaskDrawerOpen as boolean}
-                onClose={handleCloseDrawer}
-                maxZIndex={maxZIndex}
-            />
         </motion.div>
     );
 });
