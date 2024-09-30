@@ -165,6 +165,8 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
         setIsEditing(fieldName);
     }, []);
 
+    // TODO: Get this to work
+    // TODO: Fix this so that it doesn't allow dropping on the same task
     const [{ isOver, canDrop }, drop] = useDrop({
         accept: 'TASK',
         drop: (item: { id: string }) => {
