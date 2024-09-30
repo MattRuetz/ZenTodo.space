@@ -188,10 +188,8 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
             onTouchEnd={handleTouchEnd}
             onClick={onClick}
             className={`task-list-item p-4 ${
-                isDragging ? 'opacity-50' : 'opacity-100'
-            } ${
-                isShaking ? 'shake' : ''
-            } rounded-lg my-2 transition-colors duration-200 shadow-md border-2`}
+                (isDragging || isShaking) && 'shake'
+            } rounded-lg my-2 transition-all duration-200 shadow-md border-2`}
             style={{
                 cursor: 'move',
                 backgroundColor:

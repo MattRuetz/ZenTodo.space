@@ -37,6 +37,7 @@ export interface SpaceData {
     maxZIndex: number;
     emoji: string;
     selectedEmojis: string[];
+    taskOrder: string[];
 }
 
 export interface User {

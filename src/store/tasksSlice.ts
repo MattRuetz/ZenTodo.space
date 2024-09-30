@@ -1,6 +1,6 @@
 // src/store/tasksSlice.ts
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { Task } from '../types';
+import { Task, SpaceData } from '../types';
 import { RootState } from './store';
 
 interface TasksState {
@@ -21,7 +21,26 @@ export const fetchTasks = createAsyncThunk('tasks/fetchTasks', async () => {
         throw new Error('Failed to fetch tasks');
     }
     const tasks = await response.json();
-    return tasks;
+
+    console.log('tasks on fetch', tasks);
+
+    // Group tasks by space
+    const tasksBySpace = tasks.reduce(
+        (acc: { [key: string]: string[] }, task: Task) => {
+            if (!task.parentTask) {
+                if (!acc[task.space as string]) {
+                    acc[task.space as string] = [];
+                }
+                acc[task.space as string].push(task._id as string);
+            }
+            return acc;
+        },
+        {}
+    );
+
+    console.log(tasksBySpace);
+
+    return { tasks, tasksBySpace };
 });
 
 export const addTaskAsync = createAsyncThunk(
@@ -422,15 +441,13 @@ export const moveTaskWithinLevelAsync = createAsyncThunk(
     'tasks/moveTaskWithinLevelAsync',
     async (
         {
-            taskId,
             parentId,
-            newPosition,
             newOrder,
+            spaceId,
         }: {
-            taskId: string;
             parentId: string | null;
-            newPosition: string;
-            newOrder?: string[];
+            newOrder: string[];
+            spaceId: string;
         },
         { rejectWithValue }
     ) => {
@@ -443,10 +460,9 @@ export const moveTaskWithinLevelAsync = createAsyncThunk(
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        taskId,
                         parentId,
-                        newPosition,
                         newOrder,
+                        spaceId,
                     }),
                 });
 
@@ -645,6 +661,7 @@ export const tasksSlice = createSlice({
             action: PayloadAction<{
                 parentId: string | null;
                 newTaskOrder: string[];
+                spaceId: string;
             }>
         ) => {
             const { parentId, newTaskOrder } = action.payload;
@@ -658,8 +675,8 @@ export const tasksSlice = createSlice({
                 // Handle root-level tasks
                 state.tasks = state.tasks.sort(
                     (a, b) =>
-                        newTaskOrder.indexOf(a._id) -
-                        newTaskOrder.indexOf(b._id)
+                        newTaskOrder.indexOf(a._id as string) -
+                        newTaskOrder.indexOf(b._id as string)
                 );
             } else {
                 // Handle subtasks
@@ -980,23 +997,32 @@ export const tasksSlice = createSlice({
                 state.error = action.error.message || null;
             })
             .addCase(moveTaskWithinLevelAsync.fulfilled, (state, action) => {
-                const { parentId, newTaskOrder } = action.payload;
+                const { parentId, newOrder } = action.payload;
                 console.log(
                     'Confirmed move task from server. Parent ID:',
                     parentId,
                     'New order:',
-                    newTaskOrder
+                    newOrder
                 );
-                const parentIndex = state.tasks.findIndex(
-                    (task) => task._id === parentId
-                );
-                if (parentIndex !== -1) {
-                    state.tasks[parentIndex].subtasks = newTaskOrder;
+                if (parentId) {
+                    // Update subtasks order
+                    const parentTask = state.tasks.find(
+                        (task) => task._id === parentId
+                    );
+                    if (parentTask) {
+                        parentTask.subtasks = newOrder;
+                    }
+                } else {
+                    // Update root-level tasks order
+                    state.tasks = state.tasks.sort(
+                        (a, b) =>
+                            newOrder.indexOf(a._id as string) -
+                            newOrder.indexOf(b._id as string)
+                    );
                 }
             });
     },
 });
-
 export const selectSubtasksByParentId = (state: RootState, parentId: string) =>
     state.tasks.tasks.filter((task) => task.parentTask === parentId);
 

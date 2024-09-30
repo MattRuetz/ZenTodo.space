@@ -1,35 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Task from '@/models/Task';
-import Space from '@/models/Space'; // Assuming you have a Space model
 import { getUserId } from '@/hooks/useGetUserId';
+import { space } from 'postcss/lib/list';
+import Space from '@/models/Space';
 
 export async function PUT(req: NextRequest) {
     try {
         await dbConnect();
         const userId = await getUserId(req);
         const body = await req.json();
-        const { taskId, parentId, newPosition, newOrder, spaceId } = body;
+        const { parentId, newOrder, spaceId } = body;
 
         console.log(
-            'Received request to move task:',
-            taskId,
-            'to parent:',
+            'Received request to move tasks for parent:',
             parentId,
-            'at position:',
-            newPosition,
             'with new order:',
-            newOrder
+            newOrder,
+            'in space:',
+            spaceId
         );
-
-        const task = await Task.findOne({ _id: taskId, user: userId });
-        if (!task) {
-            console.log('Task not found:', taskId);
-            return NextResponse.json(
-                { error: 'Task not found' },
-                { status: 404 }
-            );
-        }
 
         if (parentId) {
             // Moving within a parent task
@@ -45,98 +35,35 @@ export async function PUT(req: NextRequest) {
                 );
             }
 
-            if (newOrder) {
-                console.log(
-                    'Updating parent task subtasks with new order:',
-                    newOrder
-                );
-                parentTask.subtasks = newOrder;
-            } else {
-                // Existing logic for moving a single task within a parent
-                const taskIndex = parentTask.subtasks.indexOf(taskId);
-                if (taskIndex !== -1) {
-                    parentTask.subtasks.splice(taskIndex, 1);
-                }
-
-                if (newPosition === 'start') {
-                    parentTask.subtasks.unshift(taskId);
-                } else if (newPosition.startsWith('after_')) {
-                    const afterId = newPosition.split('_')[1];
-                    const afterIndex = parentTask.subtasks.indexOf(afterId);
-                    if (afterIndex !== -1) {
-                        parentTask.subtasks.splice(afterIndex + 1, 0, taskId);
-                    } else {
-                        parentTask.subtasks.push(taskId);
-                    }
-                } else {
-                    parentTask.subtasks.push(taskId);
-                }
-            }
-
-            task.parentTask = parentId;
+            parentTask.subtasks = newOrder;
             await parentTask.save();
             console.log('Parent task updated:', parentTask);
+
+            // Update all subtasks to ensure their parentTask field is correct
+            await Task.updateMany(
+                { _id: { $in: newOrder } },
+                { $set: { parentTask: parentId } }
+            );
         } else {
             // Moving at the root level
-            if (!spaceId) {
-                console.log('Space ID is required for root-level tasks');
-                return NextResponse.json(
-                    { error: 'Space ID is required for root-level tasks' },
-                    { status: 400 }
-                );
-            }
-
-            const space = await Space.findOne({ _id: spaceId, user: userId });
+            // Update the order of tasks within the space
+            const space = await Space.findOne({ _id: spaceId, userId: userId });
             if (!space) {
-                console.log('Space not found:', spaceId);
+                console.log('Space not found:', spaceId, userId);
                 return NextResponse.json(
                     { error: 'Space not found' },
                     { status: 404 }
                 );
             }
-
-            if (newOrder) {
-                console.log(
-                    'Updating space task order with new order:',
-                    newOrder
-                );
-                space.taskOrder = newOrder;
-            } else {
-                // Existing logic for moving a single task at root level
-                const taskIndex = space.taskOrder.indexOf(taskId);
-                if (taskIndex !== -1) {
-                    space.taskOrder.splice(taskIndex, 1);
-                }
-
-                if (newPosition === 'start') {
-                    space.taskOrder.unshift(taskId);
-                } else if (newPosition.startsWith('after_')) {
-                    const afterId = newPosition.split('_')[1];
-                    const afterIndex = space.taskOrder.indexOf(afterId);
-                    if (afterIndex !== -1) {
-                        space.taskOrder.splice(afterIndex + 1, 0, taskId);
-                    } else {
-                        space.taskOrder.push(taskId);
-                    }
-                } else {
-                    space.taskOrder.push(taskId);
-                }
-            }
-
-            task.parentTask = null;
+            space.taskOrder = newOrder;
             await space.save();
-            console.log('Space updated:', space);
+            console.log('Root tasks updated for space:', spaceId);
         }
 
-        await task.save();
-        console.log('Task updated:', task);
-
         return NextResponse.json({
-            updatedTask: task,
-            newOrder: parentId
-                ? (await Task.findById(parentId)).subtasks
-                : (await Space.findById(spaceId)).taskOrder,
+            newOrder: newOrder,
             parentId: parentId,
+            spaceId: spaceId,
         });
     } catch (error) {
         console.error('Error moving task:', error);

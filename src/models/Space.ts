@@ -10,6 +10,7 @@ interface ISpace extends Document {
     maxZIndex: number;
     emoji: string;
     selectedEmojis: string[];
+    taskOrder: string[];
 }
 
 const SpaceSchema = new mongoose.Schema({
@@ -24,6 +25,7 @@ const SpaceSchema = new mongoose.Schema({
     maxZIndex: { type: Number, default: 1 },
     emoji: { type: String, default: '' },
     selectedEmojis: { type: [String], default: [] },
+    taskOrder: { type: [String], default: [] },
 });
 
 export default mongoose.models.Space || mongoose.model('Space', SpaceSchema);

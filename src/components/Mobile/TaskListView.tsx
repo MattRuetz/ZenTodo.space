@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store/store';
 import { Task } from '@/types';
@@ -12,6 +12,9 @@ import SortingDropdown from '../Subtask/SortingDropdown';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSwipeable } from 'react-swipeable';
 import TaskListDropZone from './TaskListDropZone';
+import { useDrop } from 'react-dnd';
+import { useMoveTask } from '@/hooks/useMoveTask';
+import { updateSpaceTaskOrderAsync } from '@/store/spaceSlice';
 
 interface TaskListViewProps {
     spaceId: string;
@@ -27,6 +30,25 @@ const TaskListView: React.FC<TaskListViewProps> = ({ spaceId }) => {
     const [currentParent, setCurrentParent] = useState<Task | null>(null);
     const sortOption = useSelector((state: RootState) => state.ui.sortOption);
     const isReversed = useSelector((state: RootState) => state.ui.isReversed);
+    const space = useSelector((state: RootState) =>
+        state.spaces.spaces.find((space) => space._id === spaceId)
+    );
+
+    const { commitTaskOrder } = useMoveTask();
+    const listRef = useRef<HTMLDivElement>(null);
+
+    const [, drop] = useDrop({
+        accept: 'TASK',
+        drop: (item: { id: string }, monitor) => {
+            const didDrop = monitor.didDrop();
+            if (!didDrop) {
+                console.log('dropping');
+                commitTaskOrder(currentParent?._id || null);
+            }
+        },
+    });
+
+    drop(listRef);
 
     useEffect(() => {
         dispatch(fetchTasks());
@@ -66,12 +88,35 @@ const TaskListView: React.FC<TaskListViewProps> = ({ spaceId }) => {
                 )
                 .filter(Boolean) as Task[];
         } else {
-            // For root-level tasks, filter as before
-            return allTasks.filter(
+            // For root-level tasks, use the space's taskOrder
+            const tasksAtLevel = allTasks.filter(
                 (task) => !task.parentTask && task.space === spaceId
             );
+
+            let updatedTaskOrder = [...(space?.taskOrder || [])];
+            const missingTaskIds = tasksAtLevel
+                .filter(
+                    (task) => !updatedTaskOrder.includes(task._id as string)
+                )
+                .map((task) => task._id as string);
+
+            if (missingTaskIds.length > 0) {
+                updatedTaskOrder = [...updatedTaskOrder, ...missingTaskIds];
+                dispatch(
+                    updateSpaceTaskOrderAsync({
+                        spaceId,
+                        taskOrder: updatedTaskOrder,
+                    })
+                );
+            }
+
+            return updatedTaskOrder
+                .map((taskId) =>
+                    tasksAtLevel.find((task) => task._id === taskId)
+                )
+                .filter(Boolean) as Task[];
         }
-    }, [currentParent, allTasks, spaceId]);
+    }, [currentParent, allTasks, spaceId, space?.taskOrder, dispatch]);
 
     const sortedTasksAtLevel = useMemo(() => {
         if (sortOption === 'custom' || !sortOption) {
@@ -113,6 +158,7 @@ const TaskListView: React.FC<TaskListViewProps> = ({ spaceId }) => {
     return (
         <div
             {...handlers}
+            ref={listRef}
             className="task-list-view pt-16 overflow-y-auto h-full"
             style={{
                 backgroundColor: `var(--${currentTheme}-background-200)`,

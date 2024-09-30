@@ -1,36 +1,39 @@
 import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState, store } from '@/store/store';
+import { AppDispatch, RootState } from '@/store/store';
 import {
     moveTaskWithinLevelOptimistic,
     moveTaskWithinLevelAsync,
 } from '@/store/tasksSlice';
+import {
+    updateSpaceTaskOrderOptimistic,
+    updateSpaceTaskOrderAsync,
+} from '@/store/spaceSlice';
 import { useCallback } from 'react';
 import { useAlert } from '@/hooks/useAlert';
+import { store } from '@/store/store';
 
 export const useMoveTask = () => {
     const dispatch = useDispatch<AppDispatch>();
     const tasksState = useSelector((state: RootState) => state.tasks.tasks);
+    const currentSpace = useSelector(
+        (state: RootState) => state.spaces.currentSpace
+    );
     const { showAlert } = useAlert();
 
     const moveTaskTemporary = useCallback(
         (taskId: string, parentId: string | null, newPosition: string) => {
-            console.log(
-                'Moving task:',
-                taskId,
-                'to parent:',
-                parentId,
-                'at position:',
-                newPosition
-            );
+            const spaceId = currentSpace?._id || '';
+
             const tasks = parentId
                 ? tasksState.find((task) => task._id === parentId)?.subtasks ||
                   []
                 : tasksState
-                      .filter((task) => !task.parentTask)
+                      .filter(
+                          (task) => task.space === spaceId && !task.parentTask
+                      )
                       .map((task) => task._id);
 
             const currentIndex = tasks.indexOf(taskId);
-            console.log('Current index of task:', currentIndex);
 
             if (currentIndex === -1) {
                 console.error('Task not found in current level');
@@ -55,35 +58,62 @@ export const useMoveTask = () => {
                 newTasks.push(taskId);
             }
 
-            console.log('New task order:', newTasks);
-            dispatch(
-                moveTaskWithinLevelOptimistic({
-                    parentId,
-                    newTaskOrder: newTasks as string[],
-                })
-            );
+            if (parentId === null) {
+                dispatch(
+                    updateSpaceTaskOrderOptimistic({
+                        taskOrder: newTasks as string[],
+                        spaceId,
+                    })
+                );
+            } else {
+                dispatch(
+                    moveTaskWithinLevelOptimistic({
+                        parentId,
+                        newTaskOrder: newTasks as string[],
+                        spaceId,
+                    })
+                );
+            }
         },
-        [tasksState, dispatch, showAlert]
+        [tasksState, currentSpace, dispatch, showAlert]
     );
 
     const commitTaskOrder = useCallback(
         async (parentId: string | null) => {
-            console.log('Committing task order for parent:', parentId);
-            const tasks = store.getState().tasks.tasks;
-            const tasksAtLevel = parentId
-                ? tasks.filter((task) => task.parentTask === parentId)
-                : tasks.filter((task) => !task.parentTask);
+            const state = store.getState() as RootState; // Get the latest state
 
-            const taskIds = tasksAtLevel.map((task) => task._id);
-            console.log('Task IDs at level:', taskIds);
+            const currentSpace = state.spaces.currentSpace;
+            const spaceId = currentSpace?._id || '';
+
+            const tasks = state.tasks.tasks;
+
+            let tasksAtLevel: string[];
+            if (parentId === null) {
+                // For root-level tasks, use the current space's taskOrder
+                tasksAtLevel = currentSpace?.taskOrder || [];
+            } else {
+                // For subtasks, use the parent task's subtasks array
+                const parentTask = tasks.find((task) => task._id === parentId);
+                tasksAtLevel = parentTask?.subtasks || [];
+            }
 
             try {
-                await dispatch(
-                    moveTaskWithinLevelAsync({
-                        parentId,
-                        newOrder: taskIds as string[],
-                    })
-                ).unwrap();
+                if (parentId === null) {
+                    await dispatch(
+                        updateSpaceTaskOrderAsync({
+                            spaceId,
+                            taskOrder: tasksAtLevel,
+                        })
+                    ).unwrap();
+                } else {
+                    await dispatch(
+                        moveTaskWithinLevelAsync({
+                            parentId,
+                            newOrder: tasksAtLevel,
+                            spaceId,
+                        })
+                    ).unwrap();
+                }
             } catch (error) {
                 console.error('Failed to commit task order:', error);
                 showAlert('Failed to commit change order', 'error');

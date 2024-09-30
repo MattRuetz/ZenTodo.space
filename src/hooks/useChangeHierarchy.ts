@@ -9,6 +9,7 @@ import {
 import { Task } from '@/types';
 import { fetchAllTasksFromState } from '@/app/utils/optimisticUpdates';
 import { useAlert } from '@/hooks/useAlert';
+import { updateSpaceTaskOrderAsync } from '@/store/spaceSlice';
 
 export const useChangeHierarchy = () => {
     const dispatch = useDispatch<AppDispatch>();
@@ -169,9 +170,19 @@ export const useChangeHierarchy = () => {
         dispatch(convertSubtaskToTaskOptimistic(optimisticUpdate));
 
         try {
-            await dispatch(
+            const result = await dispatch(
                 convertSubtaskToTaskAsync({ subtask, dropPosition })
             ).unwrap();
+
+            // NEW - I am suspicious of this code.
+            if (result.updatedSubtask) {
+                dispatch(
+                    updateSpaceTaskOrderAsync({
+                        spaceId: result.updatedSubtask.space as string,
+                        taskOrder: [result.updatedSubtask._id as string],
+                    })
+                );
+            }
         } catch (error) {
             console.error('Failed to convert subtask to task:', error);
         }

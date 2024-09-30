@@ -25,6 +25,22 @@ export const fetchSpaces = createAsyncThunk('spaces/fetchSpaces', async () => {
     return response.json();
 });
 
+// export const fetchSpaceById = createAsyncThunk(
+//     'spaces/fetchSpaceById',
+//     async (spaceId: string, { rejectWithValue }) => {
+//         try {
+//             const response = await fetch(`/api/spaces/${spaceId}`);
+//             if (!response.ok) {
+//                 throw new Error('Failed to fetch space');
+//             }
+//             const space = await response.json();
+//             return space;
+//         } catch (error) {
+//             return rejectWithValue((error as Error).message);
+//         }
+//     }
+// );
+
 export const createSpace = createAsyncThunk(
     'spaces/createSpace',
     async (spaceData: Omit<SpaceData, '_id'>, { rejectWithValue }) => {
@@ -147,6 +163,36 @@ export const updateSpaceSelectedEmojis = createAsyncThunk(
     }
 );
 
+export const updateSpaceTaskOrderAsync = createAsyncThunk(
+    'spaces/updateSpaceTaskOrder',
+    async (
+        { spaceId, taskOrder }: { spaceId: string; taskOrder: string[] },
+        { rejectWithValue }
+    ) => {
+        try {
+            console.log(
+                'THUNK: Updating space task order:',
+                spaceId,
+                taskOrder
+            );
+            const response = await fetch(`/api/spaces/${spaceId}/taskOrder`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ taskOrder }),
+            });
+            if (!response.ok) {
+                throw new Error('Failed to update space task order');
+            }
+            const updatedSpace = await response.json();
+            return updatedSpace;
+        } catch (error) {
+            return rejectWithValue((error as Error).message);
+        }
+    }
+);
+
 export const deleteSpace = createAsyncThunk(
     'spaces/deleteSpace',
     async (spaceId: string, { dispatch, rejectWithValue }) => {
@@ -183,6 +229,22 @@ const spaceSlice = createSlice({
         ) => {
             state.spaces = action.payload;
         },
+        updateSpaceTaskOrderOptimistic: (
+            state,
+            action: PayloadAction<{
+                spaceId: string;
+                taskOrder: string[];
+            }>
+        ) => {
+            const { spaceId, taskOrder } = action.payload;
+            const space = state.spaces.find((s) => s._id === spaceId);
+            if (space) {
+                space.taskOrder = taskOrder;
+            }
+            if (state.currentSpace && state.currentSpace._id === spaceId) {
+                state.currentSpace.taskOrder = taskOrder;
+            }
+        },
     },
     extraReducers: (builder) => {
         builder
@@ -201,6 +263,21 @@ const spaceSlice = createSlice({
                 state.error =
                     action.error.message || 'An unknown error occurred';
             })
+            // .addCase(fetchSpaceById.fulfilled, (state, action) => {
+            //     const updatedSpace = action.payload;
+            //     const spaceIndex = state.spaces.findIndex(
+            //         (space) => space._id === updatedSpace._id
+            //     );
+            //     if (spaceIndex !== -1) {
+            //         state.spaces[spaceIndex] = updatedSpace;
+            //     }
+            //     if (
+            //         state.currentSpace &&
+            //         state.currentSpace._id === updatedSpace._id
+            //     ) {
+            //         state.currentSpace = updatedSpace;
+            //     }
+            // })
             .addCase(createSpace.fulfilled, (state, action) => {
                 state.spaces.push(action.payload);
             })
@@ -283,10 +360,51 @@ const spaceSlice = createSlice({
             .addCase(reorderSpaces.rejected, (state, action) => {
                 state.status = 'failed';
                 state.error = action.payload as string;
+            })
+            .addCase(updateSpaceTaskOrderAsync.fulfilled, (state, action) => {
+                const updatedSpace = action.payload;
+                const spaceIndex = state.spaces.findIndex(
+                    (space) => space._id === updatedSpace._id
+                );
+                if (spaceIndex !== -1) {
+                    state.spaces[spaceIndex].taskOrder = updatedSpace.taskOrder;
+                }
+                if (
+                    state.currentSpace &&
+                    state.currentSpace._id === updatedSpace._id
+                ) {
+                    state.currentSpace.taskOrder = updatedSpace.taskOrder;
+                }
+            })
+            .addCase(updateSpaceTaskOrderAsync.rejected, (state, action) => {
+                console.error(
+                    'Failed to update space task order:',
+                    action.payload
+                );
+                const notUpdatedSpace = action.payload as SpaceData;
+
+                // Rollback the optimistic update
+                const spaceIndex = state.spaces.findIndex(
+                    (space) => space._id === notUpdatedSpace._id
+                );
+                if (spaceIndex !== -1) {
+                    state.spaces[spaceIndex].taskOrder =
+                        notUpdatedSpace.taskOrder;
+                }
+                if (
+                    state.currentSpace &&
+                    state.currentSpace._id === notUpdatedSpace._id
+                ) {
+                    state.currentSpace.taskOrder = notUpdatedSpace.taskOrder;
+                }
             });
     },
 });
 
-export const { setCurrentSpace, setInitialSpace, reorderSpacesOptimistic } =
-    spaceSlice.actions;
+export const {
+    setCurrentSpace,
+    setInitialSpace,
+    reorderSpacesOptimistic,
+    updateSpaceTaskOrderOptimistic,
+} = spaceSlice.actions;
 export default spaceSlice.reducer;

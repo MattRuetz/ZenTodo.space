@@ -22,10 +22,6 @@ import {
     setSubtaskDrawerParentId,
 } from '@/store/uiSlice';
 import { AnimatePresence, motion } from 'framer-motion';
-// imports for dnd ----------------------------------
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
-import { TouchBackend } from 'react-dnd-touch-backend';
 //---------------------------------------------------
 import { useAlert } from '@/hooks/useAlert';
 import { useTheme } from '@/hooks/useTheme';
@@ -82,6 +78,7 @@ const SuperSpace = React.memo(() => {
             selectedEmojis: [],
             emoji: '',
             order: spaces.length,
+            taskOrder: [],
         };
         dispatch(createSpace(newSpace));
     };

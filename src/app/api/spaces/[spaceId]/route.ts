@@ -6,6 +6,34 @@ import { ObjectId } from 'mongodb';
 import Space from '@/models/Space';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../../auth/[...nextauth]/route';
+import { getUserId } from '@/hooks/useGetUserId';
+
+export async function GET(
+    req: NextRequest,
+    { params }: { params: { spaceId: string } }
+) {
+    try {
+        await connectToDatabase();
+        const userId = await getUserId(req);
+        const { spaceId } = params;
+
+        const space = await Space.findOne({ _id: spaceId, userId: userId });
+        if (!space) {
+            return NextResponse.json(
+                { error: 'Space not found' },
+                { status: 404 }
+            );
+        }
+
+        return NextResponse.json(space);
+    } catch (error) {
+        console.error('Error fetching space:', error);
+        return NextResponse.json(
+            { error: 'Failed to fetch space' },
+            { status: 500 }
+        );
+    }
+}
 
 export async function PUT(
     request: NextRequest,
