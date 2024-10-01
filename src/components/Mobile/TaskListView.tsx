@@ -152,10 +152,6 @@ const TaskListView: React.FC<TaskListViewProps> = ({ spaceId }) => {
         preventScrollOnSwipe: true,
     });
 
-    const handleAddTask = () => {
-        console.log('add task');
-    };
-
     return (
         <>
             <div

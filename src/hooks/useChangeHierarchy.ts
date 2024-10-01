@@ -15,6 +15,7 @@ export const useChangeHierarchy = () => {
     const dispatch = useDispatch<AppDispatch>();
     const { showAlert } = useAlert();
     const tasksState = useSelector((state: RootState) => state.tasks.tasks);
+    const spaces = useSelector((state: RootState) => state.spaces.spaces);
 
     const convertTaskToSubtask = async (task: Task, parentTaskId: string) => {
         if (!task._id || !parentTaskId) {
@@ -116,12 +117,30 @@ export const useChangeHierarchy = () => {
                     result.error
                 );
                 showAlert(result.error, 'error');
+            } else {
+                // Update the space's taskOrder
+                const spaceId = task.space as string;
+                const space = spaces.find((s) => s._id === spaceId);
+
+                if (space) {
+                    const updatedTaskOrder = space.taskOrder.filter(
+                        (id) => id !== task._id
+                    );
+
+                    await dispatch(
+                        updateSpaceTaskOrderAsync({
+                            spaceId,
+                            taskOrder: updatedTaskOrder,
+                        })
+                    );
+                }
             }
         } catch (error) {
             console.error('Failed to convert task to subtask:', error);
             showAlert('Failed to convert task to subtask', 'error');
         }
     };
+
     const convertSubtaskToTask = async (
         subtask: Task,
         dropPosition: { x: number; y: number } | undefined
@@ -174,14 +193,23 @@ export const useChangeHierarchy = () => {
                 convertSubtaskToTaskAsync({ subtask, dropPosition })
             ).unwrap();
 
-            // NEW - I am suspicious of this code.
             if (result.updatedSubtask) {
-                dispatch(
-                    updateSpaceTaskOrderAsync({
-                        spaceId: result.updatedSubtask.space as string,
-                        taskOrder: [result.updatedSubtask._id as string],
-                    })
-                );
+                const spaceId = result.updatedSubtask.space as string;
+                const space = spaces.find((s) => s._id === spaceId);
+
+                if (space) {
+                    const updatedTaskOrder = [
+                        result.updatedSubtask._id as string,
+                        ...space.taskOrder,
+                    ];
+
+                    await dispatch(
+                        updateSpaceTaskOrderAsync({
+                            spaceId,
+                            taskOrder: updatedTaskOrder,
+                        })
+                    );
+                }
             }
         } catch (error) {
             console.error('Failed to convert subtask to task:', error);

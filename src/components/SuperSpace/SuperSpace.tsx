@@ -46,9 +46,7 @@ const SuperSpace = React.memo(() => {
     const [isProfilePageOpen, setIsProfilePageOpen] = useState(false);
     const [activeTabStart, setActiveTabStart] = useState('archive');
 
-    const { data: session, status: sessionStatus } = useSession();
-    const router = useRouter();
-
+    const { data: session } = useSession();
     const { showAlert } = useAlert();
 
     const moveSpaceCard = useCallback(
