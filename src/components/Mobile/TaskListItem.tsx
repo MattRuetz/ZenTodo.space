@@ -262,6 +262,8 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
                     isSubtaskMenuOpen={isTaskMenuOpen}
                     setIsSubtaskMenuOpen={setIsTaskMenuOpen}
                 />
+                <p>{task._id}</p>
+
                 <div
                     className={`${
                         isEditing === 'taskName'

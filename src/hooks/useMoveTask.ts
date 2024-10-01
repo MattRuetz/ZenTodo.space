@@ -24,14 +24,16 @@ export const useMoveTask = () => {
         (taskId: string, parentId: string | null, newPosition: string) => {
             const spaceId = currentSpace?._id || '';
 
-            const tasks = parentId
-                ? tasksState.find((task) => task._id === parentId)?.subtasks ||
-                  []
-                : tasksState
-                      .filter(
-                          (task) => task.space === spaceId && !task.parentTask
-                      )
-                      .map((task) => task._id);
+            let tasks: string[];
+            if (parentId) {
+                // For subtasks, use the parent task's subtasks array
+                tasks =
+                    tasksState.find((task) => task._id === parentId)
+                        ?.subtasks || [];
+            } else {
+                // For root-level tasks, use the space's taskOrder
+                tasks = currentSpace?.taskOrder || [];
+            }
 
             const currentIndex = tasks.indexOf(taskId);
 
@@ -59,6 +61,8 @@ export const useMoveTask = () => {
             }
 
             if (parentId === null) {
+                console.log('newOrder', newTasks);
+
                 dispatch(
                     updateSpaceTaskOrderOptimistic({
                         taskOrder: newTasks as string[],

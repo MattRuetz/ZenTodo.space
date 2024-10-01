@@ -23,6 +23,7 @@ const TaskListDropZone: React.FC<TaskListDropZoneProps> = ({
         (item: { id: string }, monitor: any) => {
             if (sortOption === 'custom') {
                 if (!position.includes(item.id)) {
+                    console.log('moving task', item.id, parentId, position);
                     moveTaskTemporary(item.id, parentId, position);
                 }
             }
@@ -45,6 +46,7 @@ const TaskListDropZone: React.FC<TaskListDropZoneProps> = ({
 
     return (
         <div
+            id={`dropzone-${position}`}
             ref={dropRef}
             className="task-list-dropzone"
             style={{
