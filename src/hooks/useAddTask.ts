@@ -7,6 +7,7 @@ import {
 } from '@/store/tasksSlice';
 import { replaceTempTaskWithRealTask } from '@/store/tasksSlice';
 import {
+    updateSpaceTaskOrderAsync,
     updateSpaceTaskOrderOptimistic,
     updateTaskOrderAfterReplace,
 } from '@/store/spaceSlice';
@@ -70,7 +71,6 @@ export const useAddTask = () => {
             ).unwrap();
 
             // Replace temp task with real task in one atomic action
-            // Replace temp task with real task
             dispatch(
                 replaceTempTaskWithRealTask({
                     tempId,

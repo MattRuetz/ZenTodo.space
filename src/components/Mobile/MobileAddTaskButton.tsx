@@ -47,8 +47,8 @@ export const MobileAddTaskButton = ({
             const newTask: Omit<Task, '_id'> = {
                 taskName: '',
                 taskDescription: '',
-                x: Math.floor(Math.random() * 800) + 1,
-                y: Math.floor(Math.random() * 800) + 1,
+                x: Math.floor(Math.random() * 300) + 1,
+                y: Math.floor(Math.random() * 300) + 1,
                 progress: 'Not Started' as TaskProgress,
                 space: spaceId,
                 zIndex: 0,

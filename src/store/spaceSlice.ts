@@ -254,6 +254,12 @@ const spaceSlice = createSlice({
             }>
         ) => {
             const { spaceId, tempId, newTaskId } = action.payload;
+            console.log(
+                'Updating task order after replace:',
+                spaceId,
+                tempId,
+                newTaskId
+            );
             const space = state.spaces.find((s) => s._id === spaceId);
             if (space) {
                 space.taskOrder = space.taskOrder.map((id) =>
@@ -264,6 +270,20 @@ const spaceSlice = createSlice({
                 state.currentSpace.taskOrder = state.currentSpace.taskOrder.map(
                     (id) => (id === tempId ? newTaskId : id)
                 );
+            }
+        },
+        removeTaskFromTaskOrder: (
+            state,
+            action: PayloadAction<{ spaceId: string; taskId: string }>
+        ) => {
+            const { spaceId, taskId } = action.payload;
+            const space = state.spaces.find((s) => s._id === spaceId);
+            if (space) {
+                space.taskOrder = space.taskOrder.filter((id) => id !== taskId);
+            }
+            if (state.currentSpace && state.currentSpace._id === spaceId) {
+                state.currentSpace.taskOrder =
+                    state.currentSpace.taskOrder.filter((id) => id !== taskId);
             }
         },
     },
@@ -428,5 +448,6 @@ export const {
     reorderSpacesOptimistic,
     updateSpaceTaskOrderOptimistic,
     updateTaskOrderAfterReplace,
+    removeTaskFromTaskOrder,
 } = spaceSlice.actions;
 export default spaceSlice.reducer;

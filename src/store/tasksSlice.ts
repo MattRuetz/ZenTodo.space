@@ -716,10 +716,10 @@ export const tasksSlice = createSlice({
                 const { newTask, originalTempId } = action.payload;
 
                 // Use the reducer to replace temp task with real task
-                tasksSlice.caseReducers.replaceTempTaskWithRealTask(state, {
-                    payload: { originalTempId, newTask },
-                    type: 'tasks/replaceTempTaskWithRealTask',
-                });
+                // tasksSlice.caseReducers.replaceTempTaskWithRealTask(state, {
+                //     payload: { originalTempId, newTask },
+                //     type: 'tasks/replaceTempTaskWithRealTask',
+                // });
             })
             .addCase(addTaskAsync.rejected, (state, action) => {
                 state.tasks = state.tasks.filter((task) => !task.isTemp);

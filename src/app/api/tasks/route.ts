@@ -81,6 +81,16 @@ export async function POST(req: NextRequest) {
             await Space.findByIdAndUpdate(space, { maxZIndex: newZIndex });
         }
 
+        // Update the space's taskOrder
+        if (space) {
+            const currentSpace = await Space.findById(space);
+            const newTaskOrder = [
+                savedTask._id,
+                ...(currentSpace.taskOrder || []),
+            ];
+            await Space.findByIdAndUpdate(space, { taskOrder: newTaskOrder });
+        }
+
         return NextResponse.json(
             { task: savedTask, originalTempId: tempId },
             { status: 201 }

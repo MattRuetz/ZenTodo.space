@@ -1,6 +1,12 @@
 // src/components/Space.tsx
 'use client';
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, {
+    useEffect,
+    useRef,
+    useState,
+    useCallback,
+    useMemo,
+} from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useSession } from 'next-auth/react';
 import { useDrop } from 'react-dnd';
