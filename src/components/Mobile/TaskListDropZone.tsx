@@ -22,8 +22,6 @@ const TaskListDropZone: React.FC<TaskListDropZoneProps> = ({
     const handleHover = useCallback(
         (item: { id: string }, monitor: any) => {
             if (sortOption === 'custom') {
-                console.log('item.id', item.id);
-                console.log('position', position);
                 if (!position.includes(item.id)) {
                     moveTaskTemporary(item.id, parentId, position);
                 }
@@ -50,10 +48,7 @@ const TaskListDropZone: React.FC<TaskListDropZoneProps> = ({
             ref={dropRef}
             className="task-list-dropzone"
             style={{
-                height: '1rem',
-                backgroundColor: isOver
-                    ? `var(--${currentTheme}-accent-blue)`
-                    : 'transparent',
+                height: '0.5rem',
                 transition: 'background-color 0.3s ease',
             }}
         ></div>

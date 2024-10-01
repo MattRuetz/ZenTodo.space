@@ -496,7 +496,17 @@ export const tasksSlice = createSlice({
         addTaskOptimistic: (state, action: PayloadAction<Task>) => {
             state.tasks.push(action.payload);
         },
-
+        replaceTempTaskWithRealTask: (state, action) => {
+            const { tempId, newTask } = action.payload;
+            const index = state.tasks.findIndex((task) => task._id === tempId);
+            if (index !== -1) {
+                // Replace the temp task with the new task
+                state.tasks[index] = { ...newTask, isTemp: false };
+            } else {
+                // If the temp task is not found, add the new task
+                state.tasks.push(newTask);
+            }
+        },
         addNewSubtaskOptimistic: (
             state,
             action: PayloadAction<{
@@ -705,14 +715,11 @@ export const tasksSlice = createSlice({
             .addCase(addTaskAsync.fulfilled, (state, action) => {
                 const { newTask, originalTempId } = action.payload;
 
-                const tempTask = state.tasks.find(
-                    (task) => task.isTemp && task._id === originalTempId
-                );
-                if (tempTask) {
-                    Object.assign(tempTask, { ...newTask, isTemp: false });
-                } else {
-                    state.tasks.push(newTask);
-                }
+                // Use the reducer to replace temp task with real task
+                tasksSlice.caseReducers.replaceTempTaskWithRealTask(state, {
+                    payload: { originalTempId, newTask },
+                    type: 'tasks/replaceTempTaskWithRealTask',
+                });
             })
             .addCase(addTaskAsync.rejected, (state, action) => {
                 state.tasks = state.tasks.filter((task) => !task.isTemp);
@@ -1036,6 +1043,7 @@ export const {
     addTaskOptimistic,
     deleteTaskOptimistic,
     moveTaskWithinLevelOptimistic,
+    replaceTempTaskWithRealTask,
 } = tasksSlice.actions;
 
 export default tasksSlice.reducer;

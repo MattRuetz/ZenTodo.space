@@ -81,13 +81,6 @@ export async function POST(req: NextRequest) {
             await Space.findByIdAndUpdate(space, { maxZIndex: newZIndex });
         }
 
-        // Update the space's taskOrder array
-        if (!parentTask) {
-            await Space.findByIdAndUpdate(space, {
-                $push: { taskOrder: { $each: [savedTask._id], $position: 0 } },
-            });
-        }
-
         return NextResponse.json(
             { task: savedTask, originalTempId: tempId },
             { status: 201 }

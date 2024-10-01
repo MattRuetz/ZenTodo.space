@@ -1,6 +1,15 @@
 import { useDispatch } from 'react-redux';
 import { AppDispatch, store } from '@/store/store';
-import { addTaskOptimistic, addTaskAsync } from '@/store/tasksSlice';
+import {
+    addTaskOptimistic,
+    addTaskAsync,
+    deleteTaskOptimistic,
+} from '@/store/tasksSlice';
+import { replaceTempTaskWithRealTask } from '@/store/tasksSlice';
+import {
+    updateSpaceTaskOrderOptimistic,
+    updateTaskOrderAfterReplace,
+} from '@/store/spaceSlice';
 import { Task } from '@/types';
 import { generateTempId } from '@/app/utils/utils';
 import { useAlert } from './useAlert';
@@ -31,25 +40,66 @@ export const useAddTask = () => {
             subtasks: [],
         };
 
-        // Dispatch optimistic update
+        // Dispatch optimistic update for adding the task
         dispatch(addTaskOptimistic(tempTask));
+
+        // Get the current taskOrder for the space
+        const currentSpace = store
+            .getState()
+            .spaces.spaces.find((s) => s._id === task.space);
+        const currentTaskOrder = currentSpace?.taskOrder || [];
+
+        // Create a new taskOrder with the new task at the beginning
+        const newTaskOrder = [tempId, ...currentTaskOrder];
+
+        // Dispatch optimistic update for updating the space's taskOrder
+        dispatch(
+            updateSpaceTaskOrderOptimistic({
+                spaceId: task.space as string,
+                taskOrder: newTaskOrder,
+            })
+        );
 
         try {
             // Attempt to add task in the backend
-            await dispatch(
+            const result = await dispatch(
                 addTaskAsync({
                     task,
                     tempId,
                 })
             ).unwrap();
+
+            // Replace temp task with real task in one atomic action
+            // Replace temp task with real task
+            dispatch(
+                replaceTempTaskWithRealTask({
+                    tempId,
+                    newTask: result.newTask,
+                })
+            );
+
+            // Update the taskOrder in the space
+            dispatch(
+                updateTaskOrderAfterReplace({
+                    spaceId: task.space as string,
+                    tempId,
+                    newTaskId: result.newTask._id,
+                })
+            );
+
             // Success
             showAlert('Task added!', 'success');
         } catch (error) {
-            if (error instanceof Error) {
-                // Error: rollback optimistic updates -- handled in the .rejected case in taskSlice extra reducers
-                console.error('Failed to add task:', error);
-                showAlert(error.message || 'Failed to add task', 'error');
-            }
+            // Error: rollback optimistic updates
+            dispatch(deleteTaskOptimistic([tempId]));
+            dispatch(
+                updateSpaceTaskOrderOptimistic({
+                    spaceId: task.space as string,
+                    taskOrder: currentTaskOrder,
+                })
+            );
+            console.error('Failed to add task:', error);
+            showAlert('Failed to add task', 'error');
         }
     };
 

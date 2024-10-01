@@ -15,6 +15,9 @@ import TaskListDropZone from './TaskListDropZone';
 import { useDrop } from 'react-dnd';
 import { useMoveTask } from '@/hooks/useMoveTask';
 import { updateSpaceTaskOrderAsync } from '@/store/spaceSlice';
+import { MobileAddTaskButton } from './MobileAddTaskButton';
+import { useIsMobile } from '@/hooks/useIsMobile';
+import FixedTopBar from './FixedTopBar';
 
 interface TaskListViewProps {
     spaceId: string;
@@ -23,6 +26,7 @@ interface TaskListViewProps {
 const TaskListView: React.FC<TaskListViewProps> = ({ spaceId }) => {
     const dispatch = useDispatch<AppDispatch>();
     const currentTheme = useTheme();
+    const isMobile = useIsMobile();
     const allTasks = useSelector((state: RootState) => state.tasks.tasks);
     const parentTaskId = useSelector(
         (state: RootState) => state.ui.subtaskDrawerParentId
@@ -93,30 +97,15 @@ const TaskListView: React.FC<TaskListViewProps> = ({ spaceId }) => {
                 (task) => !task.parentTask && task.space === spaceId
             );
 
-            let updatedTaskOrder = [...(space?.taskOrder || [])];
-            const missingTaskIds = tasksAtLevel
-                .filter(
-                    (task) => !updatedTaskOrder.includes(task._id as string)
-                )
-                .map((task) => task._id as string);
+            const tasksMap = new Map(
+                tasksAtLevel.map((task) => [task._id, task])
+            );
 
-            if (missingTaskIds.length > 0) {
-                updatedTaskOrder = [...updatedTaskOrder, ...missingTaskIds];
-                dispatch(
-                    updateSpaceTaskOrderAsync({
-                        spaceId,
-                        taskOrder: updatedTaskOrder,
-                    })
-                );
-            }
-
-            return updatedTaskOrder
-                .map((taskId) =>
-                    tasksAtLevel.find((task) => task._id === taskId)
-                )
+            return (space?.taskOrder || [])
+                .map((taskId) => tasksMap.get(taskId))
                 .filter(Boolean) as Task[];
         }
-    }, [currentParent, allTasks, spaceId, space?.taskOrder, dispatch]);
+    }, [currentParent, allTasks, spaceId, space?.taskOrder]);
 
     const sortedTasksAtLevel = useMemo(() => {
         if (sortOption === 'custom' || !sortOption) {
@@ -155,20 +144,24 @@ const TaskListView: React.FC<TaskListViewProps> = ({ spaceId }) => {
         preventScrollOnSwipe: true,
     });
 
+    const handleAddTask = () => {
+        console.log('add task');
+    };
+
     return (
         <div
             {...handlers}
             ref={listRef}
             className="task-list-view pt-16 overflow-y-auto h-full"
             style={{
-                backgroundColor: `var(--${currentTheme}-background-200)`,
+                backgroundColor: `var(--${currentTheme}-background-300)`,
                 minHeight: '100vh',
             }}
         >
-            <div className="header flex items-center justify-between p-4">
-                <Breadcrumb task={currentParent} onBack={handleBack} />
-                <SortingDropdown />
-            </div>
+            <FixedTopBar
+                currentParent={currentParent}
+                handleBack={handleBack}
+            />
             <AnimatePresence>
                 <motion.ul
                     initial={{ x: 300 }}
@@ -206,6 +199,13 @@ const TaskListView: React.FC<TaskListViewProps> = ({ spaceId }) => {
                     />
                 </motion.ul>
             </AnimatePresence>
+
+            {isMobile && (
+                <MobileAddTaskButton
+                    currentParent={currentParent}
+                    spaceId={spaceId}
+                />
+            )}
         </div>
     );
 };

@@ -1,7 +1,7 @@
 import React, { useCallback, useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useDrag, useDrop } from 'react-dnd';
-import { AppDispatch, RootState } from '../../store/store';
+import { AppDispatch, RootState, store } from '../../store/store';
 import { updateTask } from '@/store/tasksSlice';
 import { Task, TaskProgress } from '@/types';
 import { setSimplicityModalOpen, setSubtaskDrawerOpen } from '@/store/uiSlice';
@@ -14,7 +14,7 @@ import { useArchiveTask } from '@/hooks/useArchiveTask';
 import { SubtaskTopBar } from '../Subtask/SubtaskTopBar';
 import { SubtaskBottomBar } from '../Subtask/SubtaskBottomBar';
 
-const LONG_PRESS_DELAY = 1000; // 1 second delay
+const LONG_PRESS_DELAY = 300; // 1 second delay
 
 interface TaskListItemProps {
     task: Task;
@@ -27,14 +27,11 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
     task,
     onClick,
     index,
-    parentId,
 }) => {
     const dispatch = useDispatch<AppDispatch>();
     const currentTheme = useTheme();
     const { showAlert } = useAlert();
     const archiveTask = useArchiveTask();
-    const { moveSubtaskTemporary, commitSubtaskOrder } = useMoveSubtask();
-
     const [localTask, setLocalTask] = useState(task || {});
     const [isEditing, setIsEditing] = useState<string | null>(null);
     const [isTaskMenuOpen, setIsTaskMenuOpen] = useState(false);
@@ -47,7 +44,7 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
     const currentTaskNameRef = useRef(task?.taskName || '');
     const ref = useRef<HTMLLIElement>(null);
 
-    const { convertTaskToSubtask, convertSubtaskToTask } = useChangeHierarchy();
+    const { convertTaskToSubtask } = useChangeHierarchy();
 
     const handleArchive = useCallback(() => {
         archiveTask(task);
@@ -165,15 +162,60 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
         setIsEditing(fieldName);
     }, []);
 
+    const handleDrop = useCallback(
+        (item: { id: string }) => {
+            const targetSubtask = task;
+            // Fetch the latest version of the dragged task from the Redux store
+            const state = store.getState() as RootState;
+            const draggedSubtask = state.tasks.tasks.find(
+                (task) => task._id === item.id
+            );
+
+            console.log('draggedSubtask', draggedSubtask);
+            console.log('targetSubtask', targetSubtask);
+
+            if (!draggedSubtask) {
+                console.error('Dragged subtask not found in the store');
+                showAlert('An unknown error occurred', 'error');
+                return;
+            }
+            // Check if the dropped task is already a parent of the target subtask
+            const isAlreadyParent =
+                draggedSubtask.subtasks.length > 0 ||
+                (draggedSubtask.ancestors &&
+                    draggedSubtask.ancestors.length > 1);
+
+            if (draggedSubtask._id === targetSubtask._id) {
+                // handleDropOnSelf();
+                console.log('drop on self');
+                return;
+            } else if (!isAlreadyParent) {
+                console.log(
+                    'convertTaskToSubtask',
+                    draggedSubtask,
+                    targetSubtask
+                );
+                convertTaskToSubtask(
+                    draggedSubtask,
+                    targetSubtask._id as string
+                );
+            } else {
+                // dispatch(setSimplicityModalOpen(true));
+                showAlert(
+                    'Too many levels of subtasks. Keep it simple!',
+                    'error'
+                );
+            }
+        },
+        [dispatch, task]
+    );
+
     // TODO: Get this to work
     // TODO: Fix this so that it doesn't allow dropping on the same task
     const [{ isOver, canDrop }, drop] = useDrop({
         accept: 'TASK',
         drop: (item: { id: string }) => {
-            console.log('drop item', item);
-            if (item.id !== task._id) {
-                convertTaskToSubtask(item.id, task._id);
-            }
+            handleDrop(item);
         },
         canDrop: (item: { id: string }) => item.id !== task._id,
         collect: (monitor) => ({
@@ -182,136 +224,160 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
         }),
     });
 
+    drag(drop(ref));
+
     return (
         <li
-            ref={drag(drop(ref))}
+            ref={ref}
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
-            onClick={onClick}
-            className={`task-list-item p-4 ${
+            // onClick={onClick}
+            className={`relative task-list-item p-2 ${
                 (isDragging || isShaking) && 'shake'
-            } rounded-lg my-2 transition-all duration-200 shadow-md border-2`}
+            } rounded-lg transition-all duration-200 border-2 px-2 mx-auto max-w-[350px]`}
             style={{
                 cursor: 'move',
                 backgroundColor:
+                    isDragging || isShaking
+                        ? `var(--${currentTheme}-background-100)`
+                        : `var(--${currentTheme}-background-100)`,
+                borderColor:
                     isOver && canDrop
                         ? `var(--${currentTheme}-accent-blue)`
-                        : `var(--${currentTheme}-background-100)`,
-                borderColor: `var(--${currentTheme}-card-border-color)`,
+                        : `var(--${currentTheme}-card-border-color)`,
+                filter:
+                    isDragging || isShaking
+                        ? 'blur(1px)'
+                        : isOver
+                        ? 'brightness(1.1)'
+                        : 'none',
             }}
         >
-            <SubtaskTopBar
-                subtask={task}
-                handleProgressChange={handleProgressChange}
-                handleSetDueDate={handleSetDueDate}
-                isSubtaskMenuOpen={isTaskMenuOpen}
-                setIsSubtaskMenuOpen={setIsTaskMenuOpen}
-            />
-            <div
-                className={`${
-                    isEditing === 'taskName'
-                        ? 'border-slate-400'
-                        : 'border-transparent'
-                } font-semibold rounded-lg p-2 px-4 mb-2 transition-colors duration-200 border-2`}
-                style={{
-                    backgroundColor: `var(--${currentTheme}-background-200)`,
-                    borderColor:
+            <div className="w-10/12 max-w-[300px] mx-auto">
+                <SubtaskTopBar
+                    subtask={task}
+                    handleProgressChange={handleProgressChange}
+                    handleSetDueDate={handleSetDueDate}
+                    isSubtaskMenuOpen={isTaskMenuOpen}
+                    setIsSubtaskMenuOpen={setIsTaskMenuOpen}
+                />
+                <div
+                    className={`${
                         isEditing === 'taskName'
-                            ? `var(--${currentTheme}-accent-grey)`
-                            : 'transparent',
-                    color: `var(--${currentTheme}-text-default)`,
-                }}
-            >
-                {isEditing === 'taskName' ? (
-                    <input
-                        ref={inputRef as React.RefObject<HTMLInputElement>}
-                        type="text"
-                        name="taskName"
-                        value={localTask.taskName}
-                        onChange={handleInputChange}
-                        onKeyDown={(event) => {
-                            if (event.key === 'Enter') {
-                                event.currentTarget.blur();
-                            }
-                        }}
-                        onBlur={handleBlur}
-                        className="w-full resize-none border-none outline-none bg-transparent"
-                        maxLength={30}
-                        onFocus={(event) => event.target.select()}
-                        autoFocus
-                    />
-                ) : (
-                    <h1
-                        className="cursor-pointer"
-                        onClick={() => startEditing('taskName')}
-                    >
-                        {localTask.taskName}
-                    </h1>
-                )}
-            </div>
-            <div
-                className={`${
-                    isEditing === 'taskDescription'
-                        ? 'border-slate-400'
-                        : 'border-transparent'
-                } font-normal rounded-lg p-2 px-4 mb-2 transition-all duration-200 border-2`}
-                style={{
-                    backgroundColor: `var(--${currentTheme}-background-200)`,
-                    borderColor:
+                            ? 'border-slate-400'
+                            : 'border-transparent'
+                    } font-semibold rounded p-1 px-2 mb-2 transition-colors duration-200 border-2`}
+                    style={{
+                        backgroundColor: `var(--${currentTheme}-background-200)`,
+                        borderColor:
+                            isEditing === 'taskName'
+                                ? `var(--${currentTheme}-accent-grey)`
+                                : 'transparent',
+                        color: `var(--${currentTheme}-text-default)`,
+                    }}
+                >
+                    {isEditing === 'taskName' ? (
+                        <input
+                            ref={inputRef as React.RefObject<HTMLInputElement>}
+                            type="text"
+                            name="taskName"
+                            value={localTask.taskName}
+                            onChange={handleInputChange}
+                            onKeyDown={(event) => {
+                                if (event.key === 'Enter') {
+                                    event.currentTarget.blur();
+                                }
+                            }}
+                            onBlur={handleBlur}
+                            className="w-full resize-none border-none outline-none bg-transparent"
+                            maxLength={30}
+                            onFocus={(event) => event.target.select()}
+                            autoFocus
+                        />
+                    ) : (
+                        <h1
+                            className="cursor-pointer"
+                            onClick={() => startEditing('taskName')}
+                        >
+                            {localTask.taskName || (
+                                <span
+                                    className="text-xs"
+                                    style={{
+                                        color: `var(--${currentTheme}-text-subtle)`,
+                                    }}
+                                >
+                                    + Add task name
+                                </span>
+                            )}
+                        </h1>
+                    )}
+                </div>
+                <div
+                    className={`${
                         isEditing === 'taskDescription'
-                            ? `var(--${currentTheme}-accent-grey)`
-                            : 'transparent',
-                }}
-            >
-                {isEditing === 'taskDescription' ? (
-                    <textarea
-                        ref={inputRef as React.RefObject<HTMLTextAreaElement>}
-                        name="taskDescription"
-                        value={localTask.taskDescription}
-                        onChange={handleInputChange}
-                        onBlur={handleBlur}
-                        className="w-full resize-none flex-grow outline-none text-sm bg-transparent"
-                        style={{
-                            width: '100%',
-                            boxSizing: 'border-box',
-                            minHeight: '100px',
-                            maxHeight: '500px',
-                            overflowY: 'auto',
-                            color: `var(--${currentTheme}-text-default)`,
-                        }}
-                        maxLength={500}
-                        autoFocus
-                    />
-                ) : (
-                    <p
-                        className="text-sm cursor-pointer max-h-[200px] overflow-y-auto"
-                        style={{
-                            color: `var(--${currentTheme}-text-default)`,
-                            whiteSpace: 'pre-wrap',
-                        }}
-                        onClick={() => startEditing('taskDescription')}
-                    >
-                        {localTask.taskDescription || (
-                            <span
-                                className="text-xs"
-                                style={{
-                                    color: `var(--${currentTheme}-text-subtle)`,
-                                    opacity: 0.5,
-                                }}
-                            >
-                                + Add description
-                            </span>
-                        )}
-                    </p>
-                )}
+                            ? 'border-slate-400'
+                            : 'border-transparent'
+                    } font-normal rounded p-1 px-2 mb-2 transition-all duration-200 border-2`}
+                    style={{
+                        backgroundColor: `var(--${currentTheme}-background-200)`,
+                        borderColor:
+                            isEditing === 'taskDescription'
+                                ? `var(--${currentTheme}-accent-grey)`
+                                : 'transparent',
+                    }}
+                >
+                    {isEditing === 'taskDescription' ? (
+                        <textarea
+                            ref={
+                                inputRef as React.RefObject<HTMLTextAreaElement>
+                            }
+                            name="taskDescription"
+                            value={localTask.taskDescription}
+                            onChange={handleInputChange}
+                            onBlur={handleBlur}
+                            className="w-full resize-none flex-grow outline-none text-sm bg-transparent"
+                            style={{
+                                width: '100%',
+                                boxSizing: 'border-box',
+                                minHeight: '100px',
+                                maxHeight: '500px',
+                                overflowY: 'auto',
+                                color: `var(--${currentTheme}-text-default)`,
+                            }}
+                            maxLength={500}
+                            autoFocus
+                        />
+                    ) : (
+                        <p
+                            className="text-sm cursor-pointer max-h-[200px] overflow-y-auto"
+                            style={{
+                                color: `var(--${currentTheme}-text-default)`,
+                                whiteSpace: 'pre-wrap',
+                            }}
+                            onClick={() => startEditing('taskDescription')}
+                        >
+                            {localTask.taskDescription || (
+                                <span
+                                    className="text-xs"
+                                    style={{
+                                        color: `var(--${currentTheme}-text-subtle)`,
+                                        opacity: 0.5,
+                                    }}
+                                >
+                                    + Add description
+                                </span>
+                            )}
+                        </p>
+                    )}
+                </div>
+                <SubtaskBottomBar
+                    subtask={task}
+                    handleProgressChange={handleProgressChange}
+                    handleSetDueDate={handleSetDueDate}
+                    handleArchive={handleArchive}
+                />
             </div>
-            <SubtaskBottomBar
-                subtask={task}
-                handleProgressChange={handleProgressChange}
-                handleSetDueDate={handleSetDueDate}
-                handleArchive={handleArchive}
-            />
         </li>
     );
 };

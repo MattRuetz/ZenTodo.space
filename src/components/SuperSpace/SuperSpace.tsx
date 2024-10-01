@@ -25,18 +25,18 @@ import { AnimatePresence, motion } from 'framer-motion';
 //---------------------------------------------------
 import { useAlert } from '@/hooks/useAlert';
 import { useTheme } from '@/hooks/useTheme';
-import { fetchTheme, setTheme } from '@/store/themeSlice';
 import { useRouter } from 'next/navigation';
 import { FaArrowLeft } from 'react-icons/fa6';
 import { FaPlusCircle } from 'react-icons/fa';
-import { fetchTasks } from '@/store/tasksSlice';
 import ProfileArchivePage from '../Profile_Archive/ProfileArchivePage';
 import { setUser } from '@/store/userSlice';
 import BottomSettings from './BottomSettings';
+import { useIsMobile } from '@/hooks/useIsMobile';
 
 const SuperSpace = React.memo(() => {
     const dispatch = useDispatch<AppDispatch>();
     const currentTheme = useTheme();
+    const isMobile = useIsMobile();
     const { spaces, currentSpace, status } = useSelector(
         (state: RootState) => state.spaces
     );
@@ -240,7 +240,7 @@ const SuperSpace = React.memo(() => {
                             </>
                         )
                     )}
-                    {session && currentSpace && (
+                    {session && currentSpace && !isMobile && (
                         <>
                             <button
                                 data-tooltip-id={`go-to-super-space-tooltip`}
