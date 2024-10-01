@@ -12,25 +12,28 @@ import { useIsMobile } from '@/hooks/useIsMobile';
 import 'react-toastify/dist/ReactToastify.css';
 import { EdgeStoreProvider } from '@/lib/edgestore';
 import CustomDragLayer from '@/layers/customDragLayer';
+import { MobileAlertProvider } from '@/hooks/useAlert';
 
 export default function Providers({ children }: { children: React.ReactNode }) {
     const isMobile = useIsMobile();
     const backend = isMobile ? TouchBackend : HTML5Backend;
 
     return (
-        <EdgeStoreProvider>
-            <SessionProvider>
-                <ToastContainer />
-                <Provider store={store}>
-                    <DndProvider
-                        backend={backend}
-                        options={{ enableMouseEvents: true }}
-                    >
-                        <CustomDragLayer />
-                        {children}
-                    </DndProvider>
-                </Provider>
-            </SessionProvider>
-        </EdgeStoreProvider>
+        <MobileAlertProvider>
+            <EdgeStoreProvider>
+                <SessionProvider>
+                    <ToastContainer />
+                    <Provider store={store}>
+                        <DndProvider
+                            backend={backend}
+                            options={{ enableMouseEvents: true }}
+                        >
+                            <CustomDragLayer />
+                            {children}
+                        </DndProvider>
+                    </Provider>
+                </SessionProvider>
+            </EdgeStoreProvider>
+        </MobileAlertProvider>
     );
 }

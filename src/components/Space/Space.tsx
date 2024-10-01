@@ -299,73 +299,58 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId }) => {
                             }}
                         />
                     )}
-                    {session ? (
-                        <>
-                            {tasks.length === 0 && (
-                                <div className="flex flex-col items-center justify-center h-full pointer-events-none">
-                                    <AnimatePresence>
-                                        <motion.div>
-                                            <motion.div
-                                                initial={{ opacity: 0 }}
-                                                animate={{ opacity: 1 }}
-                                                exit={{ opacity: 0 }}
-                                                transition={{
-                                                    duration: 3,
-                                                    delay: 1,
-                                                    ease: 'easeInOut',
-                                                }}
-                                            >
-                                                <h1 className="text-center text-gray-500 text-5xl font-thin">
-                                                    emptiness is bliss
-                                                </h1>
-                                            </motion.div>
-                                            <motion.div
-                                                initial={{ opacity: 0 }}
-                                                animate={{ opacity: 1 }}
-                                                exit={{ opacity: 0 }}
-                                                transition={{
-                                                    duration: 3,
-                                                    delay: 2,
-                                                    ease: 'easeInOut',
-                                                }}
-                                            >
-                                                <p className="text-center text-gray-500 text-xl font-normal p-2 mt-2">
-                                                    click anywhere to add a
-                                                    task.
-                                                </p>
-                                            </motion.div>
-                                        </motion.div>
-                                    </AnimatePresence>
-                                </div>
-                            )}
-                            {tasks
-                                .filter(
-                                    (task) =>
-                                        // !task.parentTask &&
-                                        selectedEmojis.length === 0 ||
-                                        selectedEmojis.includes(
-                                            task.emoji || ''
-                                        )
-                                )
-                                .map((task) => (
-                                    <TaskCard
-                                        key={task._id}
-                                        task={task as unknown as Task}
-                                        onDragStart={handleDragStart}
-                                        onDragStop={handleDragStop}
-                                        getNewZIndex={getNewZIndex}
-                                    />
-                                ))}
-                        </>
-                    ) : (
-                        showSignUpForm && (
-                            <SignUpForm
-                                position={formPosition}
-                                onClose={() => setShowSignUpForm(false)}
-                                onDrag={handleFormDrag}
-                            />
-                        )
+                    {tasks.length === 0 && (
+                        <div className="flex flex-col items-center justify-center h-full pointer-events-none">
+                            <AnimatePresence>
+                                <motion.div>
+                                    <motion.div
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        exit={{ opacity: 0 }}
+                                        transition={{
+                                            duration: 3,
+                                            delay: 1,
+                                            ease: 'easeInOut',
+                                        }}
+                                    >
+                                        <h1 className="text-center text-gray-500 text-5xl font-thin">
+                                            emptiness is bliss
+                                        </h1>
+                                    </motion.div>
+                                    <motion.div
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        exit={{ opacity: 0 }}
+                                        transition={{
+                                            duration: 3,
+                                            delay: 2,
+                                            ease: 'easeInOut',
+                                        }}
+                                    >
+                                        <p className="text-center text-gray-500 text-xl font-normal p-2 mt-2">
+                                            click anywhere to add a task.
+                                        </p>
+                                    </motion.div>
+                                </motion.div>
+                            </AnimatePresence>
+                        </div>
                     )}
+                    {tasks
+                        .filter(
+                            (task) =>
+                                // !task.parentTask &&
+                                selectedEmojis.length === 0 ||
+                                selectedEmojis.includes(task.emoji || '')
+                        )
+                        .map((task) => (
+                            <TaskCard
+                                key={task._id}
+                                task={task as unknown as Task}
+                                onDragStart={handleDragStart}
+                                onDragStop={handleDragStop}
+                                getNewZIndex={getNewZIndex}
+                            />
+                        ))}
                     <SubtaskDrawer
                         ref={subtaskDrawerRef}
                         isOpen={isSubtaskDrawerOpen as boolean}

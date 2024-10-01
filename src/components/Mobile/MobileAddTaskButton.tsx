@@ -1,4 +1,4 @@
-import { FaPlus } from 'react-icons/fa';
+import { FaArrowRight, FaPlus } from 'react-icons/fa';
 import { useTheme } from '@/hooks/useTheme';
 import { useAddTask } from '@/hooks/useAddTask';
 import { useAddNewSubtask } from '@/hooks/useAddNewSubtask';
@@ -9,9 +9,11 @@ import { Task, TaskProgress } from '@/types';
 export const MobileAddTaskButton = ({
     currentParent,
     spaceId,
+    showPrompt,
 }: {
     currentParent: Task | null;
     spaceId: string;
+    showPrompt: boolean;
 }) => {
     const currentTheme = useTheme();
 
@@ -63,6 +65,14 @@ export const MobileAddTaskButton = ({
     };
     return (
         <div className="flex justify-end items-center fixed bottom-4 right-4 w-full">
+            {showPrompt && (
+                <p
+                    className="flex flex-row items-center gap-2 text-center text-md font-normal p-2"
+                    style={{ color: `var(--${currentTheme}-accent-blue)` }}
+                >
+                    Add a task <FaArrowRight />
+                </p>
+            )}
             <div
                 className="flex justify-center items-center p-4 rounded-full w-fit"
                 style={{

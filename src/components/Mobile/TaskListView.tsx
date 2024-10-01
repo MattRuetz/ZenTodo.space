@@ -18,6 +18,7 @@ import { updateSpaceTaskOrderAsync } from '@/store/spaceSlice';
 import { MobileAddTaskButton } from './MobileAddTaskButton';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import FixedTopBar from './FixedTopBar';
+import { FaArrowRight } from 'react-icons/fa';
 
 interface TaskListViewProps {
     spaceId: string;
@@ -108,12 +109,19 @@ const TaskListView: React.FC<TaskListViewProps> = ({ spaceId }) => {
     }, [currentParent, allTasks, spaceId, space?.taskOrder]);
 
     const sortedTasksAtLevel = useMemo(() => {
-        if (sortOption === 'custom' || !sortOption) {
-            // If sorting is set to custom or not set, use the current order
-            return currentTasks;
+        let sorted = [...currentTasks];
+
+        if (space?.selectedEmojis.length && space.selectedEmojis.length > 0) {
+            sorted = sorted.filter((task) =>
+                space.selectedEmojis.includes(task.emoji || '')
+            );
         }
 
-        let sorted = [...currentTasks];
+        if (sortOption === 'custom' || !sortOption) {
+            // If sorting is set to custom or not set, use the current order
+            return sorted;
+        }
+
         switch (sortOption) {
             case 'name':
                 sorted.sort((a, b) => a.taskName.localeCompare(b.taskName));
@@ -137,7 +145,7 @@ const TaskListView: React.FC<TaskListViewProps> = ({ spaceId }) => {
                 break;
         }
         return isReversed ? sorted.reverse() : sorted;
-    }, [currentTasks, sortOption, isReversed]);
+    }, [currentTasks, sortOption, isReversed, space?.selectedEmojis]);
 
     const handlers = useSwipeable({
         onSwipedRight: () => handleBack(),
@@ -149,64 +157,105 @@ const TaskListView: React.FC<TaskListViewProps> = ({ spaceId }) => {
     };
 
     return (
-        <div
-            {...handlers}
-            ref={listRef}
-            className="task-list-view pt-16 overflow-y-auto h-full"
-            style={{
-                backgroundColor: `var(--${currentTheme}-background-300)`,
-                minHeight: '100vh',
-            }}
-        >
-            <FixedTopBar
-                currentParent={currentParent}
-                handleBack={handleBack}
-            />
-            <AnimatePresence>
-                <motion.ul
-                    initial={{ x: 300 }}
-                    animate={{ x: 0 }}
-                    exit={{ x: -300 }}
-                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                >
-                    {sortedTasksAtLevel.map((task, index) => (
-                        <React.Fragment key={task._id}>
+        <>
+            <div
+                {...handlers}
+                ref={listRef}
+                className="task-list-view overflow-y-auto h-full overflow-x-hidden"
+                style={{
+                    backgroundColor: `var(--${currentTheme}-space-background)`,
+                    minHeight: '100vh',
+                }}
+            >
+                <FixedTopBar
+                    currentParent={currentParent}
+                    handleBack={handleBack}
+                />
+                {sortedTasksAtLevel.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center pointer-events-none w-8/12 mx-auto h-3/4">
+                        <AnimatePresence>
+                            <motion.div>
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{
+                                        duration: 3,
+                                        delay: 1,
+                                        ease: 'easeInOut',
+                                    }}
+                                >
+                                    <h1 className="text-center text-gray-500 text-5xl font-thin">
+                                        emptiness is bliss
+                                    </h1>
+                                </motion.div>
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{
+                                        duration: 3,
+                                        delay: 2,
+                                        ease: 'easeInOut',
+                                    }}
+                                ></motion.div>
+                            </motion.div>
+                        </AnimatePresence>
+                    </div>
+                ) : (
+                    <AnimatePresence>
+                        <motion.ul
+                            initial={{ x: 300 }}
+                            animate={{ x: 0 }}
+                            exit={{ x: -300 }}
+                            transition={{
+                                type: 'spring',
+                                stiffness: 300,
+                                damping: 30,
+                            }}
+                        >
+                            {sortedTasksAtLevel.map((task, index) => (
+                                <React.Fragment key={task._id}>
+                                    <TaskListDropZone
+                                        position={
+                                            index === 0
+                                                ? 'start'
+                                                : `after_${
+                                                      sortedTasksAtLevel[
+                                                          index - 1
+                                                      ]._id
+                                                  }`
+                                        }
+                                        parentId={currentParent?._id || null}
+                                    />
+                                    <TaskListItem
+                                        task={task}
+                                        onClick={() => handleTaskClick(task)}
+                                        index={index}
+                                        parentId={currentParent?._id || null}
+                                    />
+                                </React.Fragment>
+                            ))}
+                            {/* Add a drop zone at the end */}
                             <TaskListDropZone
-                                position={
-                                    index === 0
-                                        ? 'start'
-                                        : `after_${
-                                              sortedTasksAtLevel[index - 1]._id
-                                          }`
-                                }
+                                position={`after_${
+                                    sortedTasksAtLevel[
+                                        sortedTasksAtLevel.length - 1
+                                    ]?._id
+                                }`}
                                 parentId={currentParent?._id || null}
                             />
-                            <TaskListItem
-                                task={task}
-                                onClick={() => handleTaskClick(task)}
-                                index={index}
-                                parentId={currentParent?._id || null}
-                            />
-                        </React.Fragment>
-                    ))}
-                    {/* Add a drop zone at the end */}
-                    <TaskListDropZone
-                        position={`after_${
-                            sortedTasksAtLevel[sortedTasksAtLevel.length - 1]
-                                ?._id
-                        }`}
-                        parentId={currentParent?._id || null}
-                    />
-                </motion.ul>
-            </AnimatePresence>
+                        </motion.ul>
+                    </AnimatePresence>
+                )}
 
-            {isMobile && (
                 <MobileAddTaskButton
                     currentParent={currentParent}
                     spaceId={spaceId}
+                    showPrompt={sortedTasksAtLevel.length === 0}
                 />
-            )}
-        </div>
+            </div>
+        </>
     );
 };
 
