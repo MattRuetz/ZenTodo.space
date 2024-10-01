@@ -28,11 +28,13 @@ const SubtaskDropZone = React.memo(
         const handleHover = useCallback(
             (item: Task, monitor: any) => {
                 if (parentTask && parentTask._id && sortOption === 'custom') {
-                    moveSubtaskTemporary(
-                        item._id as string,
-                        parentTask._id,
-                        position
-                    );
+                    if (!position.includes(item._id as string)) {
+                        moveSubtaskTemporary(
+                            item._id as string,
+                            parentTask._id,
+                            position
+                        );
+                    }
                 }
             },
             [parentTask, position, sortOption, moveSubtaskTemporary]
