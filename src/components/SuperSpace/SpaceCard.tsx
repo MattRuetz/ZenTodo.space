@@ -9,6 +9,7 @@ import { getComplementaryColor, getContrastingColor } from '@/app/utils/utils';
 import { FaClockRotateLeft, FaTrash } from 'react-icons/fa6';
 import { useDrag, useDrop } from 'react-dnd';
 import ConfirmDelete from '../TaskCards/ConfirmDelete';
+import { isMobile } from 'react-device-detect';
 
 interface SpaceCardProps {
     space: SpaceData;
@@ -31,6 +32,49 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
     const [color, setColor] = useState(space.color);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
+    const [isDragEnabled, setIsDragEnabled] = useState(false);
+    const [isShaking, setIsShaking] = useState(false);
+    const longPressTimer = useRef<NodeJS.Timeout | null>(null);
+    const touchStartPos = useRef<{ x: number; y: number } | null>(null);
+    const emojiInputRef = useRef<HTMLInputElement>(null);
+
+    const LONG_PRESS_DELAY = 300; // 300ms delay
+
+    const handleTouchStart = useCallback((e: React.TouchEvent) => {
+        const touch = e.touches[0];
+        touchStartPos.current = { x: touch.clientX, y: touch.clientY };
+        longPressTimer.current = setTimeout(() => {
+            setIsDragEnabled(true);
+            setIsShaking(true);
+        }, LONG_PRESS_DELAY);
+    }, []);
+
+    const handleTouchMove = useCallback((e: React.TouchEvent) => {
+        if (!touchStartPos.current) return;
+
+        const touch = e.touches[0];
+        const deltaX = Math.abs(touch.clientX - touchStartPos.current.x);
+        const deltaY = Math.abs(touch.clientY - touchStartPos.current.y);
+
+        if (deltaX > 10 || deltaY > 10) {
+            if (longPressTimer.current) {
+                clearTimeout(longPressTimer.current);
+                longPressTimer.current = null;
+            }
+            setIsDragEnabled(false);
+            setIsShaking(false);
+        }
+    }, []);
+
+    const handleTouchEnd = useCallback(() => {
+        if (longPressTimer.current) {
+            clearTimeout(longPressTimer.current);
+            longPressTimer.current = null;
+        }
+        setIsDragEnabled(false);
+        setIsShaking(false);
+        touchStartPos.current = null;
+    }, []);
 
     const tasks = useSelector((state: RootState) =>
         state.tasks.tasks.filter((task: Task) => task.space === space._id)
@@ -64,10 +108,11 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
 
     const [{ isDragging }, drag] = useDrag({
         type: 'SPACE_CARD',
-        item: () => ({ id: space._id, index }),
+        item: () => ({ id: space._id, index, spaceCard: space }),
         collect: (monitor) => ({
             isDragging: monitor.isDragging(),
         }),
+        canDrag: () => isDragEnabled,
     });
 
     const [, drop] = useDrop({
@@ -122,6 +167,16 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
 
     drag(drop(ref));
 
+    useEffect(() => {
+        if (isDragging) {
+            setIsShaking(true);
+            const timer = setTimeout(() => setIsShaking(false), 500); // Stop shaking after 500ms
+            return () => clearTimeout(timer);
+        } else {
+            setIsShaking(false);
+        }
+    }, [isDragging]);
+
     const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setName(e.target.value);
     };
@@ -158,11 +213,30 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
     const contrastInvertedColor = contrastColor === 'white' ? 'black' : 'white';
     const complementaryColor = getComplementaryColor(color);
 
+    const handleEmojiClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (isMobile && emojiInputRef.current) {
+            emojiInputRef.current.click();
+        } else {
+            // Open your custom EmojiDropdown here
+        }
+    };
+
+    const handleEmojiChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newEmoji = e.target.value;
+        if (newEmoji) {
+            handleSetSpaceEmoji(newEmoji);
+        }
+    };
+
     return (
         <div
             ref={ref}
-            className={`space rounded-lg shadow-md hover:shadow-xl p-8 cursor-pointer relative flex flex-row justify-start items-center gap-4 min-h-[150px] h-full max-h-[300px] hover:-rotate-1 border-4 border-transparent hover:border-white transition-all duration-300 ease-in-out ${
-                isDragging ? 'opacity-50' : ''
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            className={`space rounded-lg shadow-md hover:shadow-xl p-8 cursor-pointer relative flex flex-row justify-start items-center gap-4 min-h-[150px] h-full max-h-[300px] md:hover:-rotate-1 border-4 border-transparent md:hover:border-white transition-all duration-300 ease-in-out ${
+                isDragging || isShaking ? 'shake opacity-50' : ''
             }`}
             style={{
                 backgroundColor: space.color,
@@ -179,11 +253,12 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
             >
                 {isEditing ? (
                     <div
-                        className="border-2 rounded-full p-1"
+                        className="border-2 rounded-full p-1 z-50 sm:absolute sm:top-2 sm:right-2"
                         style={{
                             borderColor: complementaryColor,
                             borderStyle: 'dashed',
                         }}
+                        onClick={handleEmojiClick}
                     >
                         <EmojiDropdown
                             taskEmoji={space.emoji || <FaTag />}
@@ -199,7 +274,7 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
             {isEditing ? (
                 <div className="h-full">
                     <div
-                        className="absolute rounded-full bottom-4 right-4 p-3 text-xl text-red-600 hover:text-red-700 cursor-pointer hover:rotate-12 transition-transform duration-300 ease-in-out"
+                        className="absolute rounded-full bottom-1 right-1 p-3 md:text-xl text-sm text-red-600 hover:text-red-700 cursor-pointer hover:rotate-12 transition-transform duration-300 ease-in-out"
                         onClick={handleDelete}
                         style={{
                             backgroundColor: contrastColor,
@@ -209,7 +284,7 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
                     </div>
                     <form
                         onSubmit={handleSubmit}
-                        className="flex flex-col justify-center gap-2 h-full"
+                        className="flex flex-col justify-center gap-2 h-full pr-4"
                     >
                         <input
                             ref={inputRef}

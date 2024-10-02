@@ -22,12 +22,25 @@ const ConfirmDelete = ({
     const numSubtasks =
         spaceOrTask === 'task' ? (objectToDelete as Task).subtasks.length : 0;
 
+    const handleDelete = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setIsDeleting(true);
+        if (spaceOrTask === 'space') {
+            performDeleteSpace(objectToDelete as SpaceData);
+        } else {
+            performDeleteTask(objectToDelete as Task);
+        }
+    };
+
+    console.log(objectToDelete);
+
     return (
         <motion.div
-            className="absolute inset-0 z-50 w-full h-full flex justify-center items-center"
+            className="absolute inset-0 w-full h-full flex justify-center items-center"
             style={{
                 backgroundColor: `var(--${currentTheme}-accent-black)`, // Use theme color for background
                 opacity: 0.5,
+                zIndex: 100000,
             }}
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -84,11 +97,10 @@ const ConfirmDelete = ({
                             </button>
                             <button
                                 className="btn btn-error"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    performDeleteTask(objectToDelete as Task);
-                                    setIsDeleting(true);
-                                }}
+                                style={{
+                                    color: `var(--${currentTheme}-text-default)`,
+                                }} // Use theme color
+                                onClick={handleDelete}
                             >
                                 <span
                                     className={`${
@@ -139,13 +151,7 @@ const ConfirmDelete = ({
                                 style={{
                                     color: `var(--${currentTheme}-text-default)`,
                                 }} // Use theme color
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    performDeleteSpace(
-                                        objectToDelete as SpaceData
-                                    );
-                                    setIsDeleting(true);
-                                }}
+                                onClick={handleDelete}
                             >
                                 <span
                                     className={`${

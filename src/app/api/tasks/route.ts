@@ -9,15 +9,12 @@ export async function GET(req: NextRequest) {
     try {
         await dbConnect();
         const userId = await getUserId(req);
-        const tasks = await Task.find({ user: userId });
-        return NextResponse.json({ tasks });
+
+        const tasks = await Task.find({ user: userId }).sort({ createdAt: 1 });
+
+        return NextResponse.json(tasks);
     } catch (error) {
-        if (error instanceof Error && error.message === 'Unauthorized') {
-            return NextResponse.json(
-                { error: 'Unauthorized' },
-                { status: 401 }
-            );
-        }
+        console.error('Error fetching tasks:', error);
         return NextResponse.json(
             { error: 'Failed to fetch tasks' },
             { status: 500 }
@@ -82,6 +79,16 @@ export async function POST(req: NextRequest) {
         // Update the space's maxZIndex
         if (space) {
             await Space.findByIdAndUpdate(space, { maxZIndex: newZIndex });
+        }
+
+        // Update the space's taskOrder
+        if (space) {
+            const currentSpace = await Space.findById(space);
+            const newTaskOrder = [
+                savedTask._id,
+                ...(currentSpace.taskOrder || []),
+            ];
+            await Space.findByIdAndUpdate(space, { taskOrder: newTaskOrder });
         }
 
         return NextResponse.json(

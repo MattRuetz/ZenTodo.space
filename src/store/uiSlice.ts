@@ -9,6 +9,7 @@ interface UIState {
     sortOption: SortOption;
     isReversed: boolean;
     isSimplicityModalOpen: boolean;
+    isControlPanelOpen: boolean;
 }
 
 const initialState: UIState = {
@@ -19,6 +20,7 @@ const initialState: UIState = {
     sortOption: 'custom',
     isReversed: false,
     isSimplicityModalOpen: false,
+    isControlPanelOpen: false,
 };
 
 const uiSlice = createSlice({
@@ -49,6 +51,9 @@ const uiSlice = createSlice({
         setSimplicityModalOpen: (state, action: PayloadAction<boolean>) => {
             state.isSimplicityModalOpen = action.payload;
         },
+        setControlPanelOpen: (state, action: PayloadAction<boolean>) => {
+            state.isControlPanelOpen = action.payload;
+        },
     },
 });
 
@@ -60,5 +65,6 @@ export const {
     setSortOption,
     setIsReversed,
     setSimplicityModalOpen,
+    setControlPanelOpen,
 } = uiSlice.actions;
 export default uiSlice.reducer;

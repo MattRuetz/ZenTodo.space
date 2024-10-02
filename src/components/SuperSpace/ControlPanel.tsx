@@ -5,7 +5,11 @@ import { useSession } from 'next-auth/react';
 import ControlPanelToggle from './ControlPanelToggle';
 import ControlPanelContent from './ControlPanelContent';
 import { EmojiFilter } from '../Space/EmojiFilter';
-
+import { useIsMobile } from '@/hooks/useIsMobile';
+import { AppDispatch, RootState } from '@/store/store';
+import { useSelector } from 'react-redux';
+import { setControlPanelOpen } from '@/store/uiSlice';
+import { useDispatch } from 'react-redux';
 interface ControlPanelProps {
     toggleZoom: () => void;
     setIsProfilePageOpen: (isProfilePageOpen: boolean) => void;
@@ -14,20 +18,33 @@ interface ControlPanelProps {
 
 const ControlPanel: React.FC<ControlPanelProps> = React.memo(
     ({ toggleZoom, setIsProfilePageOpen, setActiveTabStart }) => {
-        const [isOpen, setIsOpen] = useState(false);
+        // const [isOpen, setIsOpen] = useState(false);
+        const dispatch = useDispatch<AppDispatch>();
+        const isControlPanelOpen = useSelector(
+            (state: RootState) => state.ui.isControlPanelOpen
+        );
+        const setIsOpen = (isOpen: boolean) => {
+            dispatch(setControlPanelOpen(isOpen));
+        };
         const { data: session } = useSession();
-
+        const isMobile = useIsMobile();
         if (!session) return null;
 
         return (
-            <div style={{ zIndex: 1000 }}>
+            <div style={{ zIndex: 10000 }}>
                 <ControlPanelContent
-                    isOpen={isOpen}
+                    isOpen={isControlPanelOpen}
                     toggleZoom={toggleZoom}
                     setIsProfilePageOpen={setIsProfilePageOpen}
                     setActiveTabStart={setActiveTabStart}
                 />
-                <ControlPanelToggle isOpen={isOpen} setIsOpen={setIsOpen} />
+                {!isMobile && (
+                    <ControlPanelToggle
+                        isOpen={isControlPanelOpen}
+                        setIsOpen={setIsOpen}
+                        isMobile={isMobile}
+                    />
+                )}
             </div>
         );
     }

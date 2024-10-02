@@ -41,7 +41,12 @@ export const useArchiveTask = () => {
                 return;
             }
 
-            dispatch(archiveTaskAsync(task._id) as any);
+            dispatch(
+                archiveTaskAsync({
+                    taskId: task._id,
+                    parentTaskId: task.parentTask,
+                }) as any
+            );
         },
         [checkDescendantsComplete, dispatch, showAlert]
     );

@@ -1,9 +1,17 @@
 // src/components/Space.tsx
 'use client';
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, {
+    useEffect,
+    useRef,
+    useState,
+    useCallback,
+    useMemo,
+} from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useSession } from 'next-auth/react';
 import { useDrop } from 'react-dnd';
+// Import the new TaskListView component
+import TaskListView from '../Mobile/TaskListView';
 import TaskCard from '../TaskCards/TaskCard';
 import SignUpForm from '../SignUpForm';
 import SubtaskDrawer from '../Subtask/SubtaskDrawer';
@@ -21,6 +29,7 @@ import { useClearEmojis } from '@/hooks/useClearEmojis';
 import { useAddTask } from '@/hooks/useAddTask';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useTheme } from '@/hooks/useTheme';
+import { useIsMobile } from '@/hooks/useIsMobile';
 
 // Memoized selectors
 
@@ -36,6 +45,7 @@ export const selectSelectedEmojis = createSelector(
 const Space: React.FC<SpaceProps> = React.memo(({ spaceId }) => {
     const dispatch = useDispatch<AppDispatch>();
     const currentTheme = useTheme();
+    const isMobile = useIsMobile();
 
     const { data: session, status: sessionStatus } = useSession();
 
@@ -270,23 +280,25 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId }) => {
             }}
             onMouseDown={handleSpaceClick}
         >
-            {!session && (
-                <div
-                    ref={cursorEffectRef}
-                    className="cursor-effect"
-                    style={{
-                        background: `radial-gradient(
-                            circle,
-                            var(--${currentTheme}-background-100) 0%,
-                            var(--${currentTheme}-background-200) 20%,
-                            var(--${currentTheme}-background-300) 30%,
-                            transparent 60%
-                        )`,
-                    }}
-                />
-            )}
-            {session ? (
+            {isMobile ? (
+                <TaskListView spaceId={spaceId} />
+            ) : (
                 <>
+                    {!session && (
+                        <div
+                            ref={cursorEffectRef}
+                            className="cursor-effect"
+                            style={{
+                                background: `radial-gradient(
+                                    circle,
+                                    var(--${currentTheme}-background-100) 0%,
+                                    var(--${currentTheme}-background-200) 20%,
+                                    var(--${currentTheme}-background-300) 30%,
+                                    transparent 60%
+                                )`,
+                            }}
+                        />
+                    )}
                     {tasks.length === 0 && (
                         <div className="flex flex-col items-center justify-center h-full pointer-events-none">
                             <AnimatePresence>
@@ -339,22 +351,14 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId }) => {
                                 getNewZIndex={getNewZIndex}
                             />
                         ))}
-                </>
-            ) : (
-                showSignUpForm && (
-                    <SignUpForm
-                        position={formPosition}
-                        onClose={() => setShowSignUpForm(false)}
-                        onDrag={handleFormDrag}
+                    <SubtaskDrawer
+                        ref={subtaskDrawerRef}
+                        isOpen={isSubtaskDrawerOpen as boolean}
+                        onClose={handleCloseDrawer}
+                        maxZIndex={maxZIndex}
                     />
-                )
+                </>
             )}
-            <SubtaskDrawer
-                ref={subtaskDrawerRef}
-                isOpen={isSubtaskDrawerOpen as boolean}
-                onClose={handleCloseDrawer}
-                maxZIndex={maxZIndex}
-            />
         </motion.div>
     );
 });

@@ -10,10 +10,11 @@ import { useTheme } from '@/hooks/useTheme';
 interface ControlPanelToggleProps {
     isOpen: boolean;
     setIsOpen: (isOpen: boolean) => void;
+    isMobile: boolean;
 }
 
 const ControlPanelToggle: React.FC<ControlPanelToggleProps> = React.memo(
-    ({ isOpen, setIsOpen }) => {
+    ({ isOpen, setIsOpen, isMobile }) => {
         const { data: session } = useSession();
         const currentTheme = useTheme();
         if (!session) return null;
@@ -25,23 +26,32 @@ const ControlPanelToggle: React.FC<ControlPanelToggleProps> = React.memo(
         const { clearEmojis } = useClearEmojis(spaceId ?? '');
 
         return (
-            <div>
+            <div
+                className="flex items-center justify-center gap-2"
+                style={{
+                    position: isMobile ? 'relative' : 'fixed',
+                    top: isMobile ? '0' : '1rem',
+                    left: isMobile ? '0' : '1rem',
+                    zIndex: 10000,
+                }}
+            >
                 <button
-                    className={`fixed top-4 left-4 z-20 btn btn-circle ${
-                        isOpen ? 'bg-sky-950' : ''
-                    }`}
+                    className={`z-20 btn btn-circle`}
                     style={{
                         color: `var(--${currentTheme}-text-default)`, // Use theme color
-                        backgroundColor: `var(--${currentTheme}-background-200)`, // Use theme color
-                        zIndex: 10000,
+                        backgroundColor: isMobile
+                            ? 'transparent'
+                            : `var(--${currentTheme}-background-200)`, // Use theme color
                     }}
                     onClick={() => setIsOpen(!isOpen)}
                 >
                     {isOpen ? '×' : '☰'}
                 </button>
                 <div
-                    className="absolute top-6 left-20 text-lg flex items-center justify-center"
-                    style={{ zIndex: 10000 }}
+                    className="text-lg flex items-center justify-center"
+                    style={{
+                        display: isMobile ? 'none' : 'block',
+                    }}
                 >
                     <EmojiFilter
                         clearSelectedEmojis={clearEmojis}

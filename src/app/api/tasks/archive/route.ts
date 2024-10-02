@@ -8,7 +8,7 @@ export async function PUT(req: NextRequest) {
     try {
         await dbConnect();
         const userId = await getUserId(req);
-        const { taskId } = await req.json();
+        const { taskId, parentTaskId } = await req.json();
 
         const session = await mongoose.startSession();
         session.startTransaction();
@@ -27,12 +27,27 @@ export async function PUT(req: NextRequest) {
                 );
             }
 
+            let updatedParentTask = null;
+            // Remove task from parent's subtasks array if parentTaskId is provided
+            if (parentTaskId) {
+                updatedParentTask = await Task.findByIdAndUpdate(
+                    parentTaskId,
+                    { $pull: { subtasks: taskId } },
+                    { session, new: true }
+                );
+            }
+
+            console.log('updatedParentTask1', updatedParentTask);
+
             // Update the task and all its descendants
             const updatedTasks = await archiveTaskAndDescendants(task, session);
 
             await session.commitTransaction();
 
-            return NextResponse.json({ tasks: updatedTasks });
+            return NextResponse.json({
+                updatedTasks,
+                updatedParentTask,
+            });
         } catch (error) {
             await session.abortTransaction();
             throw error;
@@ -50,7 +65,8 @@ export async function PUT(req: NextRequest) {
 
 async function archiveTaskAndDescendants(
     task: any,
-    session: mongoose.ClientSession
+    session: mongoose.ClientSession,
+    parentTaskId?: string
 ): Promise<any[]> {
     const updateData = {
         space: null,
@@ -68,13 +84,22 @@ async function archiveTaskAndDescendants(
 
     let updatedTasks = [updatedTask];
 
+    if (parentTaskId) {
+        await Task.findByIdAndUpdate(
+            parentTaskId,
+            { $pull: { subtasks: task._id } },
+            { session }
+        );
+    }
+
     if (task.subtasks && task.subtasks.length > 0) {
         for (const subtaskId of task.subtasks) {
             const subtask = await Task.findById(subtaskId).session(session);
             if (subtask) {
                 const subtaskUpdates = await archiveTaskAndDescendants(
                     subtask,
-                    session
+                    session,
+                    updatedTask.parentTask // Pass the updated parent task ID
                 );
                 updatedTasks = updatedTasks.concat(subtaskUpdates);
             }

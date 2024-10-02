@@ -8,7 +8,8 @@ import { updateSpaceSelectedEmojis } from '@/store/spaceSlice';
 import { fetchTasks } from '@/store/tasksSlice';
 import { Tooltip } from 'react-tooltip';
 import { useTheme } from '@/hooks/useTheme';
-
+import { useIsMobile } from '@/hooks/useIsMobile';
+import { useAlert } from '@/hooks/useAlert';
 interface EmojiFilterProps {
     clearSelectedEmojis: () => void;
     spaceId: string;
@@ -20,6 +21,8 @@ export const EmojiFilter: React.FC<EmojiFilterProps> = ({
 }) => {
     const dispatch = useDispatch<AppDispatch>();
     const currentTheme = useTheme();
+    const isMobile = useIsMobile();
+    const { showAlert } = useAlert();
     const selectedEmojis = useSelector(
         (state: RootState) => state.spaces.currentSpace?.selectedEmojis || []
     );
@@ -82,6 +85,8 @@ export const EmojiFilter: React.FC<EmojiFilterProps> = ({
                 onClick={() => {
                     if (availableEmojis.length > 0) {
                         setIsOpen(!isOpen);
+                    } else {
+                        showAlert('There are no emojis in this space', 'error');
                     }
                 }}
                 className={`flex items-center justify-center w-8 h-8 rounded-md transition-colors duration-200 border border-black`}
@@ -89,22 +94,23 @@ export const EmojiFilter: React.FC<EmojiFilterProps> = ({
                     backgroundColor:
                         selectedEmojis.length > 0
                             ? `var(--${currentTheme}-accent-blue)`
+                            : isMobile
+                            ? `transparent`
                             : `var(--${currentTheme}-background-200)`,
-                    color:
-                        selectedEmojis.length > 0
-                            ? `var(--${currentTheme}-text-default)`
-                            : `var(--${currentTheme}-text-subtle)`,
+                    color: `var(--${currentTheme}-text-default)`,
                 }}
             >
                 <FaFilter />
             </button>
-            <Tooltip id="emoji-filter-tooltip">
-                <div className="bg-transparent font-normal text-sm text-left text-white">
-                    {availableEmojis.length === 0
-                        ? 'No emojis in this space'
-                        : 'Filter by emoji'}
-                </div>
-            </Tooltip>
+            {!isMobile && (
+                <Tooltip id="emoji-filter-tooltip">
+                    <div className="bg-transparent font-normal text-sm text-left text-white">
+                        {availableEmojis.length === 0
+                            ? 'No emojis in this space'
+                            : 'Filter by emoji'}
+                    </div>
+                </Tooltip>
+            )}
 
             {isOpen && (
                 <div

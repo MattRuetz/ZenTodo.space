@@ -13,6 +13,7 @@ import { FaPaintbrush, FaUserAstronaut } from 'react-icons/fa6';
 import { useTheme } from '@/hooks/useTheme';
 import { setUser } from '@/store/userSlice';
 import { ComponentSpinner } from '../ComponentSpinner';
+import { setControlPanelOpen } from '@/store/uiSlice';
 interface ControlPanelContentProps {
     isOpen: boolean;
     toggleZoom: () => void;
@@ -115,6 +116,7 @@ const ControlPanelContent: React.FC<ControlPanelContentProps> = ({
                     }}
                     onClick={() => {
                         // go to super space
+                        dispatch(setControlPanelOpen(false));
                         toggleZoom();
                     }}
                 >
@@ -168,6 +170,7 @@ const ControlPanelContent: React.FC<ControlPanelContentProps> = ({
                 onClick={() => {
                     setActiveTabStart('archive');
                     setIsProfilePageOpen(true);
+                    dispatch(setControlPanelOpen(false));
                 }}
             >
                 <h2 className="text-md font-semibold my-2 flex items-center justify-start gap-2">

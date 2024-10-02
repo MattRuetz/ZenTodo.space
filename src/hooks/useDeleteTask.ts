@@ -1,10 +1,14 @@
-import { AppDispatch, RootState } from '@/store/store';
+import { AppDispatch, RootState, store } from '@/store/store';
 import { useCallback, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchTasks } from '@/store/tasksSlice';
 import { deleteTaskOptimistic, deleteTaskAsync } from '@/store/tasksSlice';
 import { Task } from '@/types';
 import { useAlert } from '@/hooks/useAlert';
+import {
+    removeTaskFromTaskOrder,
+    updateSpaceTaskOrderAsync,
+} from '@/store/spaceSlice';
 
 export const useDeleteTask = () => {
     const dispatch = useDispatch<AppDispatch>();
@@ -39,12 +43,32 @@ export const useDeleteTask = () => {
                 deleteTaskOptimistic(tasksToDelete.map((t) => t._id as string))
             );
 
+            // Remove the task from the space's taskOrder
+            dispatch(
+                removeTaskFromTaskOrder({
+                    spaceId: task.space as string,
+                    taskId: task._id,
+                })
+            );
+
             const parentTaskId = task.parentTask;
             try {
                 await dispatch(
                     deleteTaskAsync({
                         taskId: task._id,
                         parentTaskId: parentTaskId || '',
+                    })
+                ).unwrap();
+
+                // If the deletion was successful, update the space's taskOrder in the backend
+                await dispatch(
+                    updateSpaceTaskOrderAsync({
+                        spaceId: task.space as string,
+                        taskOrder:
+                            store
+                                .getState()
+                                .spaces.spaces.find((s) => s._id === task.space)
+                                ?.taskOrder || [],
                     })
                 ).unwrap();
             } catch (error) {

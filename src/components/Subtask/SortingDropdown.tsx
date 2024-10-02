@@ -48,10 +48,9 @@ const SortingDropdown: React.FC<SortingDropdownProps> = React.memo(() => {
         <div className="relative">
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center space-x-1 px-2 py-1 rounded-md shadow-md"
+                className="flex items-center space-x-1 px-2 py-1 rounded-md shadow-sm"
                 style={{
                     backgroundColor: `var(--${currentTheme}-accent-blue)`, // Use theme color
-                    color: `var(--${currentTheme}-text-default)`, // Use theme color
                 }}
             >
                 <FaSort />
