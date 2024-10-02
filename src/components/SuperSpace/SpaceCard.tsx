@@ -208,7 +208,7 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
         }
     };
 
-    const handleDelete = (e: React.MouseEvent<HTMLDivElement>) => {
+    const handleDelete = (e: React.MouseEvent) => {
         e.stopPropagation();
         setShowDeleteConfirm(true);
     };
@@ -241,7 +241,7 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
-            className={`space rounded-lg shadow-md hover:shadow-xl p-8 cursor-pointer relative flex flex-row justify-start items-center gap-4 min-h-[150px] h-full max-h-[300px] md:hover:-rotate-1 border-4 border-transparent md:hover:border-white transition-all duration-300 ease-in-out ${
+            className={`space rounded-lg shadow-md hover:shadow-xl p-4 md:p-8 cursor-pointer relative flex flex-row justify-start items-center gap-4 min-h-[150px] h-full max-h-[300px] md:hover:-rotate-1 border-4 border-transparent md:hover:border-white transition-all duration-300 ease-in-out ${
                 isDragging || isShaking ? 'shake opacity-50' : ''
             }`}
             style={{
@@ -279,18 +279,9 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
             </div>
             {isEditing ? (
                 <div className="h-full">
-                    <div
-                        className="absolute rounded-full bottom-1 right-1 p-3 md:text-xl text-sm text-red-600 hover:text-red-700 cursor-pointer hover:rotate-12 transition-transform duration-300 ease-in-out"
-                        onClick={handleDelete}
-                        style={{
-                            backgroundColor: contrastColor,
-                        }}
-                    >
-                        <FaTrash />
-                    </div>
                     <form
                         onSubmit={handleSubmit}
-                        className="flex flex-col justify-center gap-2 h-full pr-4"
+                        className="flex flex-col justify-center gap-3 h-full pr-4"
                     >
                         <input
                             ref={inputRef}
@@ -306,7 +297,7 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
                                 className="p-2 rounded cursor-pointer text-sm font-medium"
                                 style={{
                                     backgroundColor: color,
-                                    color: getContrastingColor(color),
+                                    color: contrastColor,
                                 }}
                             >
                                 Choose Space Color
@@ -328,12 +319,21 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
                             type="submit"
                             className="btn btn-sm"
                             style={{
-                                backgroundColor: color,
-                                color: contrastColor,
+                                backgroundColor: contrastColor,
+                                color: contrastInvertedColor,
                                 border: `1px solid ${contrastColor}`,
                             }}
                         >
                             Save
+                        </button>
+                        <button
+                            className="btn btn-sm btn-error text-white"
+                            onClick={handleDelete}
+                            style={{
+                                border: `3px solid ${space.color}`,
+                            }}
+                        >
+                            <FaTrash /> Delete Space
                         </button>
                     </form>
                 </div>
@@ -364,9 +364,9 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
                             <div
                                 className="flex flex-col bg-opacity-80 p-4 rounded-lg shadow-md"
                                 style={{
-                                    backgroundColor: contrastInvertedColor,
-                                    border: `1px solid ${contrastColor}`,
-                                    color: contrastColor,
+                                    backgroundColor: 'white',
+                                    border: `1px solid black`,
+                                    color: 'black',
                                 }}
                             >
                                 <h4 className="text-lg font-semibold mb-2">

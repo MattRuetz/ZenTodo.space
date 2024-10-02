@@ -91,6 +91,13 @@ const SubtaskDrawer = React.memo(
                             a.taskName.localeCompare(b.taskName)
                         );
                         break;
+                    case 'dueDate':
+                        sorted.sort(
+                            (a, b) =>
+                                new Date(a.dueDate as Date).getTime() -
+                                new Date(b.dueDate as Date).getTime()
+                        );
+                        break;
                     case 'progress':
                         sorted.sort((a, b) =>
                             a.progress.localeCompare(b.progress)

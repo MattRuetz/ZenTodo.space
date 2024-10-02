@@ -12,8 +12,8 @@ import {
 } from 'react-icons/fa';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTheme } from '@/hooks/useTheme';
-
-type SortOption = 'custom' | 'name' | 'progress' | 'created' | 'lastEdited';
+import { FaHourglassHalf } from 'react-icons/fa6';
+import { SortOption } from '@/types';
 
 interface SortingDropdownProps {}
 
@@ -38,6 +38,7 @@ const SortingDropdown: React.FC<SortingDropdownProps> = React.memo(() => {
 
     const sortOptionString = {
         name: isReversed ? 'Name (a-Z)' : 'Name (Z-a)',
+        dueDate: 'Due Date ' + (isReversed ? '(Reverse)' : ''),
         progress: 'Progress',
         created: 'Created ' + (isReversed ? '(Oldest)' : '(Newest)'),
         lastEdited: 'Last Edited ' + (isReversed ? '(Oldest)' : '(Newest)'),
@@ -51,6 +52,7 @@ const SortingDropdown: React.FC<SortingDropdownProps> = React.memo(() => {
                 className="flex items-center space-x-1 px-2 py-1 rounded-md shadow-sm"
                 style={{
                     backgroundColor: `var(--${currentTheme}-accent-blue)`, // Use theme color
+                    color: `var(--${currentTheme}-text-default)`, // Use theme color
                 }}
             >
                 <FaSort />
@@ -83,6 +85,21 @@ const SortingDropdown: React.FC<SortingDropdownProps> = React.memo(() => {
                                 }}
                             />
                             <span>Custom</span>
+                        </li>
+                        <li
+                            className="px-4 py-2 hover:bg-black/20 cursor-pointer flex items-center space-x-2"
+                            onClick={() => handleSortChange('dueDate')}
+                            style={{
+                                color: `var(--${currentTheme}-text-default)`, // Use theme color
+                            }}
+                        >
+                            <FaHourglassHalf
+                                className="text-primary"
+                                style={{
+                                    color: `var(--${currentTheme}-text-default)`,
+                                }}
+                            />
+                            <span>Due Date</span>
                         </li>
                         <li
                             className="px-4 py-2 hover:bg-black/20 cursor-pointer flex items-center space-x-2"

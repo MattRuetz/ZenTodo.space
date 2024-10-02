@@ -1,6 +1,6 @@
 'use client';
 // src/components/SuperSpace.tsx
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
     fetchSpaces,
@@ -31,6 +31,8 @@ import ProfileArchivePage from '../Profile_Archive/ProfileArchivePage';
 import { setUser } from '@/store/userSlice';
 import BottomSettings from './BottomSettings';
 import { useIsMobile } from '@/hooks/useIsMobile';
+import { useDragLayer } from 'react-dnd';
+import { useAutoScroll } from '@/hooks/useAutoScroll';
 
 const SuperSpace = React.memo(() => {
     const dispatch = useDispatch<AppDispatch>();
@@ -44,6 +46,8 @@ const SuperSpace = React.memo(() => {
     const [isAdding, setIsAdding] = useState(false);
     const [isProfilePageOpen, setIsProfilePageOpen] = useState(false);
     const [activeTabStart, setActiveTabStart] = useState('archive');
+
+    const autoScrollRef = useRef<HTMLDivElement>(null);
 
     const { data: session } = useSession();
     const { showAlert } = useAlert();
@@ -123,6 +127,17 @@ const SuperSpace = React.memo(() => {
         fetchUserData();
     }, [dispatch]);
 
+    const { isDragging, currentOffset } = useDragLayer((monitor) => ({
+        isDragging: monitor.isDragging(),
+        currentOffset: monitor.getSourceClientOffset(),
+    }));
+
+    useAutoScroll(
+        autoScrollRef as React.RefObject<HTMLDivElement>,
+        isDragging,
+        currentOffset
+    );
+
     return (
         <>
             {isProfilePageOpen ? (
@@ -136,7 +151,10 @@ const SuperSpace = React.memo(() => {
             ) : (
                 <div className="relative w-full h-full bg-gradient-to-b from-slate-900 to-slate-800 overflow-hidden">
                     {isZoomedOut ? (
-                        <div className="overflow-y-auto h-[calc(100%-50px)] pb-20">
+                        <div
+                            ref={autoScrollRef}
+                            className="overflow-y-auto h-[calc(100%-50px)] pb-20"
+                        >
                             <h4 className="text-xl text-white text-center pt-4 pb-2 font-bold">
                                 Spaces: {spaces.length} / 9
                             </h4>

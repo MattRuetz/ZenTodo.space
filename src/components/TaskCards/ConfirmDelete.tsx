@@ -45,6 +45,7 @@ const ConfirmDelete = ({
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
+            onClick={(e) => e.stopPropagation()}
         >
             <motion.div
                 className="p-6 rounded-lg shadow-lg max-w-sm"

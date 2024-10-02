@@ -54,11 +54,12 @@ export interface User {
     tasksInProgress: number;
 }
 export type SortOption =
+    | 'custom'
     | 'name'
+    | 'dueDate'
     | 'progress'
     | 'created'
-    | 'lastEdited'
-    | 'custom';
+    | 'lastEdited';
 
 export type ThemeName = 'buji' | 'daigo' | 'enzu';
 
