@@ -46,12 +46,14 @@ const FixedTopBar = ({
     }, [allTasks, currentSpace?._id]);
 
     return (
-        <div className="header flex flex-col items-start justify-between w-full">
+        <div
+            className="header sticky top-0 flex flex-col items-start justify-between w-full"
+            style={{ zIndex: 10000 }}
+        >
             <div
-                className="header flex items-center justify-between p-2 w-full sticky top-0"
+                className="header flex items-center justify-between p-2 w-full top-0"
                 style={{
                     backgroundColor: `var(--${currentTheme}-background-100)`,
-                    zIndex: 10000,
                 }}
             >
                 <ControlPanelToggle
