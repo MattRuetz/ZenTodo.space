@@ -144,7 +144,7 @@ export const ProgressDropdown: React.FC<ProgressDropdownProps> = React.memo(
                 </div>
                 <div
                     ref={dropdownRef}
-                    className={`progress-dropdown mt-1 absolute z-50`}
+                    className={`progress-dropdown mt-1 absolute`}
                     style={{
                         backgroundColor: `var(--${currentTheme}-background-200)`, // Use theme color
                         border: `1px solid var(--${currentTheme}-accent-grey)`, // Use theme color
@@ -153,6 +153,7 @@ export const ProgressDropdown: React.FC<ProgressDropdownProps> = React.memo(
                         overflow: 'hidden',
                         transition: 'max-height 0.3s ease-in-out',
                         maxHeight: isDropdownOpen ? '10rem' : '0', // Adjust max height based on dropdown state
+                        zIndex: 100,
                     }}
                 >
                     {PROGRESS_OPTIONS.map((progressOption) => (

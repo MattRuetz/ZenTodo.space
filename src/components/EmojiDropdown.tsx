@@ -28,7 +28,7 @@ const EmojiDropdown: React.FC<EmojiDropdownProps> = ({
             >
                 {taskEmoji}
             </div>
-            <div className="emoji-dropdown-menu fixed top-10 left-0 z-20">
+            <div className="emoji-dropdown-menu fixed top-10 left-1/2 -translate-x-1/2 z-20">
                 {isOpen && (
                     <>
                         <MyEmojiPicker

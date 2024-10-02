@@ -258,7 +258,7 @@ const SubtaskDrawerCard = React.memo(
                         isEditing === 'taskName'
                             ? 'border-slate-400'
                             : 'border-transparent'
-                    } font-semibold rounded-lg p-2 px-4 mb-2 transition-colors duration-200 border-2`}
+                    } font-semibold rounded-lg py-1 px-2 mb-2 transition-colors duration-200 border-2`}
                     style={{
                         backgroundColor: `var(--${currentTheme}-background-200)`, // Use theme color
                         borderColor:
@@ -315,7 +315,7 @@ const SubtaskDrawerCard = React.memo(
                         isEditing === 'taskDescription'
                             ? 'border-slate-400'
                             : 'border-transparent'
-                    } font-normal rounded-lg p-2 px-4 mb-2 transition-all duration-200 border-2`}
+                    } font-normal rounded-lg py-2 px-2 mb-2 transition-all duration-200 border-2`}
                     style={{
                         backgroundColor: `var(--${currentTheme}-background-200)`, // Use theme color
                         borderColor:

@@ -17,6 +17,10 @@ import SortingDropdown from './SortingDropdown';
 import SimplicityModal from '../SimplicityModal';
 import { setSimplicityModalOpen } from '@/store/uiSlice';
 import { useTheme } from '@/hooks/useTheme';
+import { AnimatePresence, motion } from 'framer-motion';
+import { useDragLayer } from 'react-dnd';
+import { useAutoScroll } from '@/hooks/useAutoScroll';
+import { useRef } from 'react';
 interface SubtaskDrawerProps {
     isOpen: boolean;
     onClose: () => void;
@@ -31,6 +35,7 @@ const SubtaskDrawer = React.memo(
         ) => {
             const currentTheme = useTheme();
             const dispatch = useDispatch<AppDispatch>();
+            const autoScrollRef = useRef<HTMLDivElement>(null);
 
             const isSimplicityModalOpen = useSelector(
                 (state: RootState) => state.ui.isSimplicityModalOpen
@@ -150,13 +155,30 @@ const SubtaskDrawer = React.memo(
                 }
             }, [isOpen, sortedSubtasks, isGlobalDragging]);
 
+            const { isDragging, currentOffset } = useDragLayer((monitor) => ({
+                isDragging: monitor.isDragging(),
+                currentOffset: monitor.getSourceClientOffset(),
+            }));
+
+            useAutoScroll(
+                autoScrollRef as React.RefObject<HTMLDivElement>,
+                isDragging,
+                currentOffset
+            );
+
+            const taskVariants = {
+                hidden: { opacity: 0, y: 50 },
+                visible: { opacity: 1, y: 0 },
+                exit: { opacity: 0, y: -50, transition: { duration: 0.2 } },
+            };
+
             return (
                 <div
                     ref={ref}
                     data-drawer-parent-id={parentTask?._id}
                     className={`subtask-drawer fixed top-0 right-0 h-full shadow-md transform w-[400px] border-l-2 ${
                         isOpen ? 'opacity-90' : 'translate-x-full opacity-0'
-                    } transition-transform duration-300 ease-in-out subtask-drawer-items`}
+                    } transition-transform duration-300 ease-in-out h-full`}
                     style={{
                         backgroundColor: `var(--${currentTheme}-background-300)`, // Use theme color
                         borderColor: isTaskCardOver
@@ -260,25 +282,67 @@ const SubtaskDrawer = React.memo(
                             }}
                         ></div>
 
-                        <ul className="overflow-y-auto overflow-x-visible h-[calc(100vh-10rem)] subtask-drawer-items pt-2">
-                            <SubtaskDropZone
-                                position="start"
-                                parentTask={parentTask as Task}
-                            />
-                            {sortedSubtasks.map((subtask, index) => (
-                                <React.Fragment key={subtask?._id}>
-                                    <SubtaskDrawerCard
-                                        subtask={subtask as Task}
-                                        position={subtask._id as string}
-                                        maxZIndex={maxZIndex}
-                                    />
-                                    <SubtaskDropZone
-                                        position={`after_${subtask._id}`}
-                                        parentTask={parentTask as Task}
-                                    />
-                                </React.Fragment>
-                            ))}
-                        </ul>
+                        <div
+                            ref={autoScrollRef}
+                            className="overflow-y-auto overflow-x-visible h-[calc(100vh-10rem)] subtask-drawer-items pt-2"
+                        >
+                            <ul>
+                                <SubtaskDropZone
+                                    position="start"
+                                    parentTask={parentTask as Task}
+                                    isDragging={isDragging}
+                                />
+                                <AnimatePresence mode="popLayout">
+                                    <motion.ul
+                                        initial={{ x: 300 }}
+                                        animate={{ x: 0 }}
+                                        exit={{ x: -300 }}
+                                        transition={{
+                                            type: 'spring',
+                                            stiffness: 300,
+                                            damping: 30,
+                                        }}
+                                    >
+                                        {sortedSubtasks.map(
+                                            (subtask, index) => (
+                                                <motion.div
+                                                    key={subtask?._id}
+                                                    layout
+                                                    variants={taskVariants}
+                                                    initial="hidden"
+                                                    animate="visible"
+                                                    exit="exit"
+                                                    transition={{
+                                                        type: 'spring',
+                                                        stiffness: 500,
+                                                        damping: 30,
+                                                        mass: 1,
+                                                        layoutDuration: 0.3,
+                                                    }}
+                                                >
+                                                    <SubtaskDrawerCard
+                                                        subtask={
+                                                            subtask as Task
+                                                        }
+                                                        position={
+                                                            subtask._id as string
+                                                        }
+                                                        maxZIndex={maxZIndex}
+                                                    />
+                                                    <SubtaskDropZone
+                                                        position={`after_${subtask._id}`}
+                                                        parentTask={
+                                                            parentTask as Task
+                                                        }
+                                                        isDragging={isDragging}
+                                                    />
+                                                </motion.div>
+                                            )
+                                        )}
+                                    </motion.ul>
+                                </AnimatePresence>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             );

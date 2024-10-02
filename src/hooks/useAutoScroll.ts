@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { useIsMobile } from './useIsMobile';
 
 export const useAutoScroll = (
     scrollRef: React.RefObject<HTMLElement>,
@@ -6,8 +7,8 @@ export const useAutoScroll = (
     currentOffset: { x: number; y: number } | null
 ) => {
     const scrollIntervalRef = useRef<number | null>(null);
-    const scrollSpeed = 10; // Increase scroll speed for smoother scrolling
-    const scrollThreshold = 100; // pixels from top/bottom to trigger scroll
+    const scrollSpeed = 10; // Base scroll speed
+    const scrollThreshold = 200; // pixels from top/bottom to trigger scroll
 
     useEffect(() => {
         if (!isDragging || !currentOffset || !scrollRef.current) {
@@ -24,10 +25,20 @@ export const useAutoScroll = (
         const handleScroll = () => {
             const { y } = currentOffset;
 
-            if (y - containerRect.top < scrollThreshold) {
-                scrollContainer.scrollTop -= scrollSpeed; // Scroll up
-            } else if (containerRect.bottom - y < scrollThreshold) {
-                scrollContainer.scrollTop += scrollSpeed; // Scroll down
+            // Calculate how close the drag item is to the top or bottom
+            const distanceToTop = y - containerRect.top;
+            const distanceToBottom = containerRect.bottom - y;
+
+            if (distanceToTop < scrollThreshold) {
+                // Scroll up faster if closer to the top
+                scrollContainer.scrollTop -=
+                    (scrollSpeed * (scrollThreshold - distanceToTop)) /
+                    scrollThreshold;
+            } else if (distanceToBottom < scrollThreshold) {
+                // Scroll down faster if closer to the bottom
+                scrollContainer.scrollTop +=
+                    (scrollSpeed * (scrollThreshold - distanceToBottom)) /
+                    scrollThreshold;
             }
         };
 

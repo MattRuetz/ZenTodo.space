@@ -9,10 +9,11 @@ import { useTheme } from '@/hooks/useTheme';
 interface SubtaskDropZoneProps {
     position: string;
     parentTask: Task | null;
+    isDragging: boolean;
 }
 
 const SubtaskDropZone = React.memo(
-    ({ position, parentTask }: SubtaskDropZoneProps) => {
+    ({ position, parentTask, isDragging }: SubtaskDropZoneProps) => {
         const currentTheme = useTheme();
         const { addNewSubtask } = useAddNewSubtask();
         const { moveSubtaskTemporary, commitSubtaskOrder } = useMoveSubtask();
@@ -55,8 +56,10 @@ const SubtaskDropZone = React.memo(
         drop(dropRef);
 
         const handleMouseEnter = () => {
-            setHoverStatus('prompting-to-add');
-            setTextOpacity(1);
+            if (!isDragging) {
+                setHoverStatus('prompting-to-add');
+                setTextOpacity(1);
+            }
         };
 
         const handleMouseLeave = () => {
@@ -120,7 +123,7 @@ const SubtaskDropZone = React.memo(
                                     color: `var(--${currentTheme}-text-default)`, // Use theme color
                                     height:
                                         hoverStatus === 'hiding'
-                                            ? '1rem'
+                                            ? '0.5rem'
                                             : '1.75rem', // Adjust height based on hover status
                                     backgroundColor:
                                         hoverStatus === 'hiding'

@@ -67,10 +67,7 @@ const CustomDragLayer = () => {
                             </div>
                         )}
                         {itemType === 'SPACE_CARD' && (
-                            <div className="truncate">
-                                {/* {item.spaceCard.name || 'Untitled Space Card'} */}
-                                Space Card
-                            </div>
+                            <div className="truncate">Space Card</div>
                         )}
                     </div>
                     {itemType === 'TASK' && item.task.emoji && (
@@ -84,17 +81,6 @@ const CustomDragLayer = () => {
                             {item.task.emoji}
                         </div>
                     )}
-                    {/* {itemType === 'SPACE_CARD' && item.spaceCard.emoji && (
-                        <div
-                            className="absolute text-sm -right-4 -top-4 p-1 rounded-full"
-                            style={{
-                                backgroundColor: `var(--${currentTheme}-emphasis-light)`,
-                                border: `1px solid var(--${currentTheme}-emphasis-dark)`,
-                            }}
-                        >
-                            {item.spaceCard.emoji}
-                        </div>
-                    )} */}
                 </div>
             </div>
         </div>
