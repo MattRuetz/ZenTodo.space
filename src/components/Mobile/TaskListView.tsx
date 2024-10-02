@@ -12,13 +12,14 @@ import SortingDropdown from '../Subtask/SortingDropdown';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSwipeable } from 'react-swipeable';
 import TaskListDropZone from './TaskListDropZone';
-import { useDrop } from 'react-dnd';
+import { useDrop, useDragLayer } from 'react-dnd';
 import { useMoveTask } from '@/hooks/useMoveTask';
 import { updateSpaceTaskOrderAsync } from '@/store/spaceSlice';
 import { MobileAddTaskButton } from './MobileAddTaskButton';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import FixedTopBar from './FixedTopBar';
 import { FaArrowRight } from 'react-icons/fa';
+import { useAutoScroll } from '@/hooks/useAutoScroll';
 
 interface TaskListViewProps {
     spaceId: string;
@@ -47,13 +48,19 @@ const TaskListView: React.FC<TaskListViewProps> = ({ spaceId }) => {
         drop: (item: { id: string }, monitor) => {
             const didDrop = monitor.didDrop();
             if (!didDrop) {
-                console.log('dropping');
                 commitTaskOrder(currentParent?._id || null);
             }
         },
     });
 
     drop(listRef);
+
+    const { isDragging, currentOffset } = useDragLayer((monitor) => ({
+        isDragging: monitor.isDragging(),
+        currentOffset: monitor.getSourceClientOffset(),
+    }));
+
+    useAutoScroll(listRef, isDragging, currentOffset);
 
     useEffect(() => {
         dispatch(fetchTasks());
