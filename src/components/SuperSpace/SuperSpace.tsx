@@ -54,9 +54,7 @@ const SuperSpace = React.memo(() => {
             const newSpaces = [...spaces];
             newSpaces.splice(dragIndex, 1);
             newSpaces.splice(hoverIndex, 0, draggedSpace);
-            console.log('newSpaces', newSpaces);
             dispatch(reorderSpacesOptimistic(newSpaces));
-            console.log('moveSpaceCard', dragIndex, hoverIndex);
         },
         [spaces, dispatch]
     );

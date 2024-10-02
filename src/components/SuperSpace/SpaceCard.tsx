@@ -32,7 +32,7 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
     const [color, setColor] = useState(space.color);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
-    const [isDragEnabled, setIsDragEnabled] = useState(true);
+    const [isDragEnabled, setIsDragEnabled] = useState(false);
     const [isShaking, setIsShaking] = useState(false);
     const longPressTimer = useRef<NodeJS.Timeout | null>(null);
     const touchStartPos = useRef<{ x: number; y: number } | null>(null);
@@ -118,6 +118,7 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
         collect: (monitor) => ({
             isDragging: monitor.isDragging(),
         }),
+        canDrag: () => isDragEnabled,
     });
 
     const [, drop] = useDrop({
