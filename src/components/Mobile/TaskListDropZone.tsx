@@ -4,6 +4,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
 import { useMoveTask } from '@/hooks/useMoveTask';
+import { Task } from '@/types';
 
 interface TaskListDropZoneProps {
     position: string;
@@ -20,11 +21,20 @@ const TaskListDropZone: React.FC<TaskListDropZoneProps> = ({
     const sortOption = useSelector((state: RootState) => state.ui.sortOption);
 
     const handleHover = useCallback(
-        (item: { id: string }, monitor: any) => {
+        (item: { task: Task }, monitor: any) => {
             if (sortOption === 'custom') {
-                if (!position.includes(item.id)) {
-                    console.log('moving task', item.id, parentId, position);
-                    moveTaskTemporary(item.id, parentId, position);
+                if (!position.includes(item.task._id as string)) {
+                    console.log(
+                        'moving task',
+                        item.task._id,
+                        parentId,
+                        position
+                    );
+                    moveTaskTemporary(
+                        item.task._id as string,
+                        parentId,
+                        position
+                    );
                 }
             }
         },
@@ -34,7 +44,7 @@ const TaskListDropZone: React.FC<TaskListDropZoneProps> = ({
     const [{ isOver }, drop] = useDrop({
         accept: 'TASK',
         hover: handleHover,
-        drop: (item: { id: string }) => {
+        drop: (item: { task: Task }) => {
             commitTaskOrder(parentId);
         },
         collect: (monitor) => ({

@@ -10,10 +10,12 @@ export const MobileAddTaskButton = ({
     currentParent,
     spaceId,
     showPrompt,
+    onAddTask,
 }: {
     currentParent: Task | null;
     spaceId: string;
     showPrompt: boolean;
+    onAddTask: () => void;
 }) => {
     const currentTheme = useTheme();
 
@@ -62,9 +64,15 @@ export const MobileAddTaskButton = ({
             };
             addTask(newTask);
         }
+        onAddTask();
     };
     return (
-        <div className="flex justify-end items-center fixed bottom-4 right-4 w-full">
+        <div
+            className="flex justify-end items-center fixed bottom-4 right-4 w-full"
+            style={{
+                zIndex: 1000,
+            }}
+        >
             {showPrompt && (
                 <p
                     className="flex flex-row items-center gap-2 text-center text-md font-normal p-2"
@@ -77,6 +85,7 @@ export const MobileAddTaskButton = ({
                 className="flex justify-center items-center p-4 rounded-full w-fit"
                 style={{
                     backgroundColor: `var(--${currentTheme}-accent-blue)`,
+                    color: `var(--${currentTheme}-emphasis-dark)`,
                 }}
                 onClick={handleAddTask}
             >

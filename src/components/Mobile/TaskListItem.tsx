@@ -89,7 +89,7 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
 
     const [{ isDragging }, drag] = useDrag({
         type: 'TASK',
-        item: { id: task._id, index },
+        item: { task },
         collect: (monitor) => ({
             isDragging: monitor.isDragging(),
         }),
@@ -163,12 +163,12 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
     }, []);
 
     const handleDrop = useCallback(
-        (item: { id: string }) => {
+        (item: Task) => {
             const targetSubtask = task;
             // Fetch the latest version of the dragged task from the Redux store
             const state = store.getState() as RootState;
             const draggedSubtask = state.tasks.tasks.find(
-                (task) => task._id === item.id
+                (task) => task._id === item._id
             );
 
             console.log('draggedSubtask', draggedSubtask);
@@ -210,14 +210,12 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
         [dispatch, task]
     );
 
-    // TODO: Get this to work
-    // TODO: Fix this so that it doesn't allow dropping on the same task
     const [{ isOver, canDrop }, drop] = useDrop({
         accept: 'TASK',
-        drop: (item: { id: string }) => {
-            handleDrop(item);
+        drop: (item: { task: Task }) => {
+            handleDrop(item.task);
         },
-        canDrop: (item: { id: string }) => item.id !== task._id,
+        canDrop: (item: { task: Task }) => item.task._id !== task._id,
         collect: (monitor) => ({
             isOver: monitor.isOver(),
             canDrop: monitor.canDrop(),
@@ -262,7 +260,7 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
                     isSubtaskMenuOpen={isTaskMenuOpen}
                     setIsSubtaskMenuOpen={setIsTaskMenuOpen}
                 />
-                <p>{task._id}</p>
+                {/* <p>{task._id}</p> */}
 
                 <div
                     className={`${
@@ -275,6 +273,9 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
                         borderColor:
                             isEditing === 'taskName'
                                 ? `var(--${currentTheme}-accent-grey)`
+                                : localTask.taskName === '' ||
+                                  localTask.taskName === 'New Subtask'
+                                ? `var(--${currentTheme}-accent-red)`
                                 : 'transparent',
                         color: `var(--${currentTheme}-text-default)`,
                     }}

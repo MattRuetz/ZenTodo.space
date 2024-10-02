@@ -152,12 +152,19 @@ const TaskListView: React.FC<TaskListViewProps> = ({ spaceId }) => {
         preventScrollOnSwipe: true,
     });
 
+    const scrollToTop = () => {
+        listRef.current?.scrollTo({
+            top: 0,
+            behavior: 'smooth',
+        });
+    };
+
     return (
         <>
             <div
                 {...handlers}
                 ref={listRef}
-                className="task-list-view overflow-y-auto h-full overflow-x-hidden"
+                className="task-list-view overflow-y-auto h-full overflow-x-hidden pb-20"
                 style={{
                     backgroundColor: `var(--${currentTheme}-space-background)`,
                     minHeight: '100vh',
@@ -249,6 +256,7 @@ const TaskListView: React.FC<TaskListViewProps> = ({ spaceId }) => {
                     currentParent={currentParent}
                     spaceId={spaceId}
                     showPrompt={sortedTasksAtLevel.length === 0}
+                    onAddTask={scrollToTop}
                 />
             </div>
         </>

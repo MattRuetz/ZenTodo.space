@@ -1,26 +1,73 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Task } from '@/types';
-import { FaAngleLeft } from 'react-icons/fa';
-
+import { FaAngleLeft, FaAngleRight, FaSlash } from 'react-icons/fa';
+import { RootState } from '@/store/store';
+import { useSelector } from 'react-redux';
+import { useTheme } from '@/hooks/useTheme';
+import {
+    FaArrowLeft,
+    FaLine,
+    FaPersonWalkingDashedLineArrowRight,
+} from 'react-icons/fa6';
 interface BreadcrumbProps {
-    task: Task | null;
+    currentParent: Task | null;
     onBack: () => void;
 }
 
-const Breadcrumb: React.FC<BreadcrumbProps> = ({ task, onBack }) => {
+const Breadcrumb: React.FC<BreadcrumbProps> = ({ currentParent, onBack }) => {
+    const allTasks = useSelector((state: RootState) => state.tasks.tasks);
+    const currentTheme = useTheme();
+    const parentTask = useMemo(() => {
+        if (!currentParent) return null;
+        return allTasks.find((t) => t._id === currentParent._id);
+    }, [allTasks, currentParent]);
+
+    const grandparentTask = useMemo(() => {
+        if (!parentTask?.parentTask) return null;
+        return allTasks.find((t) => t._id === parentTask?.parentTask);
+    }, [allTasks, parentTask]);
+
     return (
-        <div className="breadcrumb flex items-center">
-            {task ? (
-                <button
-                    onClick={onBack}
-                    className="back-button flex items-center"
+        <>
+            {currentParent && (
+                <div
+                    className="breadcrumb flex items-center"
+                    style={{
+                        color: `var(--${currentTheme}-text-default)`,
+                    }}
                 >
-                    <FaAngleLeft className="mr-2" /> Back
-                </button>
-            ) : (
-                <h2 className="text-lg font-bold">Main Tasks</h2>
+                    <button
+                        onClick={onBack}
+                        className="back-button flex items-center text-xs"
+                    >
+                        <FaArrowLeft className="mr-2" />
+                        {grandparentTask ? (
+                            <>
+                                <span
+                                    className="line-clamp-2 max-w-[130px] py-2 px-4 rounded-md"
+                                    style={{
+                                        backgroundColor: `var(--${currentTheme}-background-300)`,
+                                        border: `1px solid var(--${currentTheme}-accent-blue)`,
+                                    }}
+                                >
+                                    {grandparentTask.taskName}
+                                </span>
+                                <span className="mx-2">/</span>
+                            </>
+                        ) : null}
+                        <span
+                            className="line-clamp-2 max-w-[130px] py-2 px-4 rounded-md"
+                            style={{
+                                border: `1px solid var(--${currentTheme}-accent-grey)`,
+                            }}
+                        >
+                            {currentParent.taskName}
+                        </span>
+                        <span className="mx-2">/</span>
+                    </button>
+                </div>
             )}
-        </div>
+        </>
     );
 };
 

@@ -9,6 +9,11 @@ import { useDispatch } from 'react-redux';
 import ControlPanelToggle from '../SuperSpace/ControlPanelToggle';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { useTheme } from '@/hooks/useTheme';
+import { useMemo, useState } from 'react';
+import { MobileEmojiFilter } from './MobileEmojiFilter';
+import { FaFilter } from 'react-icons/fa';
+import { FaAngleUp, FaArrowUp, FaFilterCircleXmark } from 'react-icons/fa6';
+import { AnimatePresence, motion } from 'framer-motion';
 const FixedTopBar = ({
     currentParent,
     handleBack,
@@ -17,8 +22,10 @@ const FixedTopBar = ({
     handleBack: () => void;
 }) => {
     const dispatch = useDispatch<AppDispatch>();
+    const allTasks = useSelector((state: RootState) => state.tasks.tasks);
     const isMobile = useIsMobile();
     const currentTheme = useTheme();
+    const [showEmojiFilter, setShowEmojiFilter] = useState(false);
     const currentSpace = useSelector(
         (state: RootState) => state.spaces.currentSpace
     );
@@ -28,6 +35,15 @@ const FixedTopBar = ({
     const setIsOpen = (isOpen: boolean) => {
         dispatch(setControlPanelOpen(isOpen));
     };
+
+    const hasRootLevelTasksWithEmojis = useMemo(() => {
+        return allTasks.some(
+            (task) =>
+                task.parentTask === undefined &&
+                task.emoji &&
+                task.space === currentSpace?._id
+        );
+    }, [allTasks, currentSpace?._id]);
 
     return (
         <div className="header flex flex-col items-start justify-between w-full">
@@ -43,24 +59,57 @@ const FixedTopBar = ({
                     setIsOpen={setIsOpen}
                     isMobile={isMobile}
                 />
-                <div className="flex items-center justify-center gap-4">
-                    {!currentParent && (
-                        <EmojiFilter
-                            clearSelectedEmojis={() => {}}
-                            spaceId={currentSpace?._id ?? ''}
-                        />
+                <div
+                    className="flex items-center justify-center gap-2"
+                    style={{ color: `var(--${currentTheme}-emphasis-dark)` }}
+                >
+                    {hasRootLevelTasksWithEmojis && (
+                        <button
+                            className="p-2 rounded-full shadow-sm"
+                            onClick={() => setShowEmojiFilter((prev) => !prev)}
+                            style={{
+                                backgroundColor: `var(--${currentTheme}-accent-blue)`,
+                            }}
+                        >
+                            <div className="flex items-center justify-center gap-2">
+                                <FaFilter />
+                                {showEmojiFilter ? <FaAngleUp /> : null}
+                            </div>
+                        </button>
                     )}
                     <SortingDropdown />
                 </div>
             </div>
-            <div
-                className="w-full p-4 border-b"
-                style={{
-                    borderColor: `var(--${currentTheme}-background-300)`,
-                }}
-            >
-                <Breadcrumb task={currentParent} onBack={handleBack} />
-            </div>
+            {currentParent ? (
+                <div
+                    className="w-full p-4 border-b"
+                    style={{
+                        borderColor: `var(--${currentTheme}-background-300)`,
+                    }}
+                >
+                    <Breadcrumb
+                        currentParent={currentParent}
+                        onBack={handleBack}
+                    />
+                </div>
+            ) : (
+                <AnimatePresence>
+                    {showEmojiFilter && hasRootLevelTasksWithEmojis && (
+                        <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: '70px', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.3, ease: 'easeInOut' }}
+                            style={{ overflow: 'hidden' }}
+                            className="w-full"
+                        >
+                            <MobileEmojiFilter
+                                spaceId={currentSpace?._id ?? ''}
+                            />
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            )}
         </div>
     );
 };

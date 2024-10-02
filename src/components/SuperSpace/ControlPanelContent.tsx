@@ -170,6 +170,7 @@ const ControlPanelContent: React.FC<ControlPanelContentProps> = ({
                 onClick={() => {
                     setActiveTabStart('archive');
                     setIsProfilePageOpen(true);
+                    dispatch(setControlPanelOpen(false));
                 }}
             >
                 <h2 className="text-md font-semibold my-2 flex items-center justify-start gap-2">
