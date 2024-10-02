@@ -226,6 +226,7 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
 
     return (
         <li
+            key={task.clientId || task._id} // Use clientId if available, otherwise fall back to _id
             ref={ref}
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}

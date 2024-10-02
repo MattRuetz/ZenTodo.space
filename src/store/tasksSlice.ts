@@ -507,6 +507,20 @@ export const tasksSlice = createSlice({
                 state.tasks.push(newTask);
             }
         },
+        updateTaskInPlace: (
+            state,
+            action: PayloadAction<{ tempId: string; newTask: Task }>
+        ) => {
+            const index = state.tasks.findIndex(
+                (task) => task._id === action.payload.tempId
+            );
+            if (index !== -1) {
+                state.tasks[index] = {
+                    ...action.payload.newTask,
+                    clientId: action.payload.tempId, // Keep the clientId for stable rendering
+                };
+            }
+        },
         addNewSubtaskOptimistic: (
             state,
             action: PayloadAction<{
@@ -1030,6 +1044,7 @@ export const selectSubtasksByParentId = (state: RootState, parentId: string) =>
 export const {
     // hideNewChildTask,
     duplicateTasksOptimistic,
+    updateTaskInPlace,
     convertTaskToSubtaskOptimistic,
     convertSubtaskToTaskOptimistic,
     moveSubtaskWithinLevelOptimistic,

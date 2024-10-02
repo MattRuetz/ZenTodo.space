@@ -5,7 +5,10 @@ import {
     addTaskAsync,
     deleteTaskOptimistic,
 } from '@/store/tasksSlice';
-import { replaceTempTaskWithRealTask } from '@/store/tasksSlice';
+import {
+    replaceTempTaskWithRealTask,
+    updateTaskInPlace,
+} from '@/store/tasksSlice';
 import {
     updateSpaceTaskOrderAsync,
     updateSpaceTaskOrderOptimistic,
@@ -71,8 +74,16 @@ export const useAddTask = () => {
             ).unwrap();
 
             // Replace temp task with real task in one atomic action
+            // dispatch(
+            //     replaceTempTaskWithRealTask({
+            //         tempId,
+            //         newTask: result.newTask,
+            //     })
+            // );
+
+            // Update the task in place instead of replacing it
             dispatch(
-                replaceTempTaskWithRealTask({
+                updateTaskInPlace({
                     tempId,
                     newTask: result.newTask,
                 })
@@ -88,7 +99,7 @@ export const useAddTask = () => {
             );
 
             // Success
-            showAlert('Task added!', 'success');
+            // showAlert('Task added!', 'success');
         } catch (error) {
             // Error: rollback optimistic updates
             dispatch(deleteTaskOptimistic([tempId]));

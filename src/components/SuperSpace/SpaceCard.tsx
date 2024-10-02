@@ -253,7 +253,7 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
             >
                 {isEditing ? (
                     <div
-                        className="border-2 rounded-full p-1 z-50 sm:absolute sm:top-2 sm:right-2"
+                        className="border-2 rounded-full p-1 z-50 sm:absolute sm:top-2 sm:right-2 md:relative md:top-0 md:right-0"
                         style={{
                             borderColor: complementaryColor,
                             borderStyle: 'dashed',

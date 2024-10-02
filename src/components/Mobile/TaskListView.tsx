@@ -159,6 +159,12 @@ const TaskListView: React.FC<TaskListViewProps> = ({ spaceId }) => {
         });
     };
 
+    const taskVariants = {
+        hidden: { opacity: 0, y: 50 },
+        visible: { opacity: 1, y: 0 },
+        exit: { opacity: 0, y: -50 },
+    };
+
     return (
         <>
             <div
@@ -217,28 +223,49 @@ const TaskListView: React.FC<TaskListViewProps> = ({ spaceId }) => {
                                 damping: 30,
                             }}
                         >
-                            {sortedTasksAtLevel.map((task, index) => (
-                                <React.Fragment key={task._id}>
-                                    <TaskListDropZone
-                                        position={
-                                            index === 0
-                                                ? 'start'
-                                                : `after_${
-                                                      sortedTasksAtLevel[
-                                                          index - 1
-                                                      ]._id
-                                                  }`
-                                        }
-                                        parentId={currentParent?._id || null}
-                                    />
-                                    <TaskListItem
-                                        task={task}
-                                        onClick={() => handleTaskClick(task)}
-                                        index={index}
-                                        parentId={currentParent?._id || null}
-                                    />
-                                </React.Fragment>
-                            ))}
+                            <AnimatePresence>
+                                {sortedTasksAtLevel.map((task, index) => (
+                                    <motion.div
+                                        key={task.clientId || task._id} // Use clientId if available, otherwise fall back to _id
+                                        variants={taskVariants}
+                                        initial="hidden"
+                                        animate="visible"
+                                        exit="exit"
+                                        transition={{
+                                            type: 'spring',
+                                            stiffness: 500,
+                                            damping: 30,
+                                            mass: 1,
+                                            delay: index * 0.05,
+                                        }}
+                                    >
+                                        <TaskListDropZone
+                                            position={
+                                                index === 0
+                                                    ? 'start'
+                                                    : `after_${
+                                                          sortedTasksAtLevel[
+                                                              index - 1
+                                                          ]._id
+                                                      }`
+                                            }
+                                            parentId={
+                                                currentParent?._id || null
+                                            }
+                                        />
+                                        <TaskListItem
+                                            task={task}
+                                            onClick={() =>
+                                                handleTaskClick(task)
+                                            }
+                                            index={index}
+                                            parentId={
+                                                currentParent?._id || null
+                                            }
+                                        />
+                                    </motion.div>
+                                ))}
+                            </AnimatePresence>
                             {/* Add a drop zone at the end */}
                             <TaskListDropZone
                                 position={`after_${

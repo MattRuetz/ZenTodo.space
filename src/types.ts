@@ -27,6 +27,7 @@ export interface Task {
     isTemp?: boolean;
     isArchived?: boolean;
     archivedAt?: Date;
+    clientId?: string;
 }
 
 export interface SpaceData {

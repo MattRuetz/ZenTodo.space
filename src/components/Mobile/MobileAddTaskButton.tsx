@@ -1,10 +1,12 @@
-import { FaArrowRight, FaPlus } from 'react-icons/fa';
+import { FaArrowRight, FaCheck, FaPlus } from 'react-icons/fa';
 import { useTheme } from '@/hooks/useTheme';
 import { useAddTask } from '@/hooks/useAddTask';
 import { useAddNewSubtask } from '@/hooks/useAddNewSubtask';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
 import { Task, TaskProgress } from '@/types';
+import { useEffect, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 
 export const MobileAddTaskButton = ({
     currentParent,
@@ -18,9 +20,17 @@ export const MobileAddTaskButton = ({
     onAddTask: () => void;
 }) => {
     const currentTheme = useTheme();
-
+    const [justAddedTask, setJustAddedTask] = useState(false);
     const { addTask } = useAddTask();
     const { addNewSubtask } = useAddNewSubtask();
+
+    useEffect(() => {
+        if (justAddedTask) {
+            setTimeout(() => {
+                setJustAddedTask(false);
+            }, 1000);
+        }
+    }, [justAddedTask]);
 
     const handleAddTask = () => {
         if (currentParent) {
@@ -46,6 +56,8 @@ export const MobileAddTaskButton = ({
                 subtask: newSubtask,
                 parentId: currentParent?._id as string,
                 position: 'start',
+            }).then(() => {
+                setJustAddedTask(true);
             });
         } else {
             const newTask: Omit<Task, '_id'> = {
@@ -62,7 +74,9 @@ export const MobileAddTaskButton = ({
                 width: 270,
                 height: 250,
             };
-            addTask(newTask);
+            addTask(newTask).then(() => {
+                setJustAddedTask(true);
+            });
         }
         onAddTask();
     };
@@ -81,16 +95,26 @@ export const MobileAddTaskButton = ({
                     Add a task <FaArrowRight />
                 </p>
             )}
-            <div
-                className="flex justify-center items-center p-4 rounded-full w-fit"
+            <button
+                className="btn btn-circle btn-md flex justify-center items-center"
                 style={{
                     backgroundColor: `var(--${currentTheme}-accent-blue)`,
                     color: `var(--${currentTheme}-emphasis-dark)`,
                 }}
                 onClick={handleAddTask}
             >
-                <FaPlus />
-            </div>
+                <AnimatePresence>
+                    <motion.div
+                        key={justAddedTask ? 'check' : 'plus'} // Add a key to help AnimatePresence identify the elements
+                        initial={{ opacity: 0, scale: 0.5 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        // exit={{ opacity: 0, scale: 0.5 }}
+                        transition={{ duration: 0.5 }}
+                    >
+                        {justAddedTask ? <FaCheck /> : <FaPlus />}
+                    </motion.div>
+                </AnimatePresence>
+            </button>
         </div>
     );
 };
