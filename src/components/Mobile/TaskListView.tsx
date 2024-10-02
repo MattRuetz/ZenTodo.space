@@ -179,6 +179,7 @@ const TaskListView: React.FC<TaskListViewProps> = ({ spaceId }) => {
                 <FixedTopBar
                     currentParent={currentParent}
                     handleBack={handleBack}
+                    tasksAtLevel={sortedTasksAtLevel}
                 />
                 {sortedTasksAtLevel.length === 0 ? (
                     <div className="flex flex-col items-center justify-center pointer-events-none w-8/12 mx-auto h-3/4">

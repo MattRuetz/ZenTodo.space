@@ -25,7 +25,6 @@ import { AnimatePresence, motion } from 'framer-motion';
 //---------------------------------------------------
 import { useAlert } from '@/hooks/useAlert';
 import { useTheme } from '@/hooks/useTheme';
-import { useRouter } from 'next/navigation';
 import { FaArrowLeft } from 'react-icons/fa6';
 import { FaPlusCircle } from 'react-icons/fa';
 import ProfileArchivePage from '../Profile_Archive/ProfileArchivePage';
@@ -55,7 +54,9 @@ const SuperSpace = React.memo(() => {
             const newSpaces = [...spaces];
             newSpaces.splice(dragIndex, 1);
             newSpaces.splice(hoverIndex, 0, draggedSpace);
+            console.log('newSpaces', newSpaces);
             dispatch(reorderSpacesOptimistic(newSpaces));
+            console.log('moveSpaceCard', dragIndex, hoverIndex);
         },
         [spaces, dispatch]
     );

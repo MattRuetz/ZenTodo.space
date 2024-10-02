@@ -17,6 +17,7 @@ interface BreadcrumbProps {
 const Breadcrumb: React.FC<BreadcrumbProps> = ({ currentParent, onBack }) => {
     const allTasks = useSelector((state: RootState) => state.tasks.tasks);
     const currentTheme = useTheme();
+
     const parentTask = useMemo(() => {
         if (!currentParent) return null;
         return allTasks.find((t) => t._id === currentParent._id);
@@ -44,7 +45,7 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({ currentParent, onBack }) => {
                         {grandparentTask ? (
                             <>
                                 <span
-                                    className="line-clamp-2 max-w-[130px] py-2 px-4 rounded-md"
+                                    className="line-clamp-2 max-w-[130px] py-1 px-4 rounded-md"
                                     style={{
                                         backgroundColor: `var(--${currentTheme}-background-300)`,
                                         border: `1px solid var(--${currentTheme}-accent-blue)`,
@@ -56,7 +57,7 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({ currentParent, onBack }) => {
                             </>
                         ) : null}
                         <span
-                            className="line-clamp-2 max-w-[130px] py-2 px-4 rounded-md"
+                            className="line-clamp-2 max-w-[130px] py-1 px-4 rounded-md"
                             style={{
                                 border: `1px solid var(--${currentTheme}-accent-grey)`,
                             }}

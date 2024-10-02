@@ -32,13 +32,19 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
     const [color, setColor] = useState(space.color);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
-    const [isDragEnabled, setIsDragEnabled] = useState(false);
+    const [isDragEnabled, setIsDragEnabled] = useState(true);
     const [isShaking, setIsShaking] = useState(false);
     const longPressTimer = useRef<NodeJS.Timeout | null>(null);
     const touchStartPos = useRef<{ x: number; y: number } | null>(null);
     const emojiInputRef = useRef<HTMLInputElement>(null);
 
     const LONG_PRESS_DELAY = 300; // 300ms delay
+
+    useEffect(() => {
+        if (!isMobile) {
+            setIsDragEnabled(true);
+        }
+    }, [isMobile]);
 
     const handleTouchStart = useCallback((e: React.TouchEvent) => {
         const touch = e.touches[0];
@@ -108,16 +114,15 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
 
     const [{ isDragging }, drag] = useDrag({
         type: 'SPACE_CARD',
-        item: () => ({ id: space._id, index, spaceCard: space }),
+        item: () => ({ id: space._id, index }),
         collect: (monitor) => ({
             isDragging: monitor.isDragging(),
         }),
-        canDrag: () => isDragEnabled,
     });
 
     const [, drop] = useDrop({
         accept: 'SPACE_CARD',
-        hover: (item: { id: string; index: number }, monitor) => {
+        hover(item: { id: string; index: number }, monitor) {
             if (!ref.current) {
                 return;
             }
@@ -169,10 +174,12 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
 
     useEffect(() => {
         if (isDragging) {
+            console.log('isDragging', isDragging);
             setIsShaking(true);
             const timer = setTimeout(() => setIsShaking(false), 500); // Stop shaking after 500ms
             return () => clearTimeout(timer);
         } else {
+            console.log('isDragging', isDragging);
             setIsShaking(false);
         }
     }, [isDragging]);
@@ -217,17 +224,15 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
         e.stopPropagation();
         if (isMobile && emojiInputRef.current) {
             emojiInputRef.current.click();
-        } else {
-            // Open your custom EmojiDropdown here
         }
     };
 
-    const handleEmojiChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const newEmoji = e.target.value;
-        if (newEmoji) {
-            handleSetSpaceEmoji(newEmoji);
-        }
-    };
+    // const handleEmojiChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    //     const newEmoji = e.target.value;
+    //     if (newEmoji) {
+    //         handleSetSpaceEmoji(newEmoji);
+    //     }
+    // };
 
     return (
         <div

@@ -1,19 +1,18 @@
 // src/app/components/ControlPanelContent.tsx
 'use client';
 import React, { useEffect, useState } from 'react';
-import { signOut } from 'next-auth/react';
-import { useSession } from 'next-auth/react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store/store';
 import { setTheme } from '@/store/themeSlice';
 import { Task, ThemeName } from '@/types';
 import { getComplementaryColor, getContrastingColor } from '@/app/utils/utils';
-import { FaArchive, FaSignOutAlt, FaTag } from 'react-icons/fa';
-import { FaPaintbrush, FaUserAstronaut } from 'react-icons/fa6';
+import { FaArchive, FaTag } from 'react-icons/fa';
+import { FaCircleArrowLeft, FaPaintbrush } from 'react-icons/fa6';
 import { useTheme } from '@/hooks/useTheme';
 import { setUser } from '@/store/userSlice';
 import { ComponentSpinner } from '../ComponentSpinner';
 import { setControlPanelOpen } from '@/store/uiSlice';
+import { isMobile } from 'react-device-detect';
 interface ControlPanelContentProps {
     isOpen: boolean;
     toggleZoom: () => void;
@@ -100,10 +99,21 @@ const ControlPanelContent: React.FC<ControlPanelContentProps> = ({
                 isOpen ? 'translate-x-0' : '-translate-x-full'
             } transition-transform duration-300 ease-in-out pt-20`}
             style={{
-                zIndex: 9999,
+                zIndex: 10000,
                 backgroundColor: `var(--${theme}-controlpanel-background)`,
             }}
         >
+            {isMobile && (
+                <button
+                    className="absolute top-4 left-2 p-2 text-3xl"
+                    style={{
+                        color: `var(--${theme}-text-default)`,
+                    }}
+                    onClick={() => dispatch(setControlPanelOpen(false))}
+                >
+                    <FaCircleArrowLeft />
+                </button>
+            )}
             <div className="my-2">
                 <div className="text-sm mb-2 flex items-center gap-2">
                     Current Space:

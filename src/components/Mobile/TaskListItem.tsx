@@ -60,30 +60,33 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
         }, LONG_PRESS_DELAY);
     }, []);
 
-    const handleTouchMove = useCallback((e: React.TouchEvent) => {
-        if (!touchStartPos.current) return;
+    const handleTouchMove = useCallback(
+        (e: React.TouchEvent) => {
+            if (!touchStartPos.current) return;
 
-        const touch = e.touches[0];
-        const deltaX = Math.abs(touch.clientX - touchStartPos.current.x);
-        const deltaY = Math.abs(touch.clientY - touchStartPos.current.y);
+            const touch = e.touches[0];
+            const deltaX = Math.abs(touch.clientX - touchStartPos.current.x);
+            const deltaY = Math.abs(touch.clientY - touchStartPos.current.y);
 
-        if (deltaX > 10 || deltaY > 10) {
-            if (longPressTimer.current) {
-                clearTimeout(longPressTimer.current);
-                longPressTimer.current = null;
+            if (deltaX > 10 || deltaY > 10) {
+                if (longPressTimer.current) {
+                    clearTimeout(longPressTimer.current);
+                    longPressTimer.current = null;
+                }
+                if (!isDragEnabled) {
+                    setIsDragEnabled(false);
+                    setIsShaking(false);
+                }
             }
-            setIsDragEnabled(false);
-            setIsShaking(false);
-        }
-    }, []);
+        },
+        [isDragEnabled]
+    );
 
     const handleTouchEnd = useCallback(() => {
         if (longPressTimer.current) {
             clearTimeout(longPressTimer.current);
             longPressTimer.current = null;
         }
-        setIsDragEnabled(false);
-        setIsShaking(false);
         touchStartPos.current = null;
     }, []);
 
@@ -102,6 +105,13 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
             const timer = setTimeout(() => setIsShaking(false), 500); // Stop shaking after 500ms
             return () => clearTimeout(timer);
         } else {
+            setIsShaking(false);
+        }
+    }, [isDragging]);
+
+    useEffect(() => {
+        if (!isDragging) {
+            setIsDragEnabled(false);
             setIsShaking(false);
         }
     }, [isDragging]);
@@ -170,9 +180,6 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
             const draggedSubtask = state.tasks.tasks.find(
                 (task) => task._id === item._id
             );
-
-            console.log('draggedSubtask', draggedSubtask);
-            console.log('targetSubtask', targetSubtask);
 
             if (!draggedSubtask) {
                 console.error('Dragged subtask not found in the store');

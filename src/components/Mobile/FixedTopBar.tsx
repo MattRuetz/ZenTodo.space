@@ -14,15 +14,17 @@ import { MobileEmojiFilter } from './MobileEmojiFilter';
 import { FaFilter } from 'react-icons/fa';
 import { FaAngleUp, FaArrowUp, FaFilterCircleXmark } from 'react-icons/fa6';
 import { AnimatePresence, motion } from 'framer-motion';
+
 const FixedTopBar = ({
     currentParent,
     handleBack,
+    tasksAtLevel,
 }: {
     currentParent: Task | null;
     handleBack: () => void;
+    tasksAtLevel: Task[];
 }) => {
     const dispatch = useDispatch<AppDispatch>();
-    const allTasks = useSelector((state: RootState) => state.tasks.tasks);
     const isMobile = useIsMobile();
     const currentTheme = useTheme();
     const [showEmojiFilter, setShowEmojiFilter] = useState(false);
@@ -37,17 +39,17 @@ const FixedTopBar = ({
     };
 
     const hasRootLevelTasksWithEmojis = useMemo(() => {
-        return allTasks.some(
+        return tasksAtLevel.some(
             (task) =>
                 task.parentTask === undefined &&
                 task.emoji &&
                 task.space === currentSpace?._id
         );
-    }, [allTasks, currentSpace?._id]);
+    }, [tasksAtLevel, currentSpace?._id]);
 
     return (
         <div
-            className="header sticky top-0 flex flex-col items-start justify-between w-full"
+            className="header sticky top-0 flex flex-col items-start justify-between w-full shadow-sm"
             style={{ zIndex: 10000 }}
         >
             <div
@@ -79,14 +81,15 @@ const FixedTopBar = ({
                             </div>
                         </button>
                     )}
-                    <SortingDropdown />
+                    {tasksAtLevel.length > 1 && <SortingDropdown />}
                 </div>
             </div>
             {currentParent ? (
                 <div
-                    className="w-full p-4 border-b"
+                    className="w-full px-4 py-2 border-b"
                     style={{
                         borderColor: `var(--${currentTheme}-background-300)`,
+                        backgroundColor: `var(--${currentTheme}-background-300)`,
                     }}
                 >
                     <Breadcrumb

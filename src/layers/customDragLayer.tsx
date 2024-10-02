@@ -1,12 +1,8 @@
 import React from 'react';
 import { useDragLayer } from 'react-dnd';
 import { useTheme } from '@/hooks/useTheme';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/store/store';
-import { Task } from '@/types';
-import { Icon } from '@/components/Icon';
-import { FaGripVertical } from 'react-icons/fa';
 import { FaArrowsUpDownLeftRight } from 'react-icons/fa6';
+import { isMobile } from 'react-device-detect';
 
 const CustomDragLayer = () => {
     const currentTheme = useTheme();
@@ -19,12 +15,14 @@ const CustomDragLayer = () => {
         })
     );
 
-    // if (itemType !== 'TASK') {
-    //     // SUBTASK and SPACE_CARD are also draggabled in this app
-    //     return null;
-    // }
+    if (!isMobile) {
+        return null;
+    }
 
-    console.log(itemType);
+    if (itemType !== 'TASK' && itemType !== 'SPACE_CARD') {
+        // SUBTASK and SPACE_CARD are also draggabled in this app
+        return null;
+    }
 
     if (!isDragging || !currentOffset) {
         return null;
@@ -70,7 +68,8 @@ const CustomDragLayer = () => {
                         )}
                         {itemType === 'SPACE_CARD' && (
                             <div className="truncate">
-                                {item.spaceCard.name || 'Untitled Space Card'}
+                                {/* {item.spaceCard.name || 'Untitled Space Card'} */}
+                                Space Card
                             </div>
                         )}
                     </div>
@@ -85,7 +84,7 @@ const CustomDragLayer = () => {
                             {item.task.emoji}
                         </div>
                     )}
-                    {itemType === 'SPACE_CARD' && item.spaceCard.emoji && (
+                    {/* {itemType === 'SPACE_CARD' && item.spaceCard.emoji && (
                         <div
                             className="absolute text-sm -right-4 -top-4 p-1 rounded-full"
                             style={{
@@ -95,7 +94,7 @@ const CustomDragLayer = () => {
                         >
                             {item.spaceCard.emoji}
                         </div>
-                    )}
+                    )} */}
                 </div>
             </div>
         </div>
