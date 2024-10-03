@@ -66,6 +66,14 @@ export const useChangeHierarchy = () => {
             updatedGrandparentTask,
         };
 
+        if (
+            updatedTask.taskName.length === 0 ||
+            updatedParentTask.taskName.length === 0
+        ) {
+            showAlert('Task name cannot be empty', 'error');
+            return;
+        }
+
         if (task.ancestors && task.ancestors.length >= 2) {
             showAlert(
                 'Task cannot be made a subtask because it would exceed the maximum depth of 2.',
