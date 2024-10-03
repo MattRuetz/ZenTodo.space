@@ -183,11 +183,9 @@ const TaskListView: React.FC<TaskListViewProps> = ({ spaceId }) => {
         <>
             <div
                 {...handlers}
-                ref={listRef}
-                className="task-list-view h-full pb-20"
+                className="task-list-view h-full flex flex-col"
                 style={{
                     backgroundColor: `var(--${currentTheme}-space-background)`,
-                    minHeight: '100vh',
                 }}
             >
                 <FixedTopBar
@@ -232,67 +230,77 @@ const TaskListView: React.FC<TaskListViewProps> = ({ spaceId }) => {
                         </AnimatePresence>
                     </div>
                 ) : (
-                    <AnimatePresence mode="popLayout">
-                        <motion.ul
-                            initial={{ x: 300 }}
-                            animate={{ x: 0 }}
-                            exit={{ x: -300 }}
-                            transition={{
-                                type: 'spring',
-                                stiffness: 300,
-                                damping: 30,
-                            }}
-                            className="overflow-x-hidden overflow-y-auto scrollbar-thin scrollbar-thumb-rounded-full h-[calc(100vh-7rem)]"
-                            style={{
-                                scrollbarColor: `var(--${currentTheme}-text-subtle) var(--${currentTheme}-background-200)`,
-                            }}
-                        >
-                            {sortedTasksAtLevel.map((task, index) => (
-                                <motion.div
-                                    key={task.clientId || task._id}
-                                    layout
-                                    variants={taskVariants}
-                                    initial="hidden"
-                                    animate="visible"
-                                    exit="exit"
-                                    transition={{
-                                        type: 'spring',
-                                        stiffness: 500,
-                                        damping: 30,
-                                        mass: 1,
-                                        layoutDuration: 0.3,
-                                    }}
-                                >
-                                    <TaskListDropZone
-                                        position={
-                                            index === 0
-                                                ? 'start'
-                                                : `after_${
-                                                      sortedTasksAtLevel[
-                                                          index - 1
-                                                      ]._id
-                                                  }`
-                                        }
-                                        parentId={currentParent?._id || null}
-                                    />
-                                    <TaskListItem
-                                        task={task}
-                                        onClick={() => handleTaskClick(task)}
-                                        index={index}
-                                        parentId={currentParent?._id || null}
-                                    />
-                                </motion.div>
-                            ))}
-                            <TaskListDropZone
-                                position={`after_${
-                                    sortedTasksAtLevel[
-                                        sortedTasksAtLevel.length - 1
-                                    ]?._id
-                                }`}
-                                parentId={currentParent?._id || null}
-                            />
-                        </motion.ul>
-                    </AnimatePresence>
+                    <div
+                        className="h-full overflow-x-hidden overflow-y-auto scrollbar-thin scrollbar-thumb-rounded-full"
+                        ref={listRef}
+                        style={{
+                            scrollbarColor: `var(--${currentTheme}-text-subtle) var(--${currentTheme}-background-200)`,
+                        }}
+                    >
+                        <AnimatePresence mode="popLayout">
+                            <motion.ul
+                                initial={{ x: 300 }}
+                                animate={{ x: 0 }}
+                                exit={{ x: -300 }}
+                                transition={{
+                                    type: 'spring',
+                                    stiffness: 300,
+                                    damping: 30,
+                                }}
+                            >
+                                {sortedTasksAtLevel.map((task, index) => (
+                                    <motion.div
+                                        key={task.clientId || task._id}
+                                        layout
+                                        variants={taskVariants}
+                                        initial="hidden"
+                                        animate="visible"
+                                        exit="exit"
+                                        transition={{
+                                            type: 'spring',
+                                            stiffness: 500,
+                                            damping: 30,
+                                            mass: 1,
+                                            layoutDuration: 0.3,
+                                        }}
+                                    >
+                                        <TaskListDropZone
+                                            position={
+                                                index === 0
+                                                    ? 'start'
+                                                    : `after_${
+                                                          sortedTasksAtLevel[
+                                                              index - 1
+                                                          ]._id
+                                                      }`
+                                            }
+                                            parentId={
+                                                currentParent?._id || null
+                                            }
+                                        />
+                                        <TaskListItem
+                                            task={task}
+                                            onClick={() =>
+                                                handleTaskClick(task)
+                                            }
+                                            index={index}
+                                            parentId={
+                                                currentParent?._id || null
+                                            }
+                                        />
+                                    </motion.div>
+                                ))}
+                                <TaskListDropZone
+                                    position={`after_${
+                                        sortedTasksAtLevel[
+                                            sortedTasksAtLevel.length - 1
+                                        ]?._id
+                                    }`}
+                                    parentId={currentParent?._id || null}
+                                />
+                            </motion.ul>
+                        </AnimatePresence>
+                    </div>
                 )}
 
                 <MobileAddTaskButton

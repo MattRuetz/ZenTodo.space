@@ -87,6 +87,9 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
         if (longPressTimer.current) {
             clearTimeout(longPressTimer.current);
             longPressTimer.current = null;
+
+            setIsDragEnabled(false);
+            setIsShaking(false);
         }
         touchStartPos.current = null;
     }, []);

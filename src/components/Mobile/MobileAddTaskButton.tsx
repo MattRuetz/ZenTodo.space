@@ -80,7 +80,7 @@ export const MobileAddTaskButton = ({
     };
     return (
         <div
-            className="flex justify-end items-center fixed bottom-4 right-4 w-full"
+            className="flex justify-end items-center fixed bottom-4 right-4 w-auto"
             style={{
                 zIndex: 1000,
             }}
