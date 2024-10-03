@@ -3,6 +3,7 @@ import { AppDispatch, store } from '@/store/store';
 import {
     addNewSubtaskOptimistic,
     addNewSubtaskAsync,
+    updateTaskInPlace,
 } from '@/store/tasksSlice';
 import { Task } from '@/types';
 import { generateTempId } from '@/app/utils/utils';
@@ -74,7 +75,7 @@ export const useAddNewSubtask = () => {
 
         try {
             // Attempt to add subtask in the backend
-            await dispatch(
+            const result = await dispatch(
                 addNewSubtaskAsync({
                     subtask,
                     parentTask: parentTask as Task,
@@ -82,6 +83,15 @@ export const useAddNewSubtask = () => {
                     tempId,
                 })
             ).unwrap();
+
+            // Update the task in place instead of replacing it
+            dispatch(
+                updateTaskInPlace({
+                    tempId: result.originalTempId,
+                    newTask: result.newSubtask,
+                })
+            );
+
             // Success: The new subtask with a real ID is added in the fulfilled case
             showAlert('Added subtask!', 'success');
         } catch (error) {

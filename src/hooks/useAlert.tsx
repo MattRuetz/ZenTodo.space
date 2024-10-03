@@ -1,7 +1,6 @@
 import React, { useCallback, useContext } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { useTheme } from './useTheme';
 import { useMediaQuery } from 'react-responsive';
 
 type AlertType = 'error' | 'notice' | 'success' | 'welcome';
@@ -44,7 +43,6 @@ export const MobileAlertProvider: React.FC<MobileAlertProviderProps> = ({
 };
 
 export const useAlert = () => {
-    const theme = useTheme();
     const isMobile = useMediaQuery({ maxWidth: 767 });
     const { showMobileAlert } = useContext(MobileAlertContext);
 
@@ -71,27 +69,27 @@ export const useAlert = () => {
                 const styles = {
                     error: {
                         border: '2px solid',
-                        backgroundColor: `var(--${theme}-accent-red-low-opacity)`,
-                        borderColor: `var(--${theme}-accent-red)`,
-                        color: `var(--${theme}-text-default)`,
+                        backgroundColor: '#fef2f2',
+                        borderColor: `#b91c1c`,
+                        color: `#b91c1c`,
                     },
                     notice: {
                         border: '2px solid',
-                        backgroundColor: `var(--${theme}-accent-grey-low-opacity)`,
-                        borderColor: `var(--${theme}-accent-grey)`,
-                        color: `var(--${theme}-text-default)`,
+                        backgroundColor: '#fff7ed',
+                        borderColor: `#b91c1c`,
+                        color: `#b91c1c`,
                     },
                     success: {
                         border: '2px solid',
-                        backgroundColor: `var(--${theme}-accent-green-low-opacity)`,
-                        borderColor: `var(--${theme}-accent-green)`,
-                        color: `var(--${theme}-text-default)`,
+                        backgroundColor: '#f0fdf4',
+                        borderColor: `#16a34a`,
+                        color: `#16a34a`,
                     },
                     welcome: {
                         border: '2px solid',
-                        backgroundColor: `var(--${theme}-accent-blue-low-opacity)`,
-                        borderColor: `var(--${theme}-accent-blue)`,
-                        color: `var(--${theme}-text-default)`,
+                        backgroundColor: '#f0fdf4',
+                        borderColor: `#0ea5e9`,
+                        color: `#0ea5e9`,
                     },
                 };
 
@@ -114,7 +112,7 @@ export const useAlert = () => {
                 });
             }
         },
-        [theme, isMobile, showMobileAlert]
+        [isMobile, showMobileAlert]
     );
 
     const AlertComponent: React.ComponentType = isMobile

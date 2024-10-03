@@ -73,14 +73,6 @@ export const useAddTask = () => {
                 })
             ).unwrap();
 
-            // Replace temp task with real task in one atomic action
-            // dispatch(
-            //     replaceTempTaskWithRealTask({
-            //         tempId,
-            //         newTask: result.newTask,
-            //     })
-            // );
-
             // Update the task in place instead of replacing it
             dispatch(
                 updateTaskInPlace({

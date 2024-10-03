@@ -184,7 +184,7 @@ const TaskListView: React.FC<TaskListViewProps> = ({ spaceId }) => {
             <div
                 {...handlers}
                 ref={listRef}
-                className="task-list-view overflow-y-auto h-full overflow-x-hidden pb-20"
+                className="task-list-view h-full pb-20"
                 style={{
                     backgroundColor: `var(--${currentTheme}-space-background)`,
                     minHeight: '100vh',
@@ -196,7 +196,12 @@ const TaskListView: React.FC<TaskListViewProps> = ({ spaceId }) => {
                     tasksAtLevel={sortedTasksAtLevel}
                 />
                 {sortedTasksAtLevel.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center pointer-events-none w-8/12 mx-auto h-3/4">
+                    <div
+                        className="flex flex-col items-center justify-center pointer-events-none w-8/12 mx-auto h-3/4"
+                        style={{
+                            scrollbarColor: '#0077ff #e7e5e4',
+                        }}
+                    >
                         <AnimatePresence>
                             <motion.div>
                                 <motion.div
@@ -236,6 +241,10 @@ const TaskListView: React.FC<TaskListViewProps> = ({ spaceId }) => {
                                 type: 'spring',
                                 stiffness: 300,
                                 damping: 30,
+                            }}
+                            className="overflow-x-hidden overflow-y-auto scrollbar-thin scrollbar-thumb-rounded-full h-[calc(100vh-7rem)]"
+                            style={{
+                                scrollbarColor: `var(--${currentTheme}-text-subtle) var(--${currentTheme}-background-200)`,
                             }}
                         >
                             {sortedTasksAtLevel.map((task, index) => (

@@ -27,7 +27,7 @@ const ControlPanelToggle: React.FC<ControlPanelToggleProps> = React.memo(
 
         return (
             <div
-                className="flex items-center justify-center gap-2"
+                className="flex items-center justify-center gap-2 h-12"
                 style={{
                     position: isMobile ? 'relative' : 'fixed',
                     top: isMobile ? '0' : '1rem',
@@ -36,13 +36,13 @@ const ControlPanelToggle: React.FC<ControlPanelToggleProps> = React.memo(
                 }}
             >
                 <button
-                    className={`z-20 btn btn-circle`}
+                    className={`z-20 btn btn-circle border`}
                     style={{
                         color: `var(--${currentTheme}-text-default)`, // Use theme color
                         backgroundColor: isMobile
                             ? 'transparent'
                             : `var(--${currentTheme}-background-200)`, // Use theme color
-                        borderColor: `transparent`,
+                        borderColor: isMobile ? 'transparent' : 'black',
                     }}
                     onClick={() => setIsOpen(!isOpen)}
                 >

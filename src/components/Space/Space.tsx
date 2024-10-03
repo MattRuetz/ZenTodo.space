@@ -335,6 +335,7 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId }) => {
                             </AnimatePresence>
                         </div>
                     )}
+
                     {tasks
                         .filter(
                             (task) =>

@@ -737,17 +737,18 @@ export const tasksSlice = createSlice({
                 const { newSubtask, updatedParentTask, originalTempId } =
                     action.payload;
 
-                const tempSubtask = state.tasks.find(
-                    (task) => task.isTemp && task._id === originalTempId
-                );
-                if (tempSubtask) {
-                    Object.assign(tempSubtask, {
-                        ...newSubtask,
-                        isTemp: false,
-                    });
-                } else {
-                    state.tasks.push(newSubtask);
-                }
+                // This is now handled by updateTaskInPlace
+                // const tempSubtask = state.tasks.find(
+                //     (task) => task.isTemp && task._id === originalTempId
+                // );
+                // if (tempSubtask) {
+                //     Object.assign(tempSubtask, {
+                //         ...newSubtask,
+                //         isTemp: false,
+                //     });
+                // } else {
+                //     state.tasks.push(newSubtask);
+                // }
 
                 if (updatedParentTask) {
                     const parentIndex = state.tasks.findIndex(
