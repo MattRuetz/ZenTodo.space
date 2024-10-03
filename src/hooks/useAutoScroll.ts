@@ -1,5 +1,4 @@
 import { useEffect, useRef } from 'react';
-import { useIsMobile } from './useIsMobile';
 
 export const useAutoScroll = (
     scrollRef: React.RefObject<HTMLElement>,

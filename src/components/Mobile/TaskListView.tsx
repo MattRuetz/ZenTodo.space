@@ -5,20 +5,14 @@ import { Task } from '@/types';
 import TaskListItem from './TaskListItem';
 import { fetchTasks } from '@/store/tasksSlice';
 import { useTheme } from '@/hooks/useTheme';
-import { selectTasksForSpace } from '@/store/selectors';
 import { setSubtaskDrawerParentId } from '@/store/uiSlice';
-import Breadcrumb from './Breadcrumb';
-import SortingDropdown from '../Subtask/SortingDropdown';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSwipeable } from 'react-swipeable';
 import TaskListDropZone from './TaskListDropZone';
 import { useDrop, useDragLayer } from 'react-dnd';
 import { useMoveTask } from '@/hooks/useMoveTask';
-import { updateSpaceTaskOrderAsync } from '@/store/spaceSlice';
 import { MobileAddTaskButton } from './MobileAddTaskButton';
-import { useIsMobile } from '@/hooks/useIsMobile';
 import FixedTopBar from './FixedTopBar';
-import { FaArrowRight } from 'react-icons/fa';
 import { useAutoScroll } from '@/hooks/useAutoScroll';
 
 interface TaskListViewProps {
@@ -28,7 +22,6 @@ interface TaskListViewProps {
 const TaskListView: React.FC<TaskListViewProps> = ({ spaceId }) => {
     const dispatch = useDispatch<AppDispatch>();
     const currentTheme = useTheme();
-    const isMobile = useIsMobile();
     const allTasks = useSelector((state: RootState) => state.tasks.tasks);
     const parentTaskId = useSelector(
         (state: RootState) => state.ui.subtaskDrawerParentId

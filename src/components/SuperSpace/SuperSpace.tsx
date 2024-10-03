@@ -30,14 +30,14 @@ import { FaPlusCircle } from 'react-icons/fa';
 import ProfileArchivePage from '../Profile_Archive/ProfileArchivePage';
 import { setUser } from '@/store/userSlice';
 import BottomSettings from './BottomSettings';
-import { useIsMobile } from '@/hooks/useIsMobile';
+import { useIsMobileSize } from '@/hooks/useIsMobileSize';
 import { useDragLayer } from 'react-dnd';
 import { useAutoScroll } from '@/hooks/useAutoScroll';
 
 const SuperSpace = React.memo(() => {
     const dispatch = useDispatch<AppDispatch>();
     const currentTheme = useTheme();
-    const isMobile = useIsMobile();
+    const isMobileSize = useIsMobileSize();
     const { spaces, currentSpace, status } = useSelector(
         (state: RootState) => state.spaces
     );
@@ -225,7 +225,7 @@ const SuperSpace = React.memo(() => {
                                             </div>
                                         </motion.div>
                                     )}
-                                    {spaces.length === 0 && !isMobile && (
+                                    {spaces.length === 0 && !isMobileSize && (
                                         <div className="text-center w-5/12 flex items-center justify-center h-[150px] gap-2 text-slate-400">
                                             <FaArrowLeft className="text-4xl mb-4" />
                                             <span className="text-xl">
@@ -254,7 +254,7 @@ const SuperSpace = React.memo(() => {
                             </>
                         )
                     )}
-                    {session && currentSpace && !isMobile && (
+                    {session && currentSpace && !isMobileSize && (
                         <>
                             <button
                                 data-tooltip-id={`go-to-super-space-tooltip`}

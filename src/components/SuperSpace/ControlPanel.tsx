@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react';
 import ControlPanelToggle from './ControlPanelToggle';
 import ControlPanelContent from './ControlPanelContent';
 import { EmojiFilter } from '../Space/EmojiFilter';
-import { useIsMobile } from '@/hooks/useIsMobile';
+import { useIsMobileSize } from '@/hooks/useIsMobileSize';
 import { AppDispatch, RootState } from '@/store/store';
 import { useSelector } from 'react-redux';
 import { setControlPanelOpen } from '@/store/uiSlice';
@@ -27,7 +27,7 @@ const ControlPanel: React.FC<ControlPanelProps> = React.memo(
             dispatch(setControlPanelOpen(isOpen));
         };
         const { data: session } = useSession();
-        const isMobile = useIsMobile();
+        const isMobileSize = useIsMobileSize();
         if (!session) return null;
 
         return (
@@ -38,11 +38,11 @@ const ControlPanel: React.FC<ControlPanelProps> = React.memo(
                     setIsProfilePageOpen={setIsProfilePageOpen}
                     setActiveTabStart={setActiveTabStart}
                 />
-                {!isMobile && (
+                {!isMobileSize && (
                     <ControlPanelToggle
                         isOpen={isControlPanelOpen}
                         setIsOpen={setIsOpen}
-                        isMobile={isMobile}
+                        isMobile={isMobileSize}
                     />
                 )}
             </div>

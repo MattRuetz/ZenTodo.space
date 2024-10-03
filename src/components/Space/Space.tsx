@@ -29,7 +29,8 @@ import { useClearEmojis } from '@/hooks/useClearEmojis';
 import { useAddTask } from '@/hooks/useAddTask';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useTheme } from '@/hooks/useTheme';
-import { useIsMobile } from '@/hooks/useIsMobile';
+import { useIsMobileSize } from '@/hooks/useIsMobileSize';
+import { isMobile } from 'react-device-detect';
 
 // Memoized selectors
 
@@ -45,7 +46,9 @@ export const selectSelectedEmojis = createSelector(
 const Space: React.FC<SpaceProps> = React.memo(({ spaceId }) => {
     const dispatch = useDispatch<AppDispatch>();
     const currentTheme = useTheme();
-    const isMobile = useIsMobile();
+
+    const isMobileSize = useIsMobileSize();
+    const isMobileDevice = isMobile;
 
     const { data: session, status: sessionStatus } = useSession();
 
@@ -280,7 +283,7 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId }) => {
             }}
             onMouseDown={handleSpaceClick}
         >
-            {isMobile ? (
+            {isMobileSize || isMobileDevice ? (
                 <TaskListView spaceId={spaceId} />
             ) : (
                 <>

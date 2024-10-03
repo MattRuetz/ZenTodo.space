@@ -3,10 +3,10 @@ import { signIn } from 'next-auth/react';
 import { useAlert } from '@/hooks/useAlert';
 import { getQuoteForDay } from '@/hooks/useQuoteForDay';
 import Image from 'next/image';
-import { useIsMobile } from '@/hooks/useIsMobile';
+import { useIsMobileSize } from '@/hooks/useIsMobileSize';
 
 const AuthPage = () => {
-    const isMobile = useIsMobile();
+    const isMobileSize = useIsMobileSize();
     const [isLogin, setIsLogin] = useState(true);
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
@@ -96,7 +96,7 @@ const AuthPage = () => {
 
     return (
         <>
-            {isMobile ? (
+            {isMobileSize ? (
                 <div className="min-h-screen flex flex-col bg-black">
                     <div className="p-6 flex flex-col items-center justify-center w-11/12 mx-auto">
                         <Image

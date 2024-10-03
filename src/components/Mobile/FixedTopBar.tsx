@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux';
 import { setControlPanelOpen } from '@/store/uiSlice';
 import { useDispatch } from 'react-redux';
 import ControlPanelToggle from '../SuperSpace/ControlPanelToggle';
-import { useIsMobile } from '@/hooks/useIsMobile';
+import { useIsMobileSize } from '@/hooks/useIsMobileSize';
 import { useTheme } from '@/hooks/useTheme';
 import { useMemo, useState } from 'react';
 import { MobileEmojiFilter } from './MobileEmojiFilter';
@@ -24,7 +24,7 @@ const FixedTopBar = ({
     tasksAtLevel: Task[];
 }) => {
     const dispatch = useDispatch<AppDispatch>();
-    const isMobile = useIsMobile();
+    const isMobileSize = useIsMobileSize();
     const currentTheme = useTheme();
     const [showEmojiFilter, setShowEmojiFilter] = useState(false);
     const currentSpace = useSelector(
@@ -61,7 +61,7 @@ const FixedTopBar = ({
                 <ControlPanelToggle
                     isOpen={isControlPanelOpen}
                     setIsOpen={setIsOpen}
-                    isMobile={isMobile}
+                    isMobile={isMobileSize}
                 />
                 <div
                     className="flex items-center justify-center gap-2"

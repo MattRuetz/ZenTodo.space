@@ -8,7 +8,7 @@ import { updateSpaceSelectedEmojis } from '@/store/spaceSlice';
 import { fetchTasks } from '@/store/tasksSlice';
 import { Tooltip } from 'react-tooltip';
 import { useTheme } from '@/hooks/useTheme';
-import { useIsMobile } from '@/hooks/useIsMobile';
+import { useIsMobileSize } from '@/hooks/useIsMobileSize';
 import { useAlert } from '@/hooks/useAlert';
 interface EmojiFilterProps {
     clearSelectedEmojis: () => void;
@@ -21,7 +21,7 @@ export const EmojiFilter: React.FC<EmojiFilterProps> = ({
 }) => {
     const dispatch = useDispatch<AppDispatch>();
     const currentTheme = useTheme();
-    const isMobile = useIsMobile();
+    const isMobileSize = useIsMobileSize();
     const { showAlert } = useAlert();
     const selectedEmojis = useSelector(
         (state: RootState) => state.spaces.currentSpace?.selectedEmojis || []
@@ -94,7 +94,7 @@ export const EmojiFilter: React.FC<EmojiFilterProps> = ({
                     backgroundColor:
                         selectedEmojis.length > 0
                             ? `var(--${currentTheme}-accent-blue)`
-                            : isMobile
+                            : isMobileSize
                             ? `transparent`
                             : `var(--${currentTheme}-background-200)`,
                     color: `var(--${currentTheme}-text-default)`,
@@ -102,7 +102,7 @@ export const EmojiFilter: React.FC<EmojiFilterProps> = ({
             >
                 <FaFilter />
             </button>
-            {!isMobile && (
+            {!isMobileSize && (
                 <Tooltip id="emoji-filter-tooltip">
                     <div className="bg-transparent font-normal text-sm text-left text-white">
                         {availableEmojis.length === 0
