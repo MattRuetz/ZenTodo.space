@@ -317,7 +317,7 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
                         </div>
                         <button
                             type="submit"
-                            className="btn btn-sm"
+                            className="btn btn-md md:btn-sm"
                             style={{
                                 backgroundColor: contrastColor,
                                 color: contrastInvertedColor,
@@ -327,7 +327,7 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
                             Save
                         </button>
                         <button
-                            className="btn btn-sm btn-error text-white"
+                            className="btn btn-md md:btn-sm btn-error text-white"
                             onClick={handleDelete}
                             style={{
                                 border: `3px solid ${space.color}`,

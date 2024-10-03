@@ -1,5 +1,4 @@
 import { AppDispatch, RootState } from '@/store/store';
-import { EmojiFilter } from '../Space/EmojiFilter';
 import SortingDropdown from '../Subtask/SortingDropdown';
 import Breadcrumb from './Breadcrumb';
 import { Task } from '@/types';
@@ -53,9 +52,10 @@ const FixedTopBar = ({
             style={{ zIndex: 10000 }}
         >
             <div
-                className="header flex items-center justify-between p-2 w-full top-0"
+                className="header flex items-center justify-between p-2 w-full top-0 border-b"
                 style={{
-                    backgroundColor: `var(--${currentTheme}-background-100)`,
+                    backgroundColor: `var(--${currentTheme}-space-background)`,
+                    borderColor: `var(--${currentTheme}-background-200)`,
                 }}
             >
                 <ControlPanelToggle
@@ -65,7 +65,7 @@ const FixedTopBar = ({
                 />
                 <div
                     className="flex items-center justify-center gap-2"
-                    style={{ color: `var(--${currentTheme}-emphasis-dark)` }}
+                    style={{ color: `var(--${currentTheme}-text-default)` }}
                 >
                     {hasRootLevelTasksWithEmojis && (
                         <button

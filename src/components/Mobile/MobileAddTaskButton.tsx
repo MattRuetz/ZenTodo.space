@@ -11,12 +11,10 @@ import { AnimatePresence, motion } from 'framer-motion';
 export const MobileAddTaskButton = ({
     currentParent,
     spaceId,
-    showPrompt,
     onAddTask,
 }: {
     currentParent: Task | null;
     spaceId: string;
-    showPrompt: boolean;
     onAddTask: () => void;
 }) => {
     const currentTheme = useTheme();
@@ -87,14 +85,6 @@ export const MobileAddTaskButton = ({
                 zIndex: 1000,
             }}
         >
-            {showPrompt && (
-                <p
-                    className="flex flex-row items-center gap-2 text-center text-md font-normal p-2"
-                    style={{ color: `var(--${currentTheme}-accent-blue)` }}
-                >
-                    Add a task <FaArrowRight />
-                </p>
-            )}
             <button
                 className="btn btn-circle btn-md flex justify-center items-center"
                 style={{

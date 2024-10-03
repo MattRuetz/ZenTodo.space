@@ -767,7 +767,11 @@ export const tasksSlice = createSlice({
                     (task) => task._id === action.payload._id
                 );
                 if (index !== -1) {
-                    state.tasks[index] = action.payload;
+                    // Merge the updated fields into the existing task object
+                    state.tasks[index] = {
+                        ...state.tasks[index],
+                        ...action.payload,
+                    };
                 }
             })
             .addCase(deleteTaskAsync.fulfilled, (state, action) => {

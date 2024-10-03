@@ -289,7 +289,6 @@ const TaskListView: React.FC<TaskListViewProps> = ({ spaceId }) => {
                 <MobileAddTaskButton
                     currentParent={currentParent}
                     spaceId={spaceId}
-                    showPrompt={sortedTasksAtLevel.length === 0}
                     onAddTask={scrollToTop}
                 />
             </div>

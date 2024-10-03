@@ -72,6 +72,7 @@ const SuperSpace = React.memo(() => {
             showAlert('You can only have 9 spaces');
             return;
         }
+        setIsAdding(true);
         const newSpace = {
             name: `Space ${spaces.length + 1}`,
             color: generateRandomColor(),
@@ -82,6 +83,7 @@ const SuperSpace = React.memo(() => {
             taskOrder: [],
         };
         dispatch(createSpace(newSpace));
+        setIsAdding(false);
     };
 
     const toggleZoom = () => {
@@ -194,39 +196,36 @@ const SuperSpace = React.memo(() => {
                                     {spaces.length < 9 && (
                                         <motion.div variants={item}>
                                             <div
-                                                className={`space bg-slate-300 hover:bg-slate-400 transition-colors duration-300 border-4 border-sky-900 rounded-lg shadow-md p-4 cursor-pointer flex items-center justify-center min-h-[150px] max-h-[300px] ${
+                                                className={`space transition-colors duration-300 border-4 border-sky-200 rounded-lg shadow-md p-4 cursor-pointer flex items-center justify-center min-h-[150px] max-h-[300px] ${
                                                     spaces.length >= 9
                                                         ? 'opacity-50 cursor-not-allowed'
                                                         : ''
                                                 }`}
                                                 onClick={() => {
                                                     if (spaces.length < 9) {
-                                                        setIsAdding(true);
                                                         addSpace();
-                                                        setIsAdding(false);
                                                     }
                                                 }}
                                             >
-                                                <span
-                                                    className={`plus-icon text-4xl text-sky-900 ${
-                                                        isAdding
-                                                            ? 'invisible'
-                                                            : ''
-                                                    }`}
-                                                >
-                                                    <FaPlusCircle />
-                                                </span>
-                                                <span
-                                                    className={`${
-                                                        isAdding
-                                                            ? 'visible'
-                                                            : 'invisible'
-                                                    } delete-spinner loading loading-ring text-slate-600 loading-lg`}
-                                                ></span>
+                                                {isAdding ? (
+                                                    <span
+                                                        className={
+                                                            'delete-spinner loading loading-ring text-slate-300 loading-lg'
+                                                        }
+                                                    />
+                                                ) : (
+                                                    <span
+                                                        className={
+                                                            'plus-icon text-4xl text-sky-200 text-center'
+                                                        }
+                                                    >
+                                                        <FaPlusCircle />
+                                                    </span>
+                                                )}
                                             </div>
                                         </motion.div>
                                     )}
-                                    {spaces.length === 0 && (
+                                    {spaces.length === 0 && !isMobile && (
                                         <div className="text-center w-5/12 flex items-center justify-center h-[150px] gap-2 text-slate-400">
                                             <FaArrowLeft className="text-4xl mb-4" />
                                             <span className="text-xl">

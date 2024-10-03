@@ -42,6 +42,7 @@ const ControlPanelToggle: React.FC<ControlPanelToggleProps> = React.memo(
                         backgroundColor: isMobile
                             ? 'transparent'
                             : `var(--${currentTheme}-background-200)`, // Use theme color
+                        borderColor: `transparent`,
                     }}
                     onClick={() => setIsOpen(!isOpen)}
                 >
