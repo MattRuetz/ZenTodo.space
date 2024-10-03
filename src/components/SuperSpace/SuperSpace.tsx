@@ -31,6 +31,7 @@ import ProfileArchivePage from '../Profile_Archive/ProfileArchivePage';
 import { setUser } from '@/store/userSlice';
 import BottomSettings from './BottomSettings';
 import { useIsMobileSize } from '@/hooks/useIsMobileSize';
+import isMobile from 'react-device-detect';
 import { useDragLayer } from 'react-dnd';
 import { useAutoScroll } from '@/hooks/useAutoScroll';
 
@@ -38,6 +39,7 @@ const SuperSpace = React.memo(() => {
     const dispatch = useDispatch<AppDispatch>();
     const currentTheme = useTheme();
     const isMobileSize = useIsMobileSize();
+    const isMobileDevice = isMobile;
     const { spaces, currentSpace, status } = useSelector(
         (state: RootState) => state.spaces
     );
@@ -254,55 +256,58 @@ const SuperSpace = React.memo(() => {
                             </>
                         )
                     )}
-                    {session && currentSpace && !isMobileSize && (
-                        <>
-                            <button
-                                data-tooltip-id={`go-to-super-space-tooltip`}
-                                onClick={toggleZoom}
-                                className="absolute text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl hover:scale-110 transition-all duration-200"
-                                style={
-                                    isZoomedOut
-                                        ? {
-                                              left: '20px',
-                                              top: '10px',
-                                              backgroundColor: 'white',
-                                              color: 'black',
-                                          }
-                                        : {
-                                              right: '20px',
-                                              bottom: '20px',
-                                              zIndex: 100000,
-                                              backgroundColor: `var(--${currentTheme}-background-100)`,
-                                              color: `var(--${currentTheme}-emphasis-light)`,
-                                          }
-                                }
-                            >
-                                {isZoomedOut ? '↩' : '↪'}
-                            </button>
-                            <Tooltip
-                                id={`go-to-super-space-tooltip`}
-                                style={{
-                                    zIndex: 100000,
-                                    backgroundColor: 'white',
-                                    color: 'black',
-                                }}
-                                place="left"
-                            >
-                                {isZoomedOut ? (
-                                    <>
-                                        Return to{' '}
-                                        <em>
-                                            <strong>
-                                                {currentSpace?.name}
-                                            </strong>
-                                        </em>
-                                    </>
-                                ) : (
-                                    'Go to Super Space'
-                                )}
-                            </Tooltip>
-                        </>
-                    )}
+                    {session &&
+                        currentSpace &&
+                        !isMobileDevice &&
+                        !isMobileSize && (
+                            <>
+                                <button
+                                    data-tooltip-id={`go-to-super-space-tooltip`}
+                                    onClick={toggleZoom}
+                                    className="absolute text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl hover:scale-110 transition-all duration-200"
+                                    style={
+                                        isZoomedOut
+                                            ? {
+                                                  left: '20px',
+                                                  top: '10px',
+                                                  backgroundColor: 'white',
+                                                  color: 'black',
+                                              }
+                                            : {
+                                                  right: '20px',
+                                                  bottom: '20px',
+                                                  zIndex: 100000,
+                                                  backgroundColor: `var(--${currentTheme}-background-100)`,
+                                                  color: `var(--${currentTheme}-emphasis-light)`,
+                                              }
+                                    }
+                                >
+                                    {isZoomedOut ? '↩' : '↪'}
+                                </button>
+                                <Tooltip
+                                    id={`go-to-super-space-tooltip`}
+                                    style={{
+                                        zIndex: 100000,
+                                        backgroundColor: 'white',
+                                        color: 'black',
+                                    }}
+                                    place="left"
+                                >
+                                    {isZoomedOut ? (
+                                        <>
+                                            Return to{' '}
+                                            <em>
+                                                <strong>
+                                                    {currentSpace?.name}
+                                                </strong>
+                                            </em>
+                                        </>
+                                    ) : (
+                                        'Go to Super Space'
+                                    )}
+                                </Tooltip>
+                            </>
+                        )}
                 </div>
             )}
         </>

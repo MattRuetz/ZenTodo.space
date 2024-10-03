@@ -14,6 +14,7 @@ import { useMoveTask } from '@/hooks/useMoveTask';
 import { MobileAddTaskButton } from './MobileAddTaskButton';
 import FixedTopBar from './FixedTopBar';
 import { useAutoScroll } from '@/hooks/useAutoScroll';
+import { isTablet } from 'react-device-detect';
 
 interface TaskListViewProps {
     spaceId: string;

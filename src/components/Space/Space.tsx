@@ -30,7 +30,7 @@ import { useAddTask } from '@/hooks/useAddTask';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useTheme } from '@/hooks/useTheme';
 import { useIsMobileSize } from '@/hooks/useIsMobileSize';
-import { isMobile } from 'react-device-detect';
+import { isMobile, isTablet } from 'react-device-detect';
 
 // Memoized selectors
 
@@ -48,7 +48,7 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId }) => {
     const currentTheme = useTheme();
 
     const isMobileSize = useIsMobileSize();
-    const isMobileDevice = isMobile;
+    const isMobileDevice = isMobile || isTablet;
 
     const { data: session, status: sessionStatus } = useSession();
 
