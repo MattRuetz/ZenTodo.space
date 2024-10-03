@@ -23,6 +23,7 @@
     --buji-emphasis-dark: #000000;
     --buji-controlpanel-background: #020617;
     --buji-card-border-color: transparent;
+    --buji-task-details-background: rgba(2, 6, 23, 0.4);
     /* Subtask Progress Colors */
     --buji-not-started-text: #b3b3b3;
     --buji-in-progress-text: #ffcc00;
@@ -53,6 +54,7 @@
     --daigo-emphasis-dark: #ffffff;
     --daigo-controlpanel-background: #71717a;
     --daigo-card-border-color: #999999;
+    --daigo-task-details-background: rgba(238, 238, 238, 0.4);
     /* Subtask Progress Colors */
     --daigo-not-started-text: #333333;
     --daigo-in-progress-text: #333333;
@@ -83,6 +85,7 @@
     --enzu-emphasis-dark: #3a3a3a;
     --enzu-controlpanel-background: #4a8046;
     --enzu-card-border-color: transparent;
+    --enzu-task-details-background: rgba(254, 252, 232, 0.4);
     /* Subtask Progress Colors */
     --enzu-not-started-text: #747474;
     --enzu-in-progress-text: #d49100;

@@ -444,25 +444,19 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
                                 {tasksDueToday.length > 0 && (
                                     <div>
                                         <div
-                                            className="w-full h-0 border-b-2 border-dashed my-2"
+                                            className="w-full h-0 border-b-2 border-black/50 border-dashed my-2"
                                             style={{
-                                                borderColor: contrastColor,
                                                 opacity: 0.5,
                                             }}
                                         />
-                                        <div
-                                            className="font-xs font-bold px-4 my-1 flex flex-row items-center gap-2"
-                                            style={{
-                                                color: contrastColor,
-                                            }}
-                                        >
+                                        <div className="font-xs font-semibold px-4 my-1 flex flex-row items-center gap-2">
                                             <FaClock className="text-red-500/80" />
                                             {tasksDueToday.length} due today
                                         </div>
                                     </div>
                                 )}
                                 {tasksDueThisWeek.length > 0 && (
-                                    <div className="font-xs font-bold px-4 flex flex-row items-center gap-2">
+                                    <div className="font-xs font-semibold px-4 flex flex-row items-center gap-2">
                                         <FaClock className="text-yellow-500/80" />
                                         {tasksDueThisWeek.length} due this week
                                     </div>

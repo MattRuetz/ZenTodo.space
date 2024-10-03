@@ -190,6 +190,7 @@ export const SubtaskTopBar = ({
             <EmojiDropdown
                 taskEmoji={subtask.emoji || <FaTag />}
                 setTaskEmoji={handleSetSubtaskEmoji}
+                inSubtaskDrawer={true}
             />
             <div className="flex justify-between items-center gap-2">
                 {subtask.dueDate && (

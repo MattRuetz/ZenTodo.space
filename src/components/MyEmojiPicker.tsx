@@ -1,6 +1,4 @@
-import data from '@emoji-mart/data';
 import Picker from '@emoji-mart/react';
-import EmojiPicker, { EmojiStyle, Categories } from 'emoji-picker-react';
 import { useEffect } from 'react';
 import { FaTrash, FaX } from 'react-icons/fa6';
 import { useTheme } from '@/hooks/useTheme';
@@ -41,26 +39,45 @@ export const MyEmojiPicker = ({
                 backgroundColor: `var(--${currentTheme}-background-200)`, // Use theme color
             }}
         >
-            <button
-                className="flex items-center gap-2 text-sm btn btn-ghost btn-sm"
-                style={{
-                    color: `var(--${currentTheme}-text-default)`, // Use theme color
-                }}
-                onClick={(e) => {
-                    e.stopPropagation();
-                    if (setTaskEmoji) {
-                        setTaskEmoji('');
+            <div className="flex flex-row justify-between pb-2">
+                <button
+                    className="flex items-center gap-2 text-sm btn btn-error btn-sm"
+                    style={{
+                        color: `var(--${currentTheme}-text-default)`, // Use theme color
+                    }}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        if (setTaskEmoji) {
+                            setTaskEmoji('');
+                            setIsOpen(false);
+                        }
+                    }}
+                >
+                    <FaTrash
+                        className="w-4 h-4"
+                        style={{ color: `var(--${currentTheme}-text-default)` }}
+                    />{' '}
+                    {/* Use theme color */}
+                    No Emoji
+                </button>
+                <button
+                    className="flex items-center gap-2 text-sm btn btn-ghost btn-sm"
+                    style={{
+                        color: `var(--${currentTheme}-text-default)`, // Use theme color
+                    }}
+                    onClick={(e) => {
+                        e.stopPropagation();
                         setIsOpen(false);
-                    }
-                }}
-            >
-                <FaX
-                    className="w-4 h-4"
-                    style={{ color: `var(--${currentTheme}-accent-red)` }}
-                />{' '}
-                {/* Use theme color */}
-                No Emoji
-            </button>
+                    }}
+                >
+                    <FaX
+                        className="w-4 h-4"
+                        style={{ color: `var(--${currentTheme}-accent-red)` }}
+                    />{' '}
+                    {/* Use theme color */}
+                    Close
+                </button>
+            </div>
             <Picker
                 onClick={(e: any) => {
                     e.stopPropagation();

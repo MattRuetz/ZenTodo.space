@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
-import EmojiPicker, { Categories, EmojiStyle } from 'emoji-picker-react';
-import { FaTag, FaX } from 'react-icons/fa6';
 import { MyEmojiPicker } from './MyEmojiPicker';
 
 interface EmojiDropdownProps {
     taskEmoji: string | React.JSX.Element;
     setTaskEmoji: (emoji: string) => void;
+    inSubtaskDrawer?: boolean;
 }
 
 const EmojiDropdown: React.FC<EmojiDropdownProps> = ({
     taskEmoji,
     setTaskEmoji,
+    inSubtaskDrawer,
 }) => {
     const [isOpen, setIsOpen] = useState(false);
 
@@ -28,7 +28,11 @@ const EmojiDropdown: React.FC<EmojiDropdownProps> = ({
             >
                 {taskEmoji}
             </div>
-            <div className="emoji-dropdown-menu fixed top-28 left-1/2 -translate-x-1/2 z-20">
+            <div
+                className={`emoji-dropdown-menu left-1/2 -translate-x-1/2 z-20 ${
+                    inSubtaskDrawer ? 'fixed top-28' : 'absolute'
+                }`}
+            >
                 {isOpen && (
                     <>
                         <MyEmojiPicker
