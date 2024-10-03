@@ -62,7 +62,7 @@ const SubtaskProgresses: React.FC<SubtaskProgressesProps> = React.memo(
                     complete: 0,
                 }
             );
-        }, [task.subtasks]);
+        }, [subtasks]);
 
         return (
             <>

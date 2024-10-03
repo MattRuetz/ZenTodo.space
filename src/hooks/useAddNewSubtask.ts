@@ -36,7 +36,10 @@ export const useAddNewSubtask = () => {
             .tasks.tasks.find((task: Task) => task._id === parentId);
 
         if (!canAddSubtask(parentTask as Task)) {
-            console.error('Cannot add subtask: ancestors limit reached');
+            showAlert(
+                'Task cannot be made a subtask because it would exceed the maximum depth of 2.',
+                'error'
+            );
             return;
         }
 
@@ -63,15 +66,16 @@ export const useAddNewSubtask = () => {
                 ? [...parentTask.ancestors, parentTask._id as string]
                 : [parentTask?._id as string],
             parentTask: parentId,
+            clientId: tempId,
         };
         // Dispatch optimistic update
-        dispatch(
-            addNewSubtaskOptimistic({
-                newSubtask: tempSubtask,
-                parentId,
-                position,
-            })
-        );
+        // dispatch(
+        //     addNewSubtaskOptimistic({
+        //         newSubtask: tempSubtask,
+        //         parentId,
+        //         position,
+        //     })
+        // );
 
         try {
             // Attempt to add subtask in the backend
@@ -83,14 +87,6 @@ export const useAddNewSubtask = () => {
                     tempId,
                 })
             ).unwrap();
-
-            // Update the task in place instead of replacing it
-            dispatch(
-                updateTaskInPlace({
-                    tempId: result.originalTempId,
-                    newTask: result.newSubtask,
-                })
-            );
 
             // Success: The new subtask with a real ID is added in the fulfilled case
             showAlert('Added subtask!', 'success');

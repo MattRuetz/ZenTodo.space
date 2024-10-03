@@ -516,7 +516,9 @@ export const tasksSlice = createSlice({
             );
             if (index !== -1) {
                 state.tasks[index] = {
+                    ...state.tasks[index],
                     ...action.payload.newTask,
+                    _id: action.payload.newTask._id,
                     clientId: action.payload.tempId, // Keep the clientId for stable rendering
                 };
             }
@@ -730,6 +732,48 @@ export const tasksSlice = createSlice({
                 state.tasks = state.tasks.filter((task) => !task.isTemp);
                 state.error = action.payload as string;
             })
+            .addCase(addNewSubtaskAsync.fulfilled, (state, action) => {
+                const { newSubtask, updatedParentTask, originalTempId } =
+                    action.payload;
+
+                const subtaskIndex = state.tasks.findIndex(
+                    (task) =>
+                        task._id === originalTempId ||
+                        task.clientId === originalTempId
+                );
+
+                if (subtaskIndex !== -1) {
+                    // Update the subtask
+                    state.tasks[subtaskIndex] = {
+                        ...state.tasks[subtaskIndex],
+                        ...newSubtask,
+                        clientId: originalTempId,
+                        isTemp: false,
+                    };
+                } else {
+                    // If the subtask wasn't found, add it
+                    state.tasks.push({
+                        ...newSubtask,
+                        clientId: originalTempId,
+                        isTemp: false,
+                    });
+                }
+
+                if (updatedParentTask) {
+                    const parentIndex = state.tasks.findIndex(
+                        (task) => task._id === updatedParentTask._id
+                    );
+                    if (parentIndex !== -1) {
+                        // Update the entire parent task
+                        state.tasks[parentIndex] = {
+                            ...state.tasks[parentIndex],
+                            ...updatedParentTask,
+                            isTemp: false,
+                        };
+                    }
+                }
+            })
+
             .addCase(addNewSubtaskAsync.rejected, (state, action) => {
                 state.tasks = state.tasks.filter((task) => !task.isTemp);
                 state.error = action.payload as string;

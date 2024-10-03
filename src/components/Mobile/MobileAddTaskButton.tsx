@@ -31,6 +31,10 @@ export const MobileAddTaskButton = ({
     }, [justAddedTask]);
 
     const handleAddTask = () => {
+        if (justAddedTask) {
+            return;
+        }
+
         if (currentParent) {
             const newSubtask: Omit<Task, '_id'> = {
                 taskName: 'New Subtask',
