@@ -31,7 +31,7 @@ import ProfileArchivePage from '../Profile_Archive/ProfileArchivePage';
 import { setUser } from '@/store/userSlice';
 import BottomSettings from './BottomSettings';
 import { useIsMobileSize } from '@/hooks/useIsMobileSize';
-import isMobile from 'react-device-detect';
+import { isMobile } from 'react-device-detect';
 import { useDragLayer } from 'react-dnd';
 import { useAutoScroll } from '@/hooks/useAutoScroll';
 

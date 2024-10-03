@@ -46,7 +46,9 @@ export const useArchiveTask = () => {
                     taskId: task._id,
                     parentTaskId: task.parentTask,
                 }) as any
-            );
+            ).then(() => {
+                showAlert('Task and all descendants archived', 'success');
+            });
         },
         [checkDescendantsComplete, dispatch, showAlert]
     );

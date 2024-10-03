@@ -726,38 +726,9 @@ export const tasksSlice = createSlice({
                 state.status = 'failed';
                 state.error = action.error.message || null;
             })
-            // .addCase(addTaskAsync.fulfilled, (state, action) => {
-            //     const { newTask, originalTempId } = action.payload;
-            // })
             .addCase(addTaskAsync.rejected, (state, action) => {
                 state.tasks = state.tasks.filter((task) => !task.isTemp);
                 state.error = action.payload as string;
-            })
-            .addCase(addNewSubtaskAsync.fulfilled, (state, action) => {
-                const { newSubtask, updatedParentTask, originalTempId } =
-                    action.payload;
-
-                // This is now handled by updateTaskInPlace
-                // const tempSubtask = state.tasks.find(
-                //     (task) => task.isTemp && task._id === originalTempId
-                // );
-                // if (tempSubtask) {
-                //     Object.assign(tempSubtask, {
-                //         ...newSubtask,
-                //         isTemp: false,
-                //     });
-                // } else {
-                //     state.tasks.push(newSubtask);
-                // }
-
-                if (updatedParentTask) {
-                    const parentIndex = state.tasks.findIndex(
-                        (task) => task._id === updatedParentTask._id
-                    );
-                    if (parentIndex !== -1) {
-                        state.tasks[parentIndex] = updatedParentTask;
-                    }
-                }
             })
             .addCase(addNewSubtaskAsync.rejected, (state, action) => {
                 state.tasks = state.tasks.filter((task) => !task.isTemp);
@@ -803,17 +774,32 @@ export const tasksSlice = createSlice({
                     (task) => task._id === updatedSubtask._id
                 );
 
-                if (oldParentIndex !== -1 && updatedOldParentTask) {
-                    state.tasks[oldParentIndex] = updatedOldParentTask;
-                }
                 if (subtaskIndex !== -1) {
+                    // Update only the necessary fields of the subtask
                     state.tasks[subtaskIndex] = {
+                        ...state.tasks[subtaskIndex],
                         ...updatedSubtask,
                         isTemp: false,
                     };
                 }
+
+                if (oldParentIndex !== -1 && updatedOldParentTask) {
+                    // Update only the necessary fields of the old parent task
+                    state.tasks[oldParentIndex] = {
+                        ...state.tasks[oldParentIndex],
+                        ...updatedOldParentTask,
+                        subtasks: updatedOldParentTask.subtasks,
+                        isTemp: false,
+                    };
+                }
+
                 if (newParentIndex !== -1) {
-                    state.tasks[newParentIndex] = updatedNewParentTask;
+                    // Update only the necessary fields of the new parent task
+                    state.tasks[newParentIndex] = {
+                        ...state.tasks[newParentIndex],
+                        ...updatedNewParentTask,
+                        isTemp: false,
+                    };
                 }
             })
             .addCase(convertTaskToSubtaskAsync.rejected, (state, action) => {
