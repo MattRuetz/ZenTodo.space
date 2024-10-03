@@ -121,7 +121,12 @@ export const useDragHandlers = ({
             });
             const spaceId = task.space;
             const newZIndex = getNewZIndex();
-            dispatch(updateSpaceMaxZIndex({ spaceId, maxZIndex: newZIndex }));
+            dispatch(
+                updateSpaceMaxZIndex({
+                    spaceId: spaceId as string,
+                    maxZIndex: newZIndex,
+                })
+            );
             dispatch(setGlobalDragging(false));
             dispatch(setDraggingCardId(null));
             onDragStop();

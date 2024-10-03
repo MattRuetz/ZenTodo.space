@@ -227,39 +227,44 @@ const ControlPanelContent: React.FC<ControlPanelContentProps> = ({
                 {isLoadingUser ? (
                     <ComponentSpinner />
                 ) : (
-                    <>
-                        <img
-                            src={user.profilePicture} // Placeholder for user's profile picture
-                            alt="Profile"
-                            className="rounded-full col-span-1"
-                        />
-                        <div className="col-span-2">
-                            <p className="font-medium text-lg truncate">
-                                {user.name}
-                            </p>{' '}
-                            <p
-                                className="text-sm truncate"
-                                style={{
-                                    color: `var(--${currentTheme}-emphasis-light)`,
-                                }}
-                            >
-                                {user.email}
-                            </p>
-                            <button
-                                className="btn btn-sm mt-3 px-4 py-2 rounded-lg hover:border-white/25 hover:shadow-md"
-                                style={{
-                                    backgroundColor: `var(--${currentTheme}-background-100)`,
-                                    color: `var(--${currentTheme}-text-default)`,
-                                }}
-                                onClick={() => {
-                                    setActiveTabStart('profile');
-                                    setIsProfilePageOpen(true);
-                                }}
-                            >
-                                View Profile
-                            </button>
-                        </div>
-                    </>
+                    user && (
+                        <>
+                            <img
+                                src={
+                                    user?.profilePicture ||
+                                    '/images/profile_picture_default.webp'
+                                }
+                                alt="Profile"
+                                className="rounded-full col-span-1"
+                            />
+                            <div className="col-span-2">
+                                <p className="font-medium text-lg truncate">
+                                    {user.name}
+                                </p>{' '}
+                                <p
+                                    className="text-sm truncate"
+                                    style={{
+                                        color: `var(--${currentTheme}-emphasis-light)`,
+                                    }}
+                                >
+                                    {user.email}
+                                </p>
+                                <button
+                                    className="btn btn-sm mt-3 px-4 py-2 rounded-lg hover:border-white/25 hover:shadow-md"
+                                    style={{
+                                        backgroundColor: `var(--${currentTheme}-background-100)`,
+                                        color: `var(--${currentTheme}-text-default)`,
+                                    }}
+                                    onClick={() => {
+                                        setActiveTabStart('profile');
+                                        setIsProfilePageOpen(true);
+                                    }}
+                                >
+                                    View Profile
+                                </button>
+                            </div>
+                        </>
+                    )
                 )}
             </div>
         </div>

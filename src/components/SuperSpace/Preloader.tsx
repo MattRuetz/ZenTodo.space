@@ -11,7 +11,7 @@ const Preloader: React.FC<PreloaderProps> = React.memo(({ fadeOut }) => {
 
     return (
         <div
-            className={`preloader fixed inset-0 z-50 flex flex-col items-center justify-center bg-base-100 transition-opacity duration-500 ${
+            className={`preloader fixed inset-0 z-50 flex flex-col items-center justify-center bg-base-100 transition-opacity duration-500 w-10/12 mx-auto ${
                 fadeOut ? 'opacity-0' : 'opacity-100'
             }`}
         >

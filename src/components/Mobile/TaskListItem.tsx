@@ -13,6 +13,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useArchiveTask } from '@/hooks/useArchiveTask';
 import { SubtaskTopBar } from '../Subtask/SubtaskTopBar';
 import { SubtaskBottomBar } from '../Subtask/SubtaskBottomBar';
+import { getGrandparentTask, isGrandparent } from '@/app/utils/hierarchyUtils';
 
 const LONG_PRESS_DELAY = 300; // 1 second delay
 
@@ -187,16 +188,38 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
                 return;
             }
             // Check if the dropped task is already a parent of the target subtask
-            const isAlreadyParent =
-                draggedSubtask.subtasks.length > 0 ||
-                (draggedSubtask.ancestors &&
-                    draggedSubtask.ancestors.length > 1);
+            const isGrandparentCheck = isGrandparent(
+                draggedSubtask,
+                state.tasks.tasks
+            );
+            const isAlreadyParentAndSubtask =
+                draggedSubtask.subtasks.length > 0 &&
+                draggedSubtask.ancestors &&
+                draggedSubtask.ancestors.length > 1;
+
+            const isGrandchild = getGrandparentTask(
+                targetSubtask,
+                state.tasks.tasks
+            );
+
+            console.log(
+                'isGrandparentCheck',
+                isGrandparentCheck,
+                'isAlreadyParentAndSubtask',
+                isAlreadyParentAndSubtask,
+                'isGrandchild',
+                isGrandchild
+            );
 
             if (draggedSubtask._id === targetSubtask._id) {
                 // handleDropOnSelf();
                 console.log('drop on self');
                 return;
-            } else if (!isAlreadyParent) {
+            } else if (
+                !isGrandparentCheck &&
+                !isAlreadyParentAndSubtask &&
+                !isGrandchild
+            ) {
                 console.log(
                     'convertTaskToSubtask',
                     draggedSubtask,
