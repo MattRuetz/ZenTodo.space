@@ -1,5 +1,6 @@
 import { useTheme } from '@/hooks/useTheme';
 import { Task } from '@/types';
+import { isMobile } from 'react-device-detect';
 import { FaClock, FaExclamationCircle, FaHourglassHalf } from 'react-icons/fa';
 import { FaHourglassEnd, FaHourglassStart } from 'react-icons/fa6';
 import { Tooltip } from 'react-tooltip';
@@ -54,12 +55,39 @@ export const DueDateIndicator = ({
 
     return (
         <>
-            <div className={`text-lg`}>
-                <div
+            <div className={'text-lg'}>
+                <button
                     data-tooltip-id={`due-date-tooltip-${task._id}`}
-                    className="cursor-pointer"
+                    className="btn btn-sm btn-ghost cursor-pointer flex items-center gap-2"
                     onClick={handleDueDateClick}
                 >
+                    {isMobile && task.dueDate && (
+                        <p
+                            className="hover:saturate-150 transition-colors duration-200 text-sm"
+                            style={{
+                                color: dueDateIsPast
+                                    ? `var(--${currentTheme}-accent-red)`
+                                    : dueDateIsWithin7Days || dueDateIsToday
+                                    ? `var(--${currentTheme}-accent-yellow)`
+                                    : `var(--${currentTheme}-text-subtle)`,
+                            }}
+                        >
+                            {new Date(task.dueDate as Date).toLocaleDateString(
+                                'en-US',
+                                {
+                                    month: 'short',
+                                    day: 'numeric',
+                                    year:
+                                        new Date(
+                                            task.dueDate as Date
+                                        ).getFullYear() !==
+                                        new Date().getFullYear()
+                                            ? 'numeric'
+                                            : undefined,
+                                }
+                            )}
+                        </p>
+                    )}
                     {dueDateIsPast ? (
                         <FaHourglassEnd
                             className="hover:saturate-150 transition-colors duration-200"
@@ -89,7 +117,7 @@ export const DueDateIndicator = ({
                             }}
                         />
                     )}
-                </div>
+                </button>
                 <div className="text-base">
                     <Tooltip id={`due-date-tooltip-${task._id}`} place="top">
                         {dueDateIsPast ? (

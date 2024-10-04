@@ -148,7 +148,7 @@ const TaskCardTopBar: React.FC<TaskCardTopBarProps> = React.memo(
                         }}
                     ></div>
                 </div>
-                <div className="flex flex-row gap-4 items-center">
+                <div className="flex flex-row gap-2 items-center">
                     {task.dueDate && (
                         <DueDateIndicator
                             task={task}
