@@ -21,7 +21,7 @@ export async function PATCH(
             );
         }
 
-        console.log('ROUTE: taskOrder', taskOrder);
+        // console.log('ROUTE: taskOrder', taskOrder);
         space.taskOrder = taskOrder;
         await space.save();
 

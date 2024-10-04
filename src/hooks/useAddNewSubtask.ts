@@ -15,7 +15,6 @@ export const useAddNewSubtask = () => {
     const { showAlert } = useAlert();
 
     const canAddSubtask = (parentTask: Task | null): boolean => {
-        console.log('parentTask', parentTask);
         if (!parentTask) return false;
         if (!parentTask.ancestors) return true;
         return parentTask.ancestors.length < 2;

@@ -104,9 +104,7 @@ export const TaskListItemTopBar = ({
     const handleDuplicateTask = () => {
         const space = spacesState.find((space) => space._id === task.space);
         duplicateTask(task, tasksState).then((newTask) => {
-            console.log('New task', newTask[0]._id);
             if (space && newTask[0]._id) {
-                console.log('Space', space);
                 dispatch(
                     updateSpaceTaskOrderAsync({
                         spaceId: space._id!,
@@ -122,7 +120,6 @@ export const TaskListItemTopBar = ({
     };
 
     const handleMakeMainTask = () => {
-        console.log('Make main task', task._id, task.parentTask);
         convertSubtaskToTask(task, {
             x: Math.floor(Math.random() * 600) + 1,
             y: Math.floor(Math.random() * 600) + 1,

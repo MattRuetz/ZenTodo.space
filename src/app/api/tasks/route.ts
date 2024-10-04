@@ -112,10 +112,8 @@ export async function PUT(req: NextRequest) {
         // updateData can allow for partial updates
         const { _id, ...updateData } = body;
 
-        console.log('updateData', updateData);
         updateData.updatedAt = new Date();
 
-        // console.log('updateData', updateData);
         const updatedTask = await Task.findOneAndUpdate(
             { _id: _id, user: userId },
             { $set: updateData },

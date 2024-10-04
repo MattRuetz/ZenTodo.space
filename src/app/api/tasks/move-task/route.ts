@@ -12,15 +12,6 @@ export async function PUT(req: NextRequest) {
         const body = await req.json();
         const { parentId, newOrder, spaceId } = body;
 
-        console.log(
-            'Received request to move tasks for parent:',
-            parentId,
-            'with new order:',
-            newOrder,
-            'in space:',
-            spaceId
-        );
-
         if (parentId) {
             // Moving within a parent task
             const parentTask = await Task.findOne({
@@ -37,7 +28,6 @@ export async function PUT(req: NextRequest) {
 
             parentTask.subtasks = newOrder;
             await parentTask.save();
-            console.log('Parent task updated:', parentTask);
 
             // Update all subtasks to ensure their parentTask field is correct
             await Task.updateMany(
@@ -57,7 +47,6 @@ export async function PUT(req: NextRequest) {
             }
             space.taskOrder = newOrder;
             await space.save();
-            console.log('Root tasks updated for space:', spaceId);
         }
 
         return NextResponse.json({

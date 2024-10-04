@@ -12,7 +12,7 @@ export const useMoveSubtask = () => {
     const dispatch = useDispatch<AppDispatch>();
     const tasksState = useSelector((state: RootState) => state.tasks.tasks);
     const { showAlert } = useAlert();
-    
+
     const moveSubtaskTemporary = useCallback(
         (subtaskId: string, parentId: string, newPosition: string) => {
             const parentTask = tasksState.find((task) => task._id === parentId);
@@ -77,8 +77,6 @@ export const useMoveSubtask = () => {
                 showAlert('Parent task not found', 'error');
                 return;
             }
-
-            console.log('parentTask', parentTask.subtasks);
 
             try {
                 await dispatch(

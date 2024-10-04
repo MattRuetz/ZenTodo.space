@@ -56,7 +56,7 @@ export const useAlert = () => {
         ) => {
             const currentTime = Date.now();
             if (currentTime - lastAlertTimeRef.current < cooldownPeriod) {
-                console.log('Alert cooldown in effect. Skipping this alert.');
+                // Alert cooldown in effect. Skip this alert.
                 return;
             }
 

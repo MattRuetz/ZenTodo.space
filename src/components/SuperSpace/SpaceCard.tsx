@@ -175,12 +175,10 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
 
     useEffect(() => {
         if (isDragging) {
-            console.log('isDragging', isDragging);
             setIsShaking(true);
             const timer = setTimeout(() => setIsShaking(false), 500); // Stop shaking after 500ms
             return () => clearTimeout(timer);
         } else {
-            console.log('isDragging', isDragging);
             setIsShaking(false);
         }
     }, [isDragging]);

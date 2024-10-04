@@ -29,8 +29,6 @@ export async function GET(
             );
         }
 
-        console.log('fetched task', task);
-
         return NextResponse.json(task);
     } catch (error) {
         console.error('Error fetching task:', error);

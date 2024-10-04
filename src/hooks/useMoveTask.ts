@@ -61,8 +61,6 @@ export const useMoveTask = () => {
             }
 
             if (parentId === null) {
-                console.log('newOrder', newTasks);
-
                 dispatch(
                     updateSpaceTaskOrderOptimistic({
                         taskOrder: newTasks as string[],

@@ -202,18 +202,12 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
 
             if (draggedSubtask._id === targetSubtask._id) {
                 // handleDropOnSelf();
-                console.log('drop on self');
                 return;
             } else if (
                 !isGrandparentCheck &&
                 !isAlreadyParentAndSubtask &&
                 !isGrandchild
             ) {
-                console.log(
-                    'convertTaskToSubtask',
-                    draggedSubtask,
-                    targetSubtask
-                );
                 convertTaskToSubtask(
                     draggedSubtask,
                     targetSubtask._id as string

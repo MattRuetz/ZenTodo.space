@@ -170,11 +170,6 @@ export const updateSpaceTaskOrderAsync = createAsyncThunk(
         { rejectWithValue }
     ) => {
         try {
-            console.log(
-                'THUNK: Updating space task order:',
-                spaceId,
-                taskOrder
-            );
             const response = await fetch(`/api/spaces/${spaceId}/taskOrder`, {
                 method: 'PATCH',
                 headers: {
@@ -265,7 +260,6 @@ const spaceSlice = createSlice({
                     (id) => (id === tempId ? newTaskId : id)
                 );
             }
-            console.log('Updated task order after replace:', space?.taskOrder);
         },
         removeTaskFromTaskOrder: (
             state,

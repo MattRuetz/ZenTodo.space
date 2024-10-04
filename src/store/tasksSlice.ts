@@ -22,8 +22,6 @@ export const fetchTasks = createAsyncThunk('tasks/fetchTasks', async () => {
     }
     const tasks = await response.json();
 
-    console.log('tasks on fetch', tasks);
-
     // Group tasks by space
     const tasksBySpace = tasks.reduce(
         (acc: { [key: string]: string[] }, task: Task) => {
@@ -37,8 +35,6 @@ export const fetchTasks = createAsyncThunk('tasks/fetchTasks', async () => {
         },
         {}
     );
-
-    console.log(tasksBySpace);
 
     return { tasks, tasksBySpace };
 });
@@ -691,12 +687,7 @@ export const tasksSlice = createSlice({
             }>
         ) => {
             const { parentId, newTaskOrder } = action.payload;
-            console.log(
-                'Optimistically moving task. Parent ID:',
-                parentId,
-                'New order:',
-                newTaskOrder
-            );
+
             if (parentId === null) {
                 // Handle root-level tasks
                 state.tasks = state.tasks.sort(
@@ -1030,7 +1021,6 @@ export const tasksSlice = createSlice({
                     }
                 });
 
-                console.log('updatedParentTask', updatedParentTask);
                 // Update the parent task if provided
                 if (updatedParentTask) {
                     const parentIndex = state.tasks.findIndex(
@@ -1048,12 +1038,7 @@ export const tasksSlice = createSlice({
             })
             .addCase(moveTaskWithinLevelAsync.fulfilled, (state, action) => {
                 const { parentId, newOrder } = action.payload;
-                console.log(
-                    'Confirmed move task from server. Parent ID:',
-                    parentId,
-                    'New order:',
-                    newOrder
-                );
+
                 if (parentId) {
                     // Update subtasks order
                     const parentTask = state.tasks.find(

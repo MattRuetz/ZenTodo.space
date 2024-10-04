@@ -16,7 +16,7 @@ export const fetchTheme = createAsyncThunk(
         try {
             const response = await fetch('/api/theme');
             const data = await response.json();
-            console.log('data', data);
+
             return data.themePreference;
         } catch (error) {
             return rejectWithValue((error as Error).message);

@@ -37,8 +37,6 @@ export async function PUT(req: NextRequest) {
                 );
             }
 
-            console.log('updatedParentTask1', updatedParentTask);
-
             // Update the task and all its descendants
             const updatedTasks = await archiveTaskAndDescendants(task, session);
 
