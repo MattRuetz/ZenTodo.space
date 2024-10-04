@@ -118,7 +118,7 @@ const ControlPanelContent: React.FC<ControlPanelContentProps> = ({
                 <button
                     className="absolute top-4 left-2 p-2 text-3xl"
                     style={{
-                        color: `var(--${theme}-text-default)`,
+                        color: 'white',
                     }}
                     onClick={() => dispatch(setControlPanelOpen(false))}
                 >

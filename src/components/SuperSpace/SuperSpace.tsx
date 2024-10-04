@@ -150,20 +150,18 @@ const SuperSpace = React.memo(() => {
                         animate="visible"
                     >
                         {spaces.map((space: SpaceData, index: number) => (
-                            <Link href={`/space/${space._id}`} key={space._id}>
-                                <motion.div variants={item}>
-                                    <SpaceCard
-                                        key={space._id}
-                                        space={space}
-                                        index={index}
-                                        handleDragEnd={handleDragEnd}
-                                        moveSpaceCard={moveSpaceCard}
-                                        onClick={() => {
-                                            dispatch(setCurrentSpace(space));
-                                        }}
-                                    />
-                                </motion.div>
-                            </Link>
+                            <motion.div variants={item}>
+                                <SpaceCard
+                                    key={space._id}
+                                    space={space}
+                                    index={index}
+                                    handleDragEnd={handleDragEnd}
+                                    moveSpaceCard={moveSpaceCard}
+                                    onClick={() => {
+                                        dispatch(setCurrentSpace(space));
+                                    }}
+                                />
+                            </motion.div>
                         ))}
                         {spaces.length < 9 && (
                             <motion.div variants={item}>
