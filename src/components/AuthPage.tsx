@@ -4,6 +4,7 @@ import { useAlert } from '@/hooks/useAlert';
 import { getQuoteForDay } from '@/hooks/useQuoteForDay';
 import Image from 'next/image';
 import { useIsMobileSize } from '@/hooks/useIsMobileSize';
+import { useRouter } from 'next/navigation';
 
 const AuthPage = () => {
     const isMobileSize = useIsMobileSize();
@@ -13,6 +14,7 @@ const AuthPage = () => {
     const [password, setPassword] = useState('');
     const [showInvalidCredentials, setShowInvalidCredentials] = useState(false);
     const [isPasswordReset, setIsPasswordReset] = useState(false);
+    const router = useRouter();
 
     const { showAlert } = useAlert();
 
@@ -41,6 +43,7 @@ const AuthPage = () => {
                 showAlert(result.error, 'error');
             } else {
                 showAlert('Welcome back!', 'welcome');
+                router.push('/');
             }
         } else {
             const response = await fetch('/api/auth/signup', {
@@ -60,6 +63,7 @@ const AuthPage = () => {
                     showAlert(result.error, 'error');
                 } else {
                     showAlert('Welcome to ZenTodo!', 'welcome');
+                    router.push('/');
                 }
             } else {
                 const data = await response.json();

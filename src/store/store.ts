@@ -4,7 +4,7 @@ import spaceReducer from './spaceSlice';
 import uiReducer from './uiSlice';
 import themeReducer from './themeSlice';
 import userReducer from './userSlice';
-
+import loadingReducer from './loadingSlice';
 export const store = configureStore({
     reducer: {
         tasks: tasksReducer,
@@ -12,6 +12,7 @@ export const store = configureStore({
         ui: uiReducer,
         theme: themeReducer,
         user: userReducer,
+        loading: loadingReducer,
     },
 });
 
