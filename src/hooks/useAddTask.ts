@@ -77,7 +77,7 @@ export const useAddTask = () => {
             dispatch(
                 updateTaskInPlace({
                     tempId,
-                    newTask: result.newTask,
+                    newTask: { ...result.newTask, isTemp: false },
                 })
             );
 

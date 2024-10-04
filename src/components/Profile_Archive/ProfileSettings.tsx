@@ -177,20 +177,19 @@ const ProfileSettings = () => {
     }
 
     return (
-        <div className="flex flex-col items-center justify-center p-4 sm:p-6 w-full max-w-4xl mx-auto">
+        <div className="flex flex-col items-center justify-center p-8 w-full max-w-4xl mx-auto">
             <div className="w-full">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="relative flex flex-col items-center">
-                        <div className="w-48 h-48 sm:w-64 sm:h-64 relative">
+                        <div className="w-40 h-40 md:w-48 md:h-48 sm:w-64 sm:h-64 relative">
                             <Image
                                 src={profilePicture}
                                 alt="Profile Picture"
                                 layout="fill"
                                 objectFit="cover"
-                                className="rounded-full"
+                                className="rounded-full shadow-md"
                                 style={{
                                     backgroundColor: `var(--${currentTheme}-background-300)`,
-                                    border: `1px solid var(--${currentTheme}-card-border-color)`,
                                 }}
                             />
                             {isUploadingPhoto && (
@@ -198,19 +197,20 @@ const ProfileSettings = () => {
                                     <span className="loading loading-ring text-slate-200 h-12 w-12"></span>
                                 </div>
                             )}
+                            <button
+                                className="absolute top-0 left-0 btn p-2 rounded-full w-12 h-12"
+                                style={{
+                                    color: `var(--${currentTheme}-text-default)`,
+                                    border: `3px solid var(--${currentTheme}-background-100)`,
+                                    backgroundColor: `var(--${currentTheme}-background-200)`,
+                                }}
+                                onClick={() => fileInputRef.current?.click()}
+                                disabled={isUploadingPhoto}
+                            >
+                                {isUploadingPhoto ? '...' : <FaPencil />}
+                            </button>
                         </div>
-                        <button
-                            className="absolute top-1 left-1 btn p-2 rounded-full w-12 h-12"
-                            style={{
-                                color: `var(--${currentTheme}-text-default)`,
-                                border: `3px solid var(--${currentTheme}-background-100)`,
-                                backgroundColor: `var(--${currentTheme}-background-200)`,
-                            }}
-                            onClick={() => fileInputRef.current?.click()}
-                            disabled={isUploadingPhoto}
-                        >
-                            {isUploadingPhoto ? '...' : <FaPencil />}
-                        </button>
+
                         <input
                             type="file"
                             ref={fileInputRef}
@@ -264,7 +264,7 @@ const ProfileSettings = () => {
                         ) : (
                             <div className="space-y-4">
                                 <h3
-                                    className="font-semibold text-lg"
+                                    className="font-semibold text-xl"
                                     style={{
                                         color: `var(--${currentTheme}-text-default)`,
                                     }}
@@ -307,9 +307,10 @@ const ProfileSettings = () => {
                                     Edit Name / Password
                                 </button>
                                 <button
-                                    className="btn btn-sm btn-ghost p-2 hover:border-white/25 flex items-center justify-center gap-2 text-xs w-full"
+                                    className="btn btn-sm p-2 hover:border-white/25 flex items-center justify-center gap-2 text-xs w-full hover:brightness-90"
                                     style={{
                                         color: `var(--${currentTheme}-text-default)`,
+                                        backgroundColor: `var(--${currentTheme}-background-100)`,
                                     }}
                                     onClick={() => signOut()}
                                 >
@@ -326,16 +327,10 @@ const ProfileSettings = () => {
                     backgroundColor: `var(--${currentTheme}-background-200)`,
                 }}
             />
-            <div className="quote-of-the-day p-4 text-center max-w-md text-xs mb-4 w-full">
-                <div
-                    className="text-sm mb-2"
-                    style={{ color: `var(--${currentTheme}-text-default)` }}
-                >
-                    Quote of the day:
-                </div>
+            <div className="quote-of-the-day p-4 text-center max-w-md text-sm mb-4 w-full hover:cursor-default">
                 <blockquote
                     className="text-md italic hover:scale-105 transition-all duration-300"
-                    style={{ color: `var(--${currentTheme}-text-subtle)` }}
+                    style={{ color: `var(--${currentTheme}-text-default)` }}
                 >
                     {quote}
                 </blockquote>

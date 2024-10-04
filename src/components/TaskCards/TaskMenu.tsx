@@ -114,6 +114,7 @@ export default function TaskMenu({
                         >
                             <FaPlus className="mr-2" /> Add Subtask
                         </button>
+
                         <button
                             className="flex items-center px-4 py-2 text-sm w-full hover:bg-black/20"
                             style={{
@@ -142,6 +143,7 @@ export default function TaskMenu({
                         >
                             <FaCopy className="mr-2" /> Duplicate Task
                         </button>
+
                         <button
                             className="flex items-center px-4 py-2 text-sm w-full hover:bg-black/20"
                             style={{

@@ -268,7 +268,6 @@ const TaskListView: React.FC<TaskListViewProps> = ({ spaceId }) => {
                                         }}
                                     >
                                         <TaskListDropZone
-                                            key={task.clientId || task._id}
                                             position={
                                                 index === 0
                                                     ? 'start'
@@ -283,7 +282,6 @@ const TaskListView: React.FC<TaskListViewProps> = ({ spaceId }) => {
                                             }
                                         />
                                         <TaskListItem
-                                            key={task.clientId || task._id}
                                             task={task}
                                             onClick={() =>
                                                 handleTaskClick(task)

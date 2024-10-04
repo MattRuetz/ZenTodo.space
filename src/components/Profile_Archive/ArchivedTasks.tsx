@@ -38,7 +38,7 @@ const ArchivedTasks: React.FC = () => {
 
     return (
         <div
-            className="p-4 sm:p-6 h-full w-full rounded-lg py-8 sm:py-12 max-w-screen-md mx-auto"
+            className="p-4 sm:p-6 w-full rounded-lg py-8 sm:py-12 max-w-screen-md mx-auto"
             style={{
                 color: `var(--${currentTheme}-text-default)`,
             }}
@@ -47,7 +47,7 @@ const ArchivedTasks: React.FC = () => {
                 <FaArchive className="mr-2" />
                 Archived Tasks
             </h2>
-            <div className="mb-6 space-y-4">
+            <div className="mb-6 space-y-4 h-full">
                 <div className="flex flex-col sm:flex-row gap-4">
                     <div className="relative flex-grow">
                         <input
@@ -81,7 +81,7 @@ const ArchivedTasks: React.FC = () => {
             </div>
             <div className="space-y-4 pb-10">
                 {filteredTasks.length === 0 ? (
-                    <div className="flex flex-col items-center gap-4 min-h-[200px] justify-center">
+                    <div className="flex flex-col items-center gap-4 min-h-[200px]  justify-center">
                         <FaSearch className="text-4xl" />
                         <div
                             className="text-center text-sm"

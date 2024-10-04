@@ -136,7 +136,7 @@ const ArchivedTaskCard: React.FC<ArchivedTaskCardProps> = ({
                         <button
                             className="rounded-lg btn btn-xs sm:btn-sm text-xs sm:text-sm flex items-center gap-1 hover:brightness-75 transition-all duration-300"
                             style={{
-                                color: `var(--${currentTheme}-emphasis-dark)`,
+                                color: 'black',
                                 backgroundColor: `var(--${currentTheme}-accent-green)`,
                             }}
                             onClick={() => {

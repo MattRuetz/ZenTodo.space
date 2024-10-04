@@ -47,7 +47,9 @@ export const useDuplicateTask = () => {
                 ...t,
                 isTemp: undefined,
             }));
-            await dispatch(duplicateTasksAsync(tasksToDuplicate)).unwrap();
+            const result = await dispatch(
+                duplicateTasksAsync(tasksToDuplicate)
+            ).unwrap();
             // Success
             showAlert(
                 `Duplicated task${
@@ -59,6 +61,7 @@ export const useDuplicateTask = () => {
                 }!`,
                 'success'
             );
+            return result;
         } catch (error) {
             if (error instanceof Error) {
                 console.error('Failed to duplicate tasks:', error);

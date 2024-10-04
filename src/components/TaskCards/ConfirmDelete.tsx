@@ -4,6 +4,8 @@ import { Task, SpaceData } from '@/types';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { useTheme } from '@/hooks/useTheme';
+import { FaTrash } from 'react-icons/fa';
+import { ComponentSpinner } from '../ComponentSpinner';
 
 const ConfirmDelete = ({
     objectToDelete,
@@ -97,24 +99,23 @@ const ConfirmDelete = ({
                                 Cancel
                             </button>
                             <button
-                                className="btn btn-error"
+                                className="btn bg-red-500/30 hover:bg-red-600/50 border-red-500"
                                 style={{
                                     color: `var(--${currentTheme}-text-default)`,
                                 }} // Use theme color
                                 onClick={handleDelete}
                             >
-                                <span
-                                    className={`${
-                                        isDeleting ? 'invisible' : 'visible'
-                                    } delete-text`}
-                                >
-                                    Delete
-                                </span>
-                                <span
-                                    className={`${
-                                        isDeleting ? 'visible' : 'invisible'
-                                    } delete-spinner loading loading-ring text-slate-200 loading-lg`}
-                                ></span>
+                                {isDeleting ? (
+                                    <ComponentSpinner />
+                                ) : (
+                                    <span
+                                        className={
+                                            'delete-text flex items-center'
+                                        }
+                                    >
+                                        Delete <FaTrash className="ml-2" />
+                                    </span>
+                                )}
                             </button>
                         </div>
                     </>
@@ -148,24 +149,23 @@ const ConfirmDelete = ({
                                 Cancel
                             </button>
                             <button
-                                className="btn btn-error"
+                                className="btn bg-red-500/30 hover:bg-red-600/50 border-red-500"
                                 style={{
                                     color: `var(--${currentTheme}-text-default)`,
                                 }} // Use theme color
                                 onClick={handleDelete}
                             >
-                                <span
-                                    className={`${
-                                        isDeleting ? 'invisible' : 'visible'
-                                    } delete-text`}
-                                >
-                                    Delete
-                                </span>
-                                <span
-                                    className={`${
-                                        isDeleting ? 'visible' : 'invisible'
-                                    } delete-spinner loading loading-ring text-slate-200 loading-lg`}
-                                ></span>
+                                {isDeleting ? (
+                                    <ComponentSpinner />
+                                ) : (
+                                    <span
+                                        className={
+                                            'delete-text flex items-center'
+                                        }
+                                    >
+                                        Delete <FaTrash className="ml-2" />
+                                    </span>
+                                )}
                             </button>
                         </div>
                     </>

@@ -11,9 +11,9 @@ import { useAlert } from '@/hooks/useAlert';
 import useClickOutside from '@/hooks/useClickOutside';
 import { useTheme } from '@/hooks/useTheme';
 import { useArchiveTask } from '@/hooks/useArchiveTask';
-import { SubtaskTopBar } from '../Subtask/SubtaskTopBar';
 import { SubtaskBottomBar } from '../Subtask/SubtaskBottomBar';
 import { getGrandparentTask, isGrandparent } from '@/app/utils/hierarchyUtils';
+import { TaskListItemTopBar } from './TaskListItemTopBar';
 
 const LONG_PRESS_DELAY = 300; // 1 second delay
 
@@ -153,11 +153,6 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
         dispatch(updateTask({ _id: task._id, dueDate: date || null }));
     };
 
-    const handleContextMenu = useCallback((e: React.MouseEvent) => {
-        e.preventDefault();
-        setIsTaskMenuOpen(true);
-    }, []);
-
     const handleInputChange = useCallback(
         (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
             const { name, value } = e.target;
@@ -278,12 +273,12 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
             }}
         >
             <div className="w-10/12 max-w-[300px] mx-auto">
-                <SubtaskTopBar
-                    subtask={task}
+                <TaskListItemTopBar
+                    task={task}
                     handleProgressChange={handleProgressChange}
                     handleSetDueDate={handleSetDueDate}
-                    isSubtaskMenuOpen={isTaskMenuOpen}
-                    setIsSubtaskMenuOpen={setIsTaskMenuOpen}
+                    isMenuOpen={isTaskMenuOpen}
+                    setIsMenuOpen={setIsTaskMenuOpen}
                 />
                 {/* <p>{task._id}</p> */}
 

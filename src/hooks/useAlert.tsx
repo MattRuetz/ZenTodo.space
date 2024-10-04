@@ -1,7 +1,7 @@
-import React, { useCallback, useContext } from 'react';
+import React, { useCallback, useContext, useState, useRef } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { useMediaQuery } from 'react-responsive';
+import { useIsMobileSize } from '@/hooks/useIsMobileSize';
 
 type AlertType = 'error' | 'notice' | 'success' | 'welcome';
 
@@ -43,8 +43,10 @@ export const MobileAlertProvider: React.FC<MobileAlertProviderProps> = ({
 };
 
 export const useAlert = () => {
-    const isMobile = useMediaQuery({ maxWidth: 767 });
+    const isMobile = useIsMobileSize();
     const { showMobileAlert } = useContext(MobileAlertContext);
+    const lastAlertTimeRef = useRef<number>(0);
+    const cooldownPeriod = 1000;
 
     const showAlert = useCallback(
         (
@@ -52,6 +54,14 @@ export const useAlert = () => {
             type: AlertType = 'notice',
             duration: number = 2000
         ) => {
+            const currentTime = Date.now();
+            if (currentTime - lastAlertTimeRef.current < cooldownPeriod) {
+                console.log('Alert cooldown in effect. Skipping this alert.');
+                return;
+            }
+
+            lastAlertTimeRef.current = currentTime;
+
             if (isMobile) {
                 showMobileAlert(message, type);
             } else {

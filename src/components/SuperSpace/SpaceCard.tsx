@@ -6,7 +6,7 @@ import { AppDispatch, RootState } from '@/store/store';
 import EmojiDropdown from '../EmojiDropdown';
 import { FaClock, FaTag } from 'react-icons/fa';
 import { getComplementaryColor, getContrastingColor } from '@/app/utils/utils';
-import { FaClockRotateLeft, FaTrash } from 'react-icons/fa6';
+import { FaClockRotateLeft, FaPalette, FaTrash } from 'react-icons/fa6';
 import { useDrag, useDrop } from 'react-dnd';
 import ConfirmDelete from '../TaskCards/ConfirmDelete';
 import { isMobile } from 'react-device-detect';
@@ -241,7 +241,7 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
-            className={`space rounded-lg shadow-md hover:shadow-xl p-4 md:p-8 cursor-pointer relative flex flex-row justify-start items-center gap-4 min-h-[150px] h-full max-h-[300px] md:hover:-rotate-1 border-4 border-transparent md:hover:border-white transition-all duration-300 ease-in-out ${
+            className={`space rounded-lg shadow-md hover:shadow-xl p-4 md:p-8 cursor-pointer relative flex flex-row justify-start items-center gap-4 min-h-[150px] max-h-[300px] md:hover:-rotate-1 border-4 border-transparent md:hover:border-white transition-all duration-300 ease-in-out ${
                 isDragging || isShaking ? 'shake opacity-50' : ''
             }`}
             style={{
@@ -294,13 +294,16 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
                         <div className="flex items-center gap-2 bg-white rounded-lg px-2">
                             <label
                                 htmlFor="colorPicker"
-                                className="p-2 rounded cursor-pointer text-sm font-medium"
+                                className="p-2 rounded cursor-pointer text-sm font-medium w-full text-center flex items-center justify-center"
                                 style={{
                                     backgroundColor: color,
                                     color: contrastColor,
                                 }}
                             >
-                                Choose Space Color
+                                <FaPalette className="mr-2" />
+                                <span className="hidden md:inline">
+                                    Choose Space Color
+                                </span>
                             </label>
                             <input
                                 id="colorPicker"
@@ -317,17 +320,17 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
                         </div>
                         <button
                             type="submit"
-                            className="btn btn-md md:btn-sm"
+                            className="btn btn-md"
                             style={{
-                                backgroundColor: contrastColor,
-                                color: contrastInvertedColor,
-                                border: `1px solid ${contrastColor}`,
+                                backgroundColor: 'white',
+                                color: 'black',
+                                border: '1px solid black',
                             }}
                         >
                             Save
                         </button>
                         <button
-                            className="btn btn-md md:btn-sm btn-error text-white"
+                            className="btn btn-md btn-error text-white"
                             onClick={handleDelete}
                             style={{
                                 border: `3px solid ${space.color}`,

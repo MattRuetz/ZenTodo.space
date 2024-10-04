@@ -240,11 +240,11 @@ const ControlPanelContent: React.FC<ControlPanelContentProps> = ({
                             <div className="col-span-2">
                                 <p className="font-medium text-lg truncate">
                                     {user.name}
-                                </p>{' '}
+                                </p>
                                 <p
                                     className="text-sm truncate"
                                     style={{
-                                        color: `var(--${currentTheme}-emphasis-light)`,
+                                        color: 'white',
                                     }}
                                 >
                                     {user.email}

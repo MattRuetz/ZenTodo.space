@@ -38,6 +38,7 @@ const ControlPanelToggle: React.FC<ControlPanelToggleProps> = React.memo(
                 <button
                     className={`z-20 btn btn-circle border`}
                     style={{
+                        boxShadow: 'none',
                         color: `var(--${currentTheme}-text-default)`, // Use theme color
                         backgroundColor: isMobile
                             ? 'transparent'

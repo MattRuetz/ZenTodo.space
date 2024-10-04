@@ -19,7 +19,7 @@ const ProfileArchivePage: React.FC<ProfileArchivePageProps> = ({
     const theme = useTheme();
     return (
         <div
-            className="mx-auto p-2 sm:p-4 w-full min-h-screen flex flex-col"
+            className="mx-auto p-2 sm:p-4 w-full h-screen flex flex-col"
             style={{
                 backgroundColor: `var(--${theme}-space-background)`,
             }}
@@ -29,7 +29,7 @@ const ProfileArchivePage: React.FC<ProfileArchivePageProps> = ({
                     data-tooltip-id="return-to-super-space-tooltip"
                     className="btn btn-circle px-3 py-2 sm:px-4 sm:py-2 rounded-full flex items-center hover:scale-105 hover:brightness-125 transition-all duration-300"
                     style={{
-                        color: `var(--${theme}-emphasis-light)`,
+                        color: `var(--${theme}-text-default)`,
                         backgroundColor: `var(--${theme}-background-100)`,
                     }}
                     onClick={() => setIsProfilePageOpen(false)}
@@ -49,7 +49,7 @@ const ProfileArchivePage: React.FC<ProfileArchivePageProps> = ({
             </div>
 
             <div
-                className="container max-w-screen-lg mx-auto rounded-lg overflow-hidden shadow-xl flex-grow flex flex-col mb-12"
+                className="container max-w-screen-lg mx-auto rounded-lg overflow-hidden shadow-xl flex-grow flex flex-col mb-12 h-full"
                 style={{
                     backgroundColor: `var(--${theme}-background-100)`,
                     border: `2px solid var(--${theme}-card-border-color)`,
@@ -92,7 +92,7 @@ const ProfileArchivePage: React.FC<ProfileArchivePageProps> = ({
                         </div>
                     ))}
                 </div>
-                <div className="w-full flex-grow overflow-hidden">
+                <div className="w-full flex-grow overflow-hidden h-full">
                     <AnimatePresence mode="wait">
                         <motion.div
                             key={activeTab}

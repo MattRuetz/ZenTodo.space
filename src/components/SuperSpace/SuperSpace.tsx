@@ -34,6 +34,7 @@ import { useIsMobileSize } from '@/hooks/useIsMobileSize';
 import { isMobile } from 'react-device-detect';
 import { useDragLayer } from 'react-dnd';
 import { useAutoScroll } from '@/hooks/useAutoScroll';
+import { ComponentSpinner } from '../ComponentSpinner';
 
 const SuperSpace = React.memo(() => {
     const dispatch = useDispatch<AppDispatch>();
@@ -84,8 +85,9 @@ const SuperSpace = React.memo(() => {
             order: spaces.length,
             taskOrder: [],
         };
-        dispatch(createSpace(newSpace));
-        setIsAdding(false);
+        dispatch(createSpace(newSpace)).then(() => {
+            setIsAdding(false);
+        });
     };
 
     const toggleZoom = () => {
@@ -198,7 +200,7 @@ const SuperSpace = React.memo(() => {
                                     {spaces.length < 9 && (
                                         <motion.div variants={item}>
                                             <div
-                                                className={`space transition-colors duration-300 border-4 border-sky-200 rounded-lg shadow-md p-4 cursor-pointer flex items-center justify-center min-h-[150px] max-h-[300px] ${
+                                                className={`space relative transition-colors duration-300 border-4 border-sky-200 rounded-lg shadow-md p-4 cursor-pointer flex items-center justify-center min-h-[150px] max-h-[300px] ${
                                                     spaces.length >= 9
                                                         ? 'opacity-50 cursor-not-allowed'
                                                         : ''
@@ -210,11 +212,7 @@ const SuperSpace = React.memo(() => {
                                                 }}
                                             >
                                                 {isAdding ? (
-                                                    <span
-                                                        className={
-                                                            'delete-spinner loading loading-ring text-slate-300 loading-lg'
-                                                        }
-                                                    />
+                                                    <ComponentSpinner />
                                                 ) : (
                                                     <span
                                                         className={
@@ -277,7 +275,7 @@ const SuperSpace = React.memo(() => {
                                                   right: '20px',
                                                   bottom: '20px',
                                                   zIndex: 100000,
-                                                  backgroundColor: `var(--${currentTheme}-background-100)`,
+                                                  backgroundColor: `var(--${currentTheme}-accent-blue)`,
                                                   color: `var(--${currentTheme}-emphasis-light)`,
                                               }
                                     }

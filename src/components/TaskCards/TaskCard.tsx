@@ -28,6 +28,7 @@ import { useArchiveTask } from '@/hooks/useArchiveTask';
 import { motion } from 'framer-motion';
 import { ComponentSpinner } from '../ComponentSpinner';
 import { setSubtaskDrawerOpen } from '@/store/uiSlice';
+import { updateSpaceTaskOrderAsync } from '@/store/spaceSlice';
 
 interface TaskCardProps {
     task: Task;
@@ -51,6 +52,9 @@ const TaskCard = React.memo(
         );
 
         const tasksState = useSelector((state: RootState) => state.tasks.tasks);
+        const spacesState = useSelector(
+            (state: RootState) => state.spaces.spaces
+        );
 
         const { duplicateTask } = useDuplicateTask();
         const { convertTaskToSubtask } = useChangeHierarchy();
@@ -313,12 +317,31 @@ const TaskCard = React.memo(
         };
 
         const handleMoveTask = (spaceId: string) => {
+            const space = spacesState.find((space) => space._id === spaceId);
+            if (!space) return;
+
             dispatch(moveTaskToSpace({ taskId: task._id!, spaceId }));
-            showAlert('Task moved successfully', 'notice');
+            dispatch(
+                updateSpaceTaskOrderAsync({
+                    spaceId,
+                    taskOrder: [...space.taskOrder, task._id!],
+                })
+            ).then(() => {
+                showAlert('Task moved successfully', 'notice');
+            });
         };
 
         const handleDuplicateTask = () => {
+            const space = spacesState.find((space) => space._id === task.space);
             duplicateTask(task, tasksState);
+            if (space) {
+                dispatch(
+                    updateSpaceTaskOrderAsync({
+                        spaceId: space._id!,
+                        taskOrder: [...space.taskOrder, task._id!],
+                    })
+                );
+            }
         };
 
         const handleShowDetails = () => {
