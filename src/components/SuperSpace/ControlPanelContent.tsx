@@ -7,22 +7,29 @@ import { setTheme } from '@/store/themeSlice';
 import { Task, ThemeName } from '@/types';
 import { getComplementaryColor, getContrastingColor } from '@/app/utils/utils';
 import { FaArchive, FaTag } from 'react-icons/fa';
-import { FaCircleArrowLeft, FaPaintbrush } from 'react-icons/fa6';
+import {
+    FaArrowRightFromBracket,
+    FaCircleArrowLeft,
+    FaGrip,
+    FaPaintbrush,
+} from 'react-icons/fa6';
 import { useTheme } from '@/hooks/useTheme';
 import { setUser } from '@/store/userSlice';
 import { ComponentSpinner } from '../ComponentSpinner';
-import { setControlPanelOpen } from '@/store/uiSlice';
+import {
+    setControlPanelOpen,
+    setSortOption,
+    setZoomedOut,
+} from '@/store/uiSlice';
 import { isMobile } from 'react-device-detect';
 interface ControlPanelContentProps {
     isOpen: boolean;
-    toggleZoom: () => void;
     setIsProfilePageOpen: (isProfilePageOpen: boolean) => void;
     setActiveTabStart: (activeTabStart: string) => void;
 }
 
 const ControlPanelContent: React.FC<ControlPanelContentProps> = ({
     isOpen,
-    toggleZoom,
     setIsProfilePageOpen,
     setActiveTabStart,
 }) => {
@@ -31,6 +38,7 @@ const ControlPanelContent: React.FC<ControlPanelContentProps> = ({
     const currentTheme = useSelector(
         (state: RootState) => state.theme.currentTheme
     );
+    const isZoomedOut = useSelector((state: RootState) => state.ui.isZoomedOut);
     const user = useSelector((state: RootState) => state.user.user);
     const [isLoadingUser, setIsLoadingUser] = useState(false);
 
@@ -48,7 +56,6 @@ const ControlPanelContent: React.FC<ControlPanelContentProps> = ({
 
     const contrastColor = getContrastingColor(currentSpace.color);
     const contrastInvertedColor = contrastColor === 'white' ? 'black' : 'white';
-    const complementaryColor = getComplementaryColor(currentSpace.color);
 
     const tasks = useSelector((state: RootState) => state.tasks.tasks);
 
@@ -68,6 +75,12 @@ const ControlPanelContent: React.FC<ControlPanelContentProps> = ({
     tasksInSpace.forEach((task: Task) => {
         taskProgressCounts[task.progress]++;
     });
+
+    const toggleZoomedOut = () => {
+        dispatch(setZoomedOut(!isZoomedOut));
+        dispatch(setControlPanelOpen(false));
+        dispatch(setSortOption('custom'));
+    };
 
     // Make sure the user is set in the redux store
     useEffect(() => {
@@ -127,7 +140,7 @@ const ControlPanelContent: React.FC<ControlPanelContentProps> = ({
                     onClick={() => {
                         // go to super space
                         dispatch(setControlPanelOpen(false));
-                        toggleZoom();
+                        toggleZoomedOut();
                     }}
                 >
                     <div className="flex flex-row justify-between items-center text-lg font-bold">
@@ -169,6 +182,16 @@ const ControlPanelContent: React.FC<ControlPanelContentProps> = ({
                         </tbody>
                     </table>
                 </div>
+                <button
+                    className="btn btn-sm flex justify-center items-center shadow-md mt-2 hover:bg-white/25"
+                    style={{
+                        color: `white`,
+                    }}
+                    onClick={toggleZoomedOut}
+                >
+                    Return to Super Space
+                    <FaArrowRightFromBracket />
+                </button>
             </div>
             {/* Archive access */}
             <div

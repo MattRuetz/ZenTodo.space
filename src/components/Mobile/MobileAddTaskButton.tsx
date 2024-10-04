@@ -3,10 +3,18 @@ import { useTheme } from '@/hooks/useTheme';
 import { useAddTask } from '@/hooks/useAddTask';
 import { useAddNewSubtask } from '@/hooks/useAddNewSubtask';
 import { useSelector } from 'react-redux';
-import { RootState } from '@/store/store';
+import { AppDispatch, RootState } from '@/store/store';
 import { Task, TaskProgress } from '@/types';
 import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { FaGrip, FaTableCells } from 'react-icons/fa6';
+import { Icon } from '../Icon';
+import {
+    setControlPanelOpen,
+    setZoomedOut,
+    setSortOption,
+} from '@/store/uiSlice';
+import { useDispatch } from 'react-redux';
 
 export const MobileAddTaskButton = ({
     currentParent,
@@ -21,6 +29,8 @@ export const MobileAddTaskButton = ({
     const [justAddedTask, setJustAddedTask] = useState(false);
     const { addTask } = useAddTask();
     const { addNewSubtask } = useAddNewSubtask();
+    const dispatch = useDispatch<AppDispatch>();
+    const isZoomedOut = useSelector((state: RootState) => state.ui.isZoomedOut);
 
     useEffect(() => {
         if (justAddedTask) {
@@ -82,15 +92,16 @@ export const MobileAddTaskButton = ({
         }
         onAddTask();
     };
+
     return (
         <div
-            className="flex justify-end items-center fixed bottom-4 right-4 w-auto"
+            className="flex flex-col justify-end items-end fixed bottom-4 right-4 w-auto gap-2"
             style={{
                 zIndex: 1000,
             }}
         >
             <button
-                className="btn btn-circle btn-md flex justify-center items-center"
+                className="btn btn-circle btn-sm flex justify-center items-center shadow-md"
                 style={{
                     backgroundColor: `var(--${currentTheme}-accent-blue)`,
                     color: `var(--${currentTheme}-emphasis-dark)`,
@@ -102,7 +113,6 @@ export const MobileAddTaskButton = ({
                         key={justAddedTask ? 'check' : 'plus'} // Add a key to help AnimatePresence identify the elements
                         initial={{ opacity: 0, scale: 0.5 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        // exit={{ opacity: 0, scale: 0.5 }}
                         transition={{ duration: 0.5 }}
                     >
                         {justAddedTask ? <FaCheck /> : <FaPlus />}

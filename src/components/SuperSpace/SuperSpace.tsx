@@ -35,6 +35,7 @@ import { isMobile } from 'react-device-detect';
 import { useDragLayer } from 'react-dnd';
 import { useAutoScroll } from '@/hooks/useAutoScroll';
 import { ComponentSpinner } from '../ComponentSpinner';
+import { setZoomedOut } from '@/store/uiSlice';
 
 const SuperSpace = React.memo(() => {
     const dispatch = useDispatch<AppDispatch>();
@@ -45,7 +46,14 @@ const SuperSpace = React.memo(() => {
         (state: RootState) => state.spaces
     );
 
-    const [isZoomedOut, setIsZoomedOut] = useState(true);
+    const isZoomedOut = useSelector((state: RootState) => state.ui.isZoomedOut);
+
+    const toggleZoom = () => {
+        dispatch(setZoomedOut(!isZoomedOut));
+        dispatch(setSubtaskDrawerParentId(null));
+        dispatch(setSubtaskDrawerOpen(false));
+    };
+
     const [isAdding, setIsAdding] = useState(false);
     const [isProfilePageOpen, setIsProfilePageOpen] = useState(false);
     const [activeTabStart, setActiveTabStart] = useState('archive');
@@ -88,12 +96,6 @@ const SuperSpace = React.memo(() => {
         dispatch(createSpace(newSpace)).then(() => {
             setIsAdding(false);
         });
-    };
-
-    const toggleZoom = () => {
-        setIsZoomedOut(!isZoomedOut);
-        dispatch(setSubtaskDrawerParentId(null));
-        dispatch(setSubtaskDrawerOpen(false));
     };
 
     const container = {
@@ -191,7 +193,9 @@ const SuperSpace = React.memo(() => {
                                                                 space
                                                             )
                                                         );
-                                                        setIsZoomedOut(false);
+                                                        dispatch(
+                                                            setZoomedOut(false)
+                                                        );
                                                     }}
                                                 />
                                             </motion.div>

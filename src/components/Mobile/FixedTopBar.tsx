@@ -3,7 +3,11 @@ import SortingDropdown from '../Subtask/SortingDropdown';
 import Breadcrumb from './Breadcrumb';
 import { Task } from '@/types';
 import { useSelector } from 'react-redux';
-import { setControlPanelOpen } from '@/store/uiSlice';
+import {
+    setControlPanelOpen,
+    setSortOption,
+    setZoomedOut,
+} from '@/store/uiSlice';
 import { useDispatch } from 'react-redux';
 import ControlPanelToggle from '../SuperSpace/ControlPanelToggle';
 import { useIsMobileSize } from '@/hooks/useIsMobileSize';
@@ -11,7 +15,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useMemo, useState } from 'react';
 import { MobileEmojiFilter } from './MobileEmojiFilter';
 import { FaFilter } from 'react-icons/fa';
-import { FaAngleUp, FaArrowUp, FaFilterCircleXmark } from 'react-icons/fa6';
+import { FaAngleUp, FaGrip } from 'react-icons/fa6';
 import { AnimatePresence, motion } from 'framer-motion';
 
 const FixedTopBar = ({
@@ -33,6 +37,7 @@ const FixedTopBar = ({
     const isControlPanelOpen = useSelector(
         (state: RootState) => state.ui.isControlPanelOpen
     );
+    const isZoomedOut = useSelector((state: RootState) => state.ui.isZoomedOut);
     const setIsOpen = (isOpen: boolean) => {
         dispatch(setControlPanelOpen(isOpen));
     };
@@ -64,7 +69,7 @@ const FixedTopBar = ({
                     isMobile={isMobileSize}
                 />
                 <div
-                    className="flex items-center justify-center gap-2"
+                    className="flex items-center justify-center gap-4"
                     style={{ color: `var(--${currentTheme}-text-default)` }}
                 >
                     {hasRootLevelTasksWithEmojis && (

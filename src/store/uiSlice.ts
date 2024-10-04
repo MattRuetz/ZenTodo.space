@@ -10,6 +10,7 @@ interface UIState {
     isReversed: boolean;
     isSimplicityModalOpen: boolean;
     isControlPanelOpen: boolean;
+    isZoomedOut: boolean;
 }
 
 const initialState: UIState = {
@@ -21,6 +22,7 @@ const initialState: UIState = {
     isReversed: false,
     isSimplicityModalOpen: false,
     isControlPanelOpen: false,
+    isZoomedOut: true,
 };
 
 const uiSlice = createSlice({
@@ -54,6 +56,9 @@ const uiSlice = createSlice({
         setControlPanelOpen: (state, action: PayloadAction<boolean>) => {
             state.isControlPanelOpen = action.payload;
         },
+        setZoomedOut: (state, action: PayloadAction<boolean>) => {
+            state.isZoomedOut = action.payload;
+        },
     },
 });
 
@@ -66,5 +71,6 @@ export const {
     setIsReversed,
     setSimplicityModalOpen,
     setControlPanelOpen,
+    setZoomedOut,
 } = uiSlice.actions;
 export default uiSlice.reducer;
