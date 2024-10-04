@@ -257,6 +257,10 @@ const TaskListView: React.FC<TaskListViewProps> = ({ spaceId }) => {
                                             mass: 1,
                                             layoutDuration: 0.3,
                                         }}
+                                        // Weird solution to cards overlapping menu.. but it works
+                                        className={
+                                            !isDragging ? `relative` : ''
+                                        }
                                     >
                                         <TaskListDropZone
                                             key={task.clientId || task._id}

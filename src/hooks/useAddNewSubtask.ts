@@ -69,6 +69,7 @@ export const useAddNewSubtask = () => {
             clientId: tempId,
         };
         // Dispatch optimistic update
+        // Disabled because could not figure out how to update without a rerender
         // dispatch(
         //     addNewSubtaskOptimistic({
         //         newSubtask: tempSubtask,
