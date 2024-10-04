@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useTheme } from '@/hooks/useTheme';
 import { FaArchive, FaFilter, FaSearch } from 'react-icons/fa';
 import { SpaceData, Task } from '@/types';
@@ -15,10 +15,9 @@ const ArchivedTasks: React.FC = () => {
     const spaces = useSelector((state: RootState) => state.spaces.spaces);
 
     const [searchQuery, setSearchQuery] = useState('');
-    const [filteredTasks, setFilteredTasks] = useState(archivedTasks);
     const [sortBy, setSortBy] = useState<'date' | 'name'>('date');
 
-    useEffect(() => {
+    const filteredTasks = useMemo(() => {
         let filtered = archivedTasks.filter((task: Task) =>
             task.taskName.toLowerCase().includes(searchQuery.toLowerCase())
         );
@@ -26,7 +25,7 @@ const ArchivedTasks: React.FC = () => {
         filtered.sort((a: Task, b: Task) => {
             if (sortBy === 'date') {
                 return (
-                    new Date(b.archivedAt || 0).getTime() -
+                    +new Date(b.archivedAt || 0).getTime() -
                     new Date(a.archivedAt || 0).getTime()
                 );
             } else {
@@ -34,7 +33,7 @@ const ArchivedTasks: React.FC = () => {
             }
         });
 
-        setFilteredTasks(filtered);
+        return filtered;
     }, [searchQuery, archivedTasks, sortBy]);
 
     return (

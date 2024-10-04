@@ -37,7 +37,7 @@ const SortingDropdown: React.FC<SortingDropdownProps> = React.memo(() => {
     };
 
     const sortOptionString = {
-        name: isReversed ? 'Name (a-Z)' : 'Name (Z-a)',
+        name: isReversed ? 'Name (Z-a)' : 'Name (a-Z)',
         dueDate: 'Due Date ' + (isReversed ? '(Reverse)' : ''),
         progress: 'Progress',
         created: 'Created ' + (isReversed ? '(Oldest)' : '(Newest)'),
@@ -173,7 +173,7 @@ const SortingDropdown: React.FC<SortingDropdownProps> = React.memo(() => {
                             <span>
                                 Created{' '}
                                 {sortOption === 'created' &&
-                                    (isReversed ? '(Oldest)' : '(Newest)')}
+                                    (isReversed ? '(Newest)' : '(Oldest)')}
                             </span>
                         </li>
                         <li
@@ -192,7 +192,7 @@ const SortingDropdown: React.FC<SortingDropdownProps> = React.memo(() => {
                             <span>
                                 Last Edited{' '}
                                 {sortOption === 'lastEdited' &&
-                                    (isReversed ? '(Oldest)' : '(Newest)')}
+                                    (isReversed ? '(Newest)' : '(Oldest)')}
                             </span>
                         </li>
                     </ul>

@@ -44,12 +44,14 @@ export const useDeleteTask = () => {
             );
 
             // Remove the task from the space's taskOrder
-            dispatch(
-                removeTaskFromTaskOrder({
-                    spaceId: task.space as string,
-                    taskId: task._id,
-                })
-            );
+            if (task.space) {
+                dispatch(
+                    removeTaskFromTaskOrder({
+                        spaceId: task.space as string,
+                        taskId: task._id,
+                    })
+                );
+            }
 
             const parentTaskId = task.parentTask;
             try {
@@ -60,17 +62,20 @@ export const useDeleteTask = () => {
                     })
                 ).unwrap();
 
-                // If the deletion was successful, update the space's taskOrder in the backend
-                await dispatch(
-                    updateSpaceTaskOrderAsync({
-                        spaceId: task.space as string,
-                        taskOrder:
-                            store
-                                .getState()
-                                .spaces.spaces.find((s) => s._id === task.space)
-                                ?.taskOrder || [],
-                    })
-                ).unwrap();
+                if (task.space) {
+                    // If the deletion was successful, update the space's taskOrder in the backend
+                    await dispatch(
+                        updateSpaceTaskOrderAsync({
+                            spaceId: task.space as string,
+                            taskOrder:
+                                store
+                                    .getState()
+                                    .spaces.spaces.find(
+                                        (s) => s._id === task.space
+                                    )?.taskOrder || [],
+                        })
+                    ).unwrap();
+                }
             } catch (error) {
                 console.error('Failed to delete tasks:', error);
                 dispatch(fetchTasks());

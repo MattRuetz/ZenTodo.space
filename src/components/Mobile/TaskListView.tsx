@@ -261,6 +261,11 @@ const TaskListView: React.FC<TaskListViewProps> = ({ spaceId }) => {
                                         className={
                                             !isDragging ? `relative` : ''
                                         }
+                                        style={{
+                                            zIndex:
+                                                sortedTasksAtLevel.length -
+                                                index,
+                                        }}
                                     >
                                         <TaskListDropZone
                                             key={task.clientId || task._id}
