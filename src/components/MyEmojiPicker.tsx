@@ -34,7 +34,7 @@ export const MyEmojiPicker = ({
 
     return (
         <div
-            className="emoji-picker-container p-2 rounded-lg shadow-md"
+            className="emoji-picker-container p-2 rounded-lg shadow-md w-full"
             style={{
                 backgroundColor: `var(--${currentTheme}-background-200)`, // Use theme color
             }}
@@ -78,24 +78,28 @@ export const MyEmojiPicker = ({
                     Close
                 </button>
             </div>
-            <Picker
-                onClick={(e: any) => {
-                    e.stopPropagation();
-                }}
-                onEmojiSelect={(emoji: any) => {
-                    if (setTaskEmoji) {
-                        setTaskEmoji(emoji.native);
-                    }
-                    setIsOpen(false);
-                }}
-                set="native"
-                theme="dark"
-                style={{
-                    width: '100%',
-                    border: 'none',
-                    outline: 'none',
-                }}
-            />
+            <div className="w-full flex justify-center">
+                <Picker
+                    onClick={(e: any) => {
+                        e.stopPropagation();
+                    }}
+                    onEmojiSelect={(emoji: any) => {
+                        if (setTaskEmoji) {
+                            setTaskEmoji(emoji.native);
+                        }
+                        setIsOpen(false);
+                    }}
+                    set="native"
+                    theme="dark"
+                    perLine={7}
+                    style={{
+                        border: 'none',
+                        outline: 'none',
+                        width: '100%', // Force the Picker to take full width
+                        maxWidth: '100%', // Ensure it doesn't overflow
+                    }}
+                />
+            </div>
         </div>
     );
 };

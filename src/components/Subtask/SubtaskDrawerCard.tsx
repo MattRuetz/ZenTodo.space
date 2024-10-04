@@ -19,10 +19,18 @@ interface SubtaskDrawerCardProps {
     subtask: Task;
     position: string;
     maxZIndex: number;
+    setCurrentEmojiTask: (currentEmojiTask: string | null) => void;
+    setIsEmojiPickerOpen: (isEmojiPickerOpen: boolean) => void;
 }
 
 const SubtaskDrawerCard = React.memo(
-    ({ subtask, position, maxZIndex }: SubtaskDrawerCardProps) => {
+    ({
+        subtask,
+        position,
+        maxZIndex,
+        setIsEmojiPickerOpen,
+        setCurrentEmojiTask,
+    }: SubtaskDrawerCardProps) => {
         const dispatch = useDispatch<AppDispatch>();
         const currentTheme = useTheme();
         const { showAlert } = useAlert();
@@ -252,6 +260,8 @@ const SubtaskDrawerCard = React.memo(
                     handleSetDueDate={handleSetDueDate}
                     isSubtaskMenuOpen={isSubtaskMenuOpen}
                     setIsSubtaskMenuOpen={setIsSubtaskMenuOpen}
+                    setCurrentEmojiTask={setCurrentEmojiTask}
+                    setIsEmojiPickerOpen={setIsEmojiPickerOpen}
                 />
                 <div
                     className={`${

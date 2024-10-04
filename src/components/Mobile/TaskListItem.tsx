@@ -22,12 +22,16 @@ interface TaskListItemProps {
     onClick: () => void;
     index: number;
     parentId: string | null;
+    setIsEmojiPickerOpen: (isOpen: boolean) => void;
+    setCurrentEmojiTask: (currentEmojiTask: string | null) => void;
 }
 
 const TaskListItem: React.FC<TaskListItemProps> = ({
     task,
     onClick,
     index,
+    setIsEmojiPickerOpen,
+    setCurrentEmojiTask,
 }) => {
     const dispatch = useDispatch<AppDispatch>();
     const currentTheme = useTheme();
@@ -244,7 +248,6 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
-            // onClick={onClick}
             className={`relative task-list-item p-2 ${
                 (isDragging || isShaking) && 'shake'
             } rounded-lg transition-all duration-200 border-2 px-2 mx-auto max-w-[350px]`}
@@ -273,6 +276,8 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
                     handleSetDueDate={handleSetDueDate}
                     isMenuOpen={isTaskMenuOpen}
                     setIsMenuOpen={setIsTaskMenuOpen}
+                    setIsEmojiPickerOpen={setIsEmojiPickerOpen}
+                    setCurrentEmojiTask={setCurrentEmojiTask}
                 />
                 {/* <p>{task._id}</p> */}
 

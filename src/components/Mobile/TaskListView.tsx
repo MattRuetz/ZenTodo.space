@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store/store';
 import { Task } from '@/types';
 import TaskListItem from './TaskListItem';
-import { fetchTasks } from '@/store/tasksSlice';
+import { fetchTasks, updateTask } from '@/store/tasksSlice';
 import { useTheme } from '@/hooks/useTheme';
 import { setSubtaskDrawerParentId } from '@/store/uiSlice';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -15,6 +15,7 @@ import { MobileAddTaskButton } from './MobileAddTaskButton';
 import FixedTopBar from './FixedTopBar';
 import { useAutoScroll } from '@/hooks/useAutoScroll';
 import { isTablet } from 'react-device-detect';
+import EmojiDropdown from '../EmojiDropdown';
 
 interface TaskListViewProps {
     spaceId: string;
@@ -28,6 +29,11 @@ const TaskListView: React.FC<TaskListViewProps> = ({ spaceId }) => {
         (state: RootState) => state.ui.subtaskDrawerParentId
     );
     const [currentParent, setCurrentParent] = useState<Task | null>(null);
+    const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
+    const [currentEmojiTask, setCurrentEmojiTask] = useState<string | null>(
+        null
+    );
+
     const sortOption = useSelector((state: RootState) => state.ui.sortOption);
     const isReversed = useSelector((state: RootState) => state.ui.isReversed);
     const space = useSelector((state: RootState) =>
@@ -83,6 +89,14 @@ const TaskListView: React.FC<TaskListViewProps> = ({ spaceId }) => {
         } else {
             dispatch(setSubtaskDrawerParentId(null));
         }
+    };
+
+    const handleSetTaskEmoji = (emoji: string) => {
+        if (currentEmojiTask) {
+            dispatch(updateTask({ _id: currentEmojiTask, emoji: emoji }));
+        }
+        setIsEmojiPickerOpen(false);
+        setCurrentEmojiTask(null);
     };
 
     const currentTasks = useMemo(() => {
@@ -290,6 +304,12 @@ const TaskListView: React.FC<TaskListViewProps> = ({ spaceId }) => {
                                             parentId={
                                                 currentParent?._id || null
                                             }
+                                            setIsEmojiPickerOpen={
+                                                setIsEmojiPickerOpen
+                                            }
+                                            setCurrentEmojiTask={
+                                                setCurrentEmojiTask
+                                            }
                                         />
                                     </motion.div>
                                 ))}
@@ -312,6 +332,13 @@ const TaskListView: React.FC<TaskListViewProps> = ({ spaceId }) => {
                     onAddTask={scrollToTop}
                 />
             </div>
+            <EmojiDropdown
+                taskEmoji=""
+                setTaskEmoji={handleSetTaskEmoji}
+                isModal={true}
+                isOpen={isEmojiPickerOpen}
+                setIsOpen={setIsEmojiPickerOpen}
+            />
         </>
     );
 };

@@ -20,6 +20,8 @@ interface SubtaskTopBarProps {
     handleSetDueDate: (dueDate: Date | undefined) => void;
     isSubtaskMenuOpen: boolean;
     setIsSubtaskMenuOpen: (isSubtaskMenuOpen: boolean) => void;
+    setCurrentEmojiTask: (currentEmojiTask: string | null) => void;
+    setIsEmojiPickerOpen: (isEmojiPickerOpen: boolean) => void;
 }
 
 export const SubtaskTopBar = ({
@@ -28,6 +30,8 @@ export const SubtaskTopBar = ({
     handleSetDueDate,
     isSubtaskMenuOpen,
     setIsSubtaskMenuOpen,
+    setCurrentEmojiTask,
+    setIsEmojiPickerOpen,
 }: SubtaskTopBarProps) => {
     const currentTheme = useTheme();
     const dispatch = useDispatch<AppDispatch>();
@@ -187,11 +191,17 @@ export const SubtaskTopBar = ({
                     spaceOrTask={'task'}
                 />
             )}
-            <EmojiDropdown
-                taskEmoji={subtask.emoji || <FaTag />}
-                setTaskEmoji={handleSetSubtaskEmoji}
-                inSubtaskDrawer={true}
-            />
+            <div
+                onClick={() => {
+                    setCurrentEmojiTask(subtask._id ?? null);
+                    setIsEmojiPickerOpen(true);
+                }}
+                className="emoji-tag cursor-pointer p-1 transition-colors duration-200 rounded-lg"
+            >
+                <div className="emoji-tag-icon w-4 h-4 flex items-center justify-center hover:scale-110 hover:rotate-12 transition-transform duration-200">
+                    {subtask.emoji || <FaTag />}
+                </div>
+            </div>
             <div className="flex justify-between items-center gap-2">
                 {subtask.dueDate && (
                     <DueDateIndicator

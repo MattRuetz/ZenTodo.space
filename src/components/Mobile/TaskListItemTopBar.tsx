@@ -26,6 +26,8 @@ interface TaskListItemTopBarProps {
     handleSetDueDate: (dueDate: Date | undefined) => void;
     isMenuOpen: boolean;
     setIsMenuOpen: (isMenuOpen: boolean) => void;
+    setIsEmojiPickerOpen: (isEmojiPickerOpen: boolean) => void;
+    setCurrentEmojiTask: (currentEmojiTask: string | null) => void;
 }
 
 export const TaskListItemTopBar = ({
@@ -34,6 +36,8 @@ export const TaskListItemTopBar = ({
     handleSetDueDate,
     isMenuOpen,
     setIsMenuOpen,
+    setIsEmojiPickerOpen,
+    setCurrentEmojiTask,
 }: TaskListItemTopBarProps) => {
     const currentTheme = useTheme();
     const dispatch = useDispatch<AppDispatch>();
@@ -93,12 +97,6 @@ export const TaskListItemTopBar = ({
             parentId: task._id,
             position: 'start',
         });
-    };
-
-    const handleSetTaskEmoji = (emoji: string) => {
-        if (task._id) {
-            dispatch(updateTask({ _id: task._id, emoji: emoji }));
-        }
     };
 
     const handleDuplicateTask = () => {
@@ -224,11 +222,17 @@ export const TaskListItemTopBar = ({
                     </ul>
                 </div>
             )}
-            <EmojiDropdown
-                taskEmoji={task.emoji || <FaTag />}
-                setTaskEmoji={handleSetTaskEmoji}
-                inSubtaskDrawer={true}
-            />
+            <div
+                onClick={() => {
+                    setCurrentEmojiTask(task._id ?? null);
+                    setIsEmojiPickerOpen(true);
+                }}
+                className="emoji-tag cursor-pointer p-1 transition-colors duration-200 rounded-lg"
+            >
+                <div className="emoji-tag-icon w-4 h-4 flex items-center justify-center hover:scale-110 hover:rotate-12 transition-transform duration-200">
+                    {task.emoji || <FaTag />}
+                </div>
+            </div>
             <div className="flex justify-between items-center gap-2">
                 {task.dueDate && (
                     <DueDateIndicator

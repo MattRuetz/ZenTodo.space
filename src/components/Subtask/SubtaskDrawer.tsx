@@ -21,6 +21,8 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useDragLayer } from 'react-dnd';
 import { useAutoScroll } from '@/hooks/useAutoScroll';
 import { useRef } from 'react';
+import EmojiDropdown from '../EmojiDropdown';
+import { updateTask } from '@/store/tasksSlice';
 interface SubtaskDrawerProps {
     isOpen: boolean;
     onClose: () => void;
@@ -36,6 +38,10 @@ const SubtaskDrawer = React.memo(
             const currentTheme = useTheme();
             const dispatch = useDispatch<AppDispatch>();
             const autoScrollRef = useRef<HTMLDivElement>(null);
+            const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
+            const [currentEmojiTask, setCurrentEmojiTask] = useState<
+                string | null
+            >(null);
 
             const isSimplicityModalOpen = useSelector(
                 (state: RootState) => state.ui.isSimplicityModalOpen
@@ -177,6 +183,16 @@ const SubtaskDrawer = React.memo(
                 hidden: { opacity: 0, y: 50 },
                 visible: { opacity: 1, y: 0 },
                 exit: { opacity: 0, y: -50, transition: { duration: 0.2 } },
+            };
+
+            const handleSetSubtaskEmoji = (emoji: string) => {
+                if (currentEmojiTask) {
+                    dispatch(
+                        updateTask({ _id: currentEmojiTask, emoji: emoji })
+                    );
+                }
+                setIsEmojiPickerOpen(false);
+                setCurrentEmojiTask(null);
             };
 
             return (
@@ -335,6 +351,12 @@ const SubtaskDrawer = React.memo(
                                                             subtask._id as string
                                                         }
                                                         maxZIndex={maxZIndex}
+                                                        setCurrentEmojiTask={
+                                                            setCurrentEmojiTask
+                                                        }
+                                                        setIsEmojiPickerOpen={
+                                                            setIsEmojiPickerOpen
+                                                        }
                                                     />
                                                     <SubtaskDropZone
                                                         position={`after_${subtask._id}`}
@@ -351,6 +373,13 @@ const SubtaskDrawer = React.memo(
                             </ul>
                         </div>
                     </div>
+                    <EmojiDropdown
+                        taskEmoji=""
+                        setTaskEmoji={handleSetSubtaskEmoji}
+                        isModal={true}
+                        isOpen={isEmojiPickerOpen}
+                        setIsOpen={setIsEmojiPickerOpen}
+                    />
                 </div>
             );
         }
