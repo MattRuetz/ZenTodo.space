@@ -27,7 +27,7 @@ export const MobileAlertProvider: React.FC<MobileAlertProviderProps> = ({
 
     const showMobileAlert = useCallback((message: string, type: AlertType) => {
         setAlert({ message, type });
-        setTimeout(() => setAlert(null), 3000); // Hide after 3 seconds
+        setTimeout(() => setAlert(null), 2500); // Hide after
     }, []);
 
     return (

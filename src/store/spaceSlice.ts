@@ -254,12 +254,6 @@ const spaceSlice = createSlice({
             }>
         ) => {
             const { spaceId, tempId, newTaskId } = action.payload;
-            console.log(
-                'Updating task order after replace:',
-                spaceId,
-                tempId,
-                newTaskId
-            );
             const space = state.spaces.find((s) => s._id === spaceId);
             if (space) {
                 space.taskOrder = space.taskOrder.map((id) =>
@@ -271,6 +265,7 @@ const spaceSlice = createSlice({
                     (id) => (id === tempId ? newTaskId : id)
                 );
             }
+            console.log('Updated task order after replace:', space?.taskOrder);
         },
         removeTaskFromTaskOrder: (
             state,

@@ -5,12 +5,8 @@ import {
     addTaskAsync,
     deleteTaskOptimistic,
 } from '@/store/tasksSlice';
+import { updateTaskInPlace } from '@/store/tasksSlice';
 import {
-    replaceTempTaskWithRealTask,
-    updateTaskInPlace,
-} from '@/store/tasksSlice';
-import {
-    updateSpaceTaskOrderAsync,
     updateSpaceTaskOrderOptimistic,
     updateTaskOrderAfterReplace,
 } from '@/store/spaceSlice';

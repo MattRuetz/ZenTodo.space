@@ -10,12 +10,15 @@ import { Task } from '@/types';
 import { fetchAllTasksFromState } from '@/app/utils/optimisticUpdates';
 import { useAlert } from '@/hooks/useAlert';
 import { updateSpaceTaskOrderAsync } from '@/store/spaceSlice';
+import { isGrandparent } from '@/app/utils/hierarchyUtils';
+import { store } from '@/store/store';
 
 export const useChangeHierarchy = () => {
     const dispatch = useDispatch<AppDispatch>();
     const { showAlert } = useAlert();
     const tasksState = useSelector((state: RootState) => state.tasks.tasks);
     const spaces = useSelector((state: RootState) => state.spaces.spaces);
+    const { getState } = store;
 
     const convertTaskToSubtask = async (task: Task, parentTaskId: string) => {
         if (!task._id || !parentTaskId) {
@@ -92,13 +95,14 @@ export const useChangeHierarchy = () => {
             return;
         }
 
-        const childTaskIds = taskMap.get(task._id)?.subtasks || [];
-        const hasGrandchildren = childTaskIds.some((childId) => {
-            const childTask = taskMap.get(childId);
-            return (
-                childTask && childTask.subtasks && childTask.subtasks.length > 0
-            );
-        });
+        const hasGrandchildren = isGrandparent(task, tasksState);
+        // const childTaskIds = taskMap.get(task._id)?.subtasks || [];
+        // const hasGrandchildren = childTaskIds.some((childId) => {
+        //     const childTask = taskMap.get(childId);
+        //     return (
+        //         childTask && childTask.subtasks && childTask.subtasks.length > 0
+        //     );
+        // });
 
         if (hasGrandchildren) {
             showAlert(
@@ -126,9 +130,10 @@ export const useChangeHierarchy = () => {
                 );
                 showAlert(result.error, 'error');
             } else {
-                // Update the space's taskOrder
-                const spaceId = task.space as string;
-                const space = spaces.find((s) => s._id === spaceId);
+                const spaceId = result.updatedSubtask.space as string;
+                // Fetch the latest space data from the store
+                const latestSpaceState = getState().spaces.spaces;
+                const space = latestSpaceState.find((s) => s._id === spaceId);
 
                 if (space) {
                     const updatedTaskOrder = space.taskOrder.filter(
@@ -203,24 +208,38 @@ export const useChangeHierarchy = () => {
 
             if (result.updatedSubtask) {
                 const spaceId = result.updatedSubtask.space as string;
-                const space = spaces.find((s) => s._id === spaceId);
+                // Fetch the latest space data from the store
+                const latestSpaceState = getState().spaces.spaces;
+                const space = latestSpaceState.find((s) => s._id === spaceId);
 
                 if (space) {
-                    const updatedTaskOrder = [
-                        result.updatedSubtask._id as string,
-                        ...space.taskOrder,
-                    ];
+                    // Check if the task ID is already in the taskOrder
+                    if (
+                        !space.taskOrder.includes(
+                            result.updatedSubtask._id as string
+                        )
+                    ) {
+                        const updatedTaskOrder = [
+                            result.updatedSubtask._id as string,
+                            ...space.taskOrder,
+                        ];
 
-                    await dispatch(
-                        updateSpaceTaskOrderAsync({
-                            spaceId,
-                            taskOrder: updatedTaskOrder,
-                        })
-                    );
+                        await dispatch(
+                            updateSpaceTaskOrderAsync({
+                                spaceId,
+                                taskOrder: updatedTaskOrder,
+                            })
+                        );
+                    } else {
+                        console.log(
+                            'Task ID already exists in taskOrder, no update needed'
+                        );
+                    }
                 }
             }
         } catch (error) {
             console.error('Failed to convert subtask to task:', error);
+            showAlert('Failed to convert subtask to task', 'error');
         }
     };
 
