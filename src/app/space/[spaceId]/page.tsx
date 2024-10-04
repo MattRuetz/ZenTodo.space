@@ -1,19 +1,21 @@
+// src/app/space/[spaceId]/page.tsx
 'use client';
+import React, { useEffect } from 'react';
+import { useParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { redirect } from 'next/navigation';
-import SuperSpace from '@/components/SuperSpace/SuperSpace';
-import Preloader from '@/components/SuperSpace/Preloader';
-import { use, useEffect, useState } from 'react';
-import { fetchTasks } from '@/store/tasksSlice';
+import Space from '@/components/Space/Space';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState, AppDispatch } from '@/store/store';
 import { fetchSpaces } from '@/store/spaceSlice';
+import { fetchTasks } from '@/store/tasksSlice';
 import { fetchTheme } from '@/store/themeSlice';
-import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState } from '@/store/store';
 import { setInitialDataLoaded } from '@/store/loadingSlice';
+import Preloader from '@/components/SuperSpace/Preloader';
 
-export default function Home() {
+const SpacePage: React.FC = () => {
+    const { spaceId } = useParams();
     const { data: session, status } = useSession();
-    const [fadeOut, setFadeOut] = useState(false);
     const dispatch = useDispatch<AppDispatch>();
     const initialDataLoaded = useSelector(
         (state: RootState) => state.loading.initialDataLoaded
@@ -42,9 +44,15 @@ export default function Home() {
         redirect('/lander');
     }
 
+    if (!spaceId) {
+        return <div>Space ID is required</div>;
+    }
+
     return (
-        <main className="w-full h-screen">
-            <SuperSpace />
-        </main>
+        <div className="w-full h-screen">
+            <Space spaceId={spaceId as string} />
+        </div>
     );
-}
+};
+
+export default SpacePage;

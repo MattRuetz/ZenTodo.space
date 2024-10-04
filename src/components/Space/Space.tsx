@@ -31,6 +31,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useTheme } from '@/hooks/useTheme';
 import { useIsMobileSize } from '@/hooks/useIsMobileSize';
 import { isMobile, isTablet } from 'react-device-detect';
+import ControlPanel from '../SuperSpace/ControlPanel';
 
 // Memoized selectors
 
@@ -363,6 +364,7 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId }) => {
                     />
                 </>
             )}
+            <ControlPanel />
         </motion.div>
     );
 });

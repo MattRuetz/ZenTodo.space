@@ -3,11 +3,7 @@ import SortingDropdown from '../Subtask/SortingDropdown';
 import Breadcrumb from './Breadcrumb';
 import { Task } from '@/types';
 import { useSelector } from 'react-redux';
-import {
-    setControlPanelOpen,
-    setSortOption,
-    setZoomedOut,
-} from '@/store/uiSlice';
+import { setControlPanelOpen } from '@/store/uiSlice';
 import { useDispatch } from 'react-redux';
 import ControlPanelToggle from '../SuperSpace/ControlPanelToggle';
 import { useIsMobileSize } from '@/hooks/useIsMobileSize';
@@ -37,7 +33,6 @@ const FixedTopBar = ({
     const isControlPanelOpen = useSelector(
         (state: RootState) => state.ui.isControlPanelOpen
     );
-    const isZoomedOut = useSelector((state: RootState) => state.ui.isZoomedOut);
     const setIsOpen = (isOpen: boolean) => {
         dispatch(setControlPanelOpen(isOpen));
     };

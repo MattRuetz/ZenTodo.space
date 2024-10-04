@@ -35,32 +35,18 @@ import { isMobile } from 'react-device-detect';
 import { useDragLayer } from 'react-dnd';
 import { useAutoScroll } from '@/hooks/useAutoScroll';
 import { ComponentSpinner } from '../ComponentSpinner';
-import { setZoomedOut } from '@/store/uiSlice';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 const SuperSpace = React.memo(() => {
     const dispatch = useDispatch<AppDispatch>();
-    const currentTheme = useTheme();
     const isMobileSize = useIsMobileSize();
-    const isMobileDevice = isMobile;
-    const { spaces, currentSpace, status } = useSelector(
-        (state: RootState) => state.spaces
-    );
-
-    const isZoomedOut = useSelector((state: RootState) => state.ui.isZoomedOut);
-
-    const toggleZoom = () => {
-        dispatch(setZoomedOut(!isZoomedOut));
-        dispatch(setSubtaskDrawerParentId(null));
-        dispatch(setSubtaskDrawerOpen(false));
-    };
-
+    const { spaces } = useSelector((state: RootState) => state.spaces);
+    const router = useRouter();
     const [isAdding, setIsAdding] = useState(false);
-    const [isProfilePageOpen, setIsProfilePageOpen] = useState(false);
-    const [activeTabStart, setActiveTabStart] = useState('archive');
 
     const autoScrollRef = useRef<HTMLDivElement>(null);
 
-    const { data: session } = useSession();
     const { showAlert } = useAlert();
 
     const moveSpaceCard = useCallback(
@@ -147,172 +133,78 @@ const SuperSpace = React.memo(() => {
     );
 
     return (
-        <>
-            {isProfilePageOpen ? (
-                <>
-                    <ProfileArchivePage
-                        setIsProfilePageOpen={setIsProfilePageOpen}
-                        activeTabStart={activeTabStart}
-                    />
-                    <BottomSettings />
-                </>
-            ) : (
-                <div className="relative w-full h-full bg-gradient-to-b from-slate-900 to-slate-800 overflow-hidden">
-                    {isZoomedOut ? (
-                        <div
-                            ref={autoScrollRef}
-                            className="overflow-y-auto h-[calc(100%-50px)] pb-20"
-                        >
-                            <h4 className="text-xl text-white text-center pt-4 pb-2 font-bold">
-                                Spaces: {spaces.length} / 9
-                            </h4>
+        <div className="relative w-full h-full bg-gradient-to-b from-slate-900 to-slate-800 overflow-hidden">
+            <div
+                ref={autoScrollRef}
+                className="overflow-y-auto h-[calc(100%-50px)] pb-20"
+            >
+                <h4 className="text-xl text-white text-center pt-4 pb-2 font-bold">
+                    Spaces: {spaces.length} / 9
+                </h4>
 
-                            <AnimatePresence>
-                                <motion.div
-                                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 p-4"
-                                    variants={container}
-                                    initial="hidden"
-                                    animate="visible"
-                                >
-                                    {spaces.map(
-                                        (space: SpaceData, index: number) => (
-                                            <motion.div variants={item}>
-                                                <SpaceCard
-                                                    key={space._id}
-                                                    space={space}
-                                                    index={index}
-                                                    handleDragEnd={
-                                                        handleDragEnd
-                                                    }
-                                                    moveSpaceCard={
-                                                        moveSpaceCard
-                                                    }
-                                                    onClick={() => {
-                                                        dispatch(
-                                                            setCurrentSpace(
-                                                                space
-                                                            )
-                                                        );
-                                                        dispatch(
-                                                            setZoomedOut(false)
-                                                        );
-                                                    }}
-                                                />
-                                            </motion.div>
-                                        )
-                                    )}
-                                    {spaces.length < 9 && (
-                                        <motion.div variants={item}>
-                                            <div
-                                                className={`space relative transition-colors duration-300 border-4 border-sky-200 rounded-lg shadow-md p-4 cursor-pointer flex items-center justify-center min-h-[150px] max-h-[300px] ${
-                                                    spaces.length >= 9
-                                                        ? 'opacity-50 cursor-not-allowed'
-                                                        : ''
-                                                }`}
-                                                onClick={() => {
-                                                    if (spaces.length < 9) {
-                                                        addSpace();
-                                                    }
-                                                }}
-                                            >
-                                                {isAdding ? (
-                                                    <ComponentSpinner />
-                                                ) : (
-                                                    <span
-                                                        className={
-                                                            'plus-icon text-4xl text-sky-200 text-center'
-                                                        }
-                                                    >
-                                                        <FaPlusCircle />
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </motion.div>
-                                    )}
-                                    {spaces.length === 0 && !isMobileSize && (
-                                        <div className="text-center w-5/12 flex items-center justify-center h-[150px] gap-2 text-slate-400">
-                                            <FaArrowLeft className="text-4xl mb-4" />
-                                            <span className="text-xl">
-                                                Click the{' '}
-                                                <FaPlusCircle className="inline-block" />{' '}
-                                                to add a space
-                                            </span>
-                                        </div>
-                                    )}
-                                </motion.div>
-                            </AnimatePresence>
-                        </div>
-                    ) : (
-                        currentSpace && (
-                            <>
-                                <Space spaceId={currentSpace?._id ?? ''} />
-                                {session && (
-                                    <ControlPanel
-                                        toggleZoom={toggleZoom}
-                                        setIsProfilePageOpen={
-                                            setIsProfilePageOpen
-                                        }
-                                        setActiveTabStart={setActiveTabStart}
-                                    />
-                                )}
-                            </>
-                        )
-                    )}
-                    {session &&
-                        currentSpace &&
-                        !isMobileDevice &&
-                        !isMobileSize && (
-                            <>
-                                <button
-                                    data-tooltip-id={`go-to-super-space-tooltip`}
-                                    onClick={toggleZoom}
-                                    className="absolute text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl hover:scale-110 transition-all duration-200"
-                                    style={
-                                        isZoomedOut
-                                            ? {
-                                                  left: '20px',
-                                                  top: '10px',
-                                                  backgroundColor: 'white',
-                                                  color: 'black',
-                                              }
-                                            : {
-                                                  right: '20px',
-                                                  bottom: '20px',
-                                                  zIndex: 100000,
-                                                  backgroundColor: `var(--${currentTheme}-accent-blue)`,
-                                                  color: `var(--${currentTheme}-emphasis-light)`,
-                                              }
-                                    }
-                                >
-                                    {isZoomedOut ? '↩' : '↪'}
-                                </button>
-                                <Tooltip
-                                    id={`go-to-super-space-tooltip`}
-                                    style={{
-                                        zIndex: 100000,
-                                        backgroundColor: 'white',
-                                        color: 'black',
+                <AnimatePresence>
+                    <motion.div
+                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 p-4"
+                        variants={container}
+                        initial="hidden"
+                        animate="visible"
+                    >
+                        {spaces.map((space: SpaceData, index: number) => (
+                            <motion.div variants={item}>
+                                <SpaceCard
+                                    key={space._id}
+                                    space={space}
+                                    index={index}
+                                    handleDragEnd={handleDragEnd}
+                                    moveSpaceCard={moveSpaceCard}
+                                    onClick={() => {
+                                        dispatch(setCurrentSpace(space));
                                     }}
-                                    place="left"
+                                />
+                            </motion.div>
+                        ))}
+                        {spaces.length < 9 && (
+                            <motion.div variants={item}>
+                                <div
+                                    className={`space relative transition-colors duration-300 border-4 border-sky-200 rounded-lg shadow-md p-4 cursor-pointer flex items-center justify-center min-h-[150px] max-h-[300px] ${
+                                        spaces.length >= 9
+                                            ? 'opacity-50 cursor-not-allowed'
+                                            : ''
+                                    }`}
+                                    onClick={() => {
+                                        if (spaces.length < 9) {
+                                            addSpace();
+                                        }
+                                    }}
                                 >
-                                    {isZoomedOut ? (
-                                        <>
-                                            Return to{' '}
-                                            <em>
-                                                <strong>
-                                                    {currentSpace?.name}
-                                                </strong>
-                                            </em>
-                                        </>
+                                    {isAdding ? (
+                                        <ComponentSpinner />
                                     ) : (
-                                        'Go to Super Space'
+                                        <span
+                                            className={
+                                                'plus-icon text-4xl text-sky-200 text-center'
+                                            }
+                                        >
+                                            <FaPlusCircle />
+                                        </span>
                                     )}
-                                </Tooltip>
-                            </>
+                                </div>
+                            </motion.div>
                         )}
-                </div>
-            )}
-        </>
+                        {spaces.length === 0 && !isMobileSize && (
+                            <div className="text-center w-5/12 flex items-center justify-center h-[150px] gap-2 text-slate-400">
+                                <FaArrowLeft className="text-4xl mb-4" />
+                                <span className="text-xl">
+                                    Click the{' '}
+                                    <FaPlusCircle className="inline-block" /> to
+                                    add a space
+                                </span>
+                            </div>
+                        )}
+                    </motion.div>
+                </AnimatePresence>
+            </div>
+        </div>
     );
 });
 

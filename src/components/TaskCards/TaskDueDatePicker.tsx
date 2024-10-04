@@ -42,6 +42,9 @@ export const TaskDueDatePicker = ({
                 boxShadow: '0 4px 6px rgba(0, 0, 0, 0.2)', // Shadow effect
             }}
         >
+            <div>
+                <span className="text-sm">Select due date:</span>
+            </div>
             <ReactDatePicker
                 selected={dueDate}
                 onChange={(date: Date | null) => setDueDate(date)}

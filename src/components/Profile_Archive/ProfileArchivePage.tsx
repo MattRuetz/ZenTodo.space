@@ -5,18 +5,19 @@ import { useTheme } from '@/hooks/useTheme';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Tooltip } from 'react-tooltip';
 import { FaArchive, FaArrowLeft, FaUser } from 'react-icons/fa';
+import { useRouter } from 'next/navigation';
+import BottomSettings from '../SuperSpace/BottomSettings';
 
 interface ProfileArchivePageProps {
-    setIsProfilePageOpen: (isProfilePageOpen: boolean) => void;
     activeTabStart: string;
 }
 
 const ProfileArchivePage: React.FC<ProfileArchivePageProps> = ({
-    setIsProfilePageOpen,
     activeTabStart,
 }) => {
     const [activeTab, setActiveTab] = useState(activeTabStart);
     const theme = useTheme();
+    const router = useRouter();
     return (
         <div
             className="mx-auto p-2 sm:p-4 w-full h-screen flex flex-col"
@@ -32,7 +33,7 @@ const ProfileArchivePage: React.FC<ProfileArchivePageProps> = ({
                         color: `var(--${theme}-text-default)`,
                         backgroundColor: `var(--${theme}-background-100)`,
                     }}
-                    onClick={() => setIsProfilePageOpen(false)}
+                    onClick={() => router.back()}
                     aria-label="Return"
                 >
                     <FaArrowLeft className="text-lg sm:text-xl" />
@@ -111,6 +112,7 @@ const ProfileArchivePage: React.FC<ProfileArchivePageProps> = ({
                     </AnimatePresence>
                 </div>
             </div>
+            <BottomSettings />
         </div>
     );
 };

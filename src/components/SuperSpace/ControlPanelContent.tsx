@@ -18,32 +18,36 @@ import { setUser } from '@/store/userSlice';
 import { ComponentSpinner } from '../ComponentSpinner';
 import {
     setControlPanelOpen,
-    setSortOption,
-    setZoomedOut,
+    setSubtaskDrawerOpen,
+    setSubtaskDrawerParentId,
 } from '@/store/uiSlice';
 import { isMobile } from 'react-device-detect';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 interface ControlPanelContentProps {
     isOpen: boolean;
-    setIsProfilePageOpen: (isProfilePageOpen: boolean) => void;
-    setActiveTabStart: (activeTabStart: string) => void;
 }
 
 const ControlPanelContent: React.FC<ControlPanelContentProps> = ({
     isOpen,
-    setIsProfilePageOpen,
-    setActiveTabStart,
 }) => {
+    const router = useRouter();
     const theme = useTheme();
     const dispatch = useDispatch<AppDispatch>();
     const currentTheme = useSelector(
         (state: RootState) => state.theme.currentTheme
     );
-    const isZoomedOut = useSelector((state: RootState) => state.ui.isZoomedOut);
     const user = useSelector((state: RootState) => state.user.user);
     const [isLoadingUser, setIsLoadingUser] = useState(false);
 
     const handleThemeChange = (theme: ThemeName) => {
         dispatch(setTheme(theme));
+    };
+
+    const onGoToSuperSpace = () => {
+        router.push('/');
+        dispatch(setSubtaskDrawerParentId(null));
+        dispatch(setSubtaskDrawerOpen(false));
     };
 
     const currentSpace = useSelector(
@@ -75,12 +79,6 @@ const ControlPanelContent: React.FC<ControlPanelContentProps> = ({
     tasksInSpace.forEach((task: Task) => {
         taskProgressCounts[task.progress]++;
     });
-
-    const toggleZoomedOut = () => {
-        dispatch(setZoomedOut(!isZoomedOut));
-        dispatch(setControlPanelOpen(false));
-        dispatch(setSortOption('custom'));
-    };
 
     // Make sure the user is set in the redux store
     useEffect(() => {
@@ -120,7 +118,7 @@ const ControlPanelContent: React.FC<ControlPanelContentProps> = ({
                 <button
                     className="absolute top-4 left-2 p-2 text-3xl"
                     style={{
-                        color: `var(--${theme}-text-default)`,
+                        color: 'white',
                     }}
                     onClick={() => dispatch(setControlPanelOpen(false))}
                 >
@@ -140,7 +138,7 @@ const ControlPanelContent: React.FC<ControlPanelContentProps> = ({
                     onClick={() => {
                         // go to super space
                         dispatch(setControlPanelOpen(false));
-                        toggleZoomedOut();
+                        onGoToSuperSpace();
                     }}
                 >
                     <div className="flex flex-row justify-between items-center text-lg font-bold">
@@ -187,35 +185,35 @@ const ControlPanelContent: React.FC<ControlPanelContentProps> = ({
                     style={{
                         color: `white`,
                     }}
-                    onClick={toggleZoomedOut}
+                    onClick={onGoToSuperSpace}
                 >
                     Return to Super Space
                     <FaArrowRightFromBracket />
                 </button>
             </div>
             {/* Archive access */}
-            <div
-                className="my-4 p-4 rounded-lg shadow-md border-2 border-transparent hover:border-white hover:-rotate-2 transition-all duration-300 cursor-pointer"
-                style={{
-                    backgroundColor: `var(--${currentTheme}-background-100)`,
-                    color: `var(--${currentTheme}-text-default)`,
-                }}
-                onClick={() => {
-                    setActiveTabStart('archive');
-                    setIsProfilePageOpen(true);
-                    dispatch(setControlPanelOpen(false));
-                }}
-            >
-                <h2 className="text-md font-semibold my-2 flex items-center justify-start gap-2">
-                    <FaArchive
-                        style={{
-                            color: `var(--${currentTheme}-text-default)`,
-                        }}
-                    />{' '}
-                    Archive: {archivedTasks.length} task
-                    {archivedTasks.length > 1 && 's'}
-                </h2>
-            </div>
+            <Link href="/profile/archive">
+                <div
+                    className="my-4 p-4 rounded-lg shadow-md border-2 border-transparent hover:border-white hover:-rotate-2 transition-all duration-300 cursor-pointer"
+                    style={{
+                        backgroundColor: `var(--${currentTheme}-background-100)`,
+                        color: `var(--${currentTheme}-text-default)`,
+                    }}
+                    onClick={() => {
+                        dispatch(setControlPanelOpen(false));
+                    }}
+                >
+                    <h2 className="text-md font-semibold my-2 flex items-center justify-start gap-2">
+                        <FaArchive
+                            style={{
+                                color: `var(--${currentTheme}-text-default)`,
+                            }}
+                        />{' '}
+                        Archive: {archivedTasks.length} task
+                        {archivedTasks.length > 1 && 's'}
+                    </h2>
+                </div>
+            </Link>
             {/* Customize theme */}
             <div className="flex-grow">
                 <h2 className="text-sm my-2 flex items-center gap-2">
@@ -272,19 +270,22 @@ const ControlPanelContent: React.FC<ControlPanelContentProps> = ({
                                 >
                                     {user.email}
                                 </p>
-                                <button
-                                    className="btn btn-sm mt-3 px-4 py-2 rounded-lg hover:border-white/25 hover:shadow-md"
-                                    style={{
-                                        backgroundColor: `var(--${currentTheme}-background-100)`,
-                                        color: `var(--${currentTheme}-text-default)`,
-                                    }}
-                                    onClick={() => {
-                                        setActiveTabStart('profile');
-                                        setIsProfilePageOpen(true);
-                                    }}
-                                >
-                                    View Profile
-                                </button>
+                                <Link href="/profile/profile">
+                                    <button
+                                        className="btn btn-sm mt-3 px-4 py-2 rounded-lg hover:border-white/25 hover:shadow-md"
+                                        style={{
+                                            backgroundColor: `var(--${currentTheme}-background-100)`,
+                                            color: `var(--${currentTheme}-text-default)`,
+                                        }}
+                                        onClick={() => {
+                                            dispatch(
+                                                setControlPanelOpen(false)
+                                            );
+                                        }}
+                                    >
+                                        View Profile
+                                    </button>
+                                </Link>
                             </div>
                         </>
                     )

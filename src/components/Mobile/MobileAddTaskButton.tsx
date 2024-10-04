@@ -7,13 +7,6 @@ import { AppDispatch, RootState } from '@/store/store';
 import { Task, TaskProgress } from '@/types';
 import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { FaGrip, FaTableCells } from 'react-icons/fa6';
-import { Icon } from '../Icon';
-import {
-    setControlPanelOpen,
-    setZoomedOut,
-    setSortOption,
-} from '@/store/uiSlice';
 import { useDispatch } from 'react-redux';
 
 export const MobileAddTaskButton = ({
@@ -29,8 +22,6 @@ export const MobileAddTaskButton = ({
     const [justAddedTask, setJustAddedTask] = useState(false);
     const { addTask } = useAddTask();
     const { addNewSubtask } = useAddNewSubtask();
-    const dispatch = useDispatch<AppDispatch>();
-    const isZoomedOut = useSelector((state: RootState) => state.ui.isZoomedOut);
 
     useEffect(() => {
         if (justAddedTask) {

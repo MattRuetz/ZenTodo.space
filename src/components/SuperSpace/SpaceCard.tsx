@@ -10,6 +10,7 @@ import { FaClockRotateLeft, FaPalette, FaTrash } from 'react-icons/fa6';
 import { useDrag, useDrop } from 'react-dnd';
 import ConfirmDelete from '../TaskCards/ConfirmDelete';
 import { isMobile } from 'react-device-detect';
+import { useRouter } from 'next/navigation';
 
 interface SpaceCardProps {
     space: SpaceData;
@@ -27,6 +28,8 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
     onClick,
 }) => {
     const dispatch = useDispatch<AppDispatch>();
+    const router = useRouter();
+
     const [isEditing, setIsEditing] = useState(false);
     const [name, setName] = useState(space.name);
     const [color, setColor] = useState(space.color);
@@ -37,7 +40,6 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
     const longPressTimer = useRef<NodeJS.Timeout | null>(null);
     const touchStartPos = useRef<{ x: number; y: number } | null>(null);
     const emojiInputRef = useRef<HTMLInputElement>(null);
-
     const LONG_PRESS_DELAY = 300; // 300ms delay
 
     useEffect(() => {
@@ -202,6 +204,7 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
 
     const handleCardClick = (e: React.MouseEvent) => {
         if (!isEditing) {
+            router.push('/space/' + space._id);
             onClick();
         }
     };
@@ -257,7 +260,7 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
             >
                 {isEditing ? (
                     <div
-                        className="border-2 rounded-full p-1 z-50 sm:absolute sm:top-2 sm:right-2 md:relative md:top-0 md:right-0"
+                        className="relative border-2 rounded-full p-1 z-50 sm:absolute sm:top-2 sm:right-2 md:relative md:top-0 md:right-0"
                         style={{
                             borderColor: complementaryColor,
                             borderStyle: 'dashed',
@@ -350,8 +353,8 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
                     </h2>
                     <button
                         onClick={(e) => {
-                            e.stopPropagation();
-                            setIsEditing(true);
+                            e.stopPropagation(); // Stop the click event from bubbling up
+                            setIsEditing(true); // Set editing state
                         }}
                         className="btn btn-sm btn-ghost absolute top-2 right-2"
                         style={{
