@@ -39,6 +39,7 @@ export interface SpaceData {
     emoji: string;
     selectedEmojis: string[];
     taskOrder: string[];
+    wallpaper: string;
 }
 
 export interface User {

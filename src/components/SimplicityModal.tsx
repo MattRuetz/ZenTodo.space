@@ -53,12 +53,11 @@ const SimplicityModal: React.FC<SimplicityModalProps> = React.memo(
                             subtasks
                         </li>
                         <li>
-                            Use tags or labels to group related tasks across
-                            different levels
-                        </li>
-                        <li>
                             Consider if some subtasks could be separate main
                             tasks
+                        </li>
+                        <li>
+                            Use emoji tags to group related main-level tasks
                         </li>
                     </ul>
                     <div className="flex justify-center">

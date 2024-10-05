@@ -11,6 +11,7 @@ import {
     FaArrowRightFromBracket,
     FaCircleArrowLeft,
     FaGrip,
+    FaImage,
     FaPaintbrush,
 } from 'react-icons/fa6';
 import { useTheme } from '@/hooks/useTheme';
@@ -24,6 +25,7 @@ import {
 import { isMobile } from 'react-device-detect';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import WallpaperSelector from '../Space/WallpaperSelector';
 interface ControlPanelContentProps {
     isOpen: boolean;
 }
@@ -179,22 +181,22 @@ const ControlPanelContent: React.FC<ControlPanelContentProps> = ({
                             )}
                         </tbody>
                     </table>
+                    <button
+                        className="btn btn-sm btn-outline flex justify-center items-center mt-4 shadow-md hover:bg-white/10"
+                        style={{
+                            color: contrastColor,
+                        }}
+                        onClick={onGoToSuperSpace}
+                    >
+                        All Spaces
+                        <FaArrowRightFromBracket />
+                    </button>
                 </div>
-                <button
-                    className="btn btn-sm flex justify-center items-center shadow-md mt-2 hover:bg-white/25"
-                    style={{
-                        color: `white`,
-                    }}
-                    onClick={onGoToSuperSpace}
-                >
-                    Return to Super Space
-                    <FaArrowRightFromBracket />
-                </button>
             </div>
             {/* Archive access */}
             <Link href="/profile/archive">
                 <div
-                    className="my-4 p-4 rounded-lg shadow-md border-2 border-transparent hover:border-white hover:-rotate-2 transition-all duration-300 cursor-pointer"
+                    className="mt-4 p-4 rounded-lg shadow-md border-2 border-transparent hover:border-white hover:-rotate-2 transition-all duration-300 cursor-pointer"
                     style={{
                         backgroundColor: `var(--${currentTheme}-background-100)`,
                         color: `var(--${currentTheme}-text-default)`,
@@ -215,7 +217,14 @@ const ControlPanelContent: React.FC<ControlPanelContentProps> = ({
                 </div>
             </Link>
             {/* Customize theme */}
-            <div className="flex-grow">
+            <div className="mt-4">
+                <h2 className="text-sm my-2 flex items-center gap-2">
+                    <FaImage /> Set Space Wallpaper
+                </h2>
+                {/* Wallpaper picker with preview */}
+                <WallpaperSelector space={currentSpace} />
+            </div>
+            <div className="mt-4 flex-grow">
                 <h2 className="text-sm my-2 flex items-center gap-2">
                     <FaPaintbrush /> Select Theme:
                 </h2>
