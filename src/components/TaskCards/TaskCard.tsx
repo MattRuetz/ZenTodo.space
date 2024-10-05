@@ -406,7 +406,7 @@ const TaskCard = React.memo(
         );
 
         const cardClassName = useMemo(() => {
-            return `task-card absolute shadow-md cursor-move flex flex-col space-y-2 rounded-xl transition-all duration-200 ${
+            return `task-card absolute shadow-lg shadow-black/20 cursor-move flex flex-col space-y-2 rounded-xl transition-all duration-200 ${
                 isDraggingOver ? 'filter brightness-110' : ''
             } ${isResizing ? 'select-none' : ''}`;
         }, [isDraggingOver, isResizing]);

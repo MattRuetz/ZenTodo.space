@@ -51,7 +51,13 @@ export async function PUT(
         }
 
         const updateData = await request.json();
-        const allowedFields = ['name', 'color', 'emoji', 'maxZIndex'];
+        const allowedFields = [
+            'name',
+            'color',
+            'emoji',
+            'maxZIndex',
+            'wallpaper',
+        ];
         const filteredUpdateData: { [key: string]: any } = {};
 
         // Filter out any fields that are not allowed to be updated

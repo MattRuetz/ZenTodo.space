@@ -218,6 +218,11 @@ const spaceSlice = createSlice({
                 state.currentSpace = state.spaces[0];
             }
         },
+        setWallpaper: (state, action: PayloadAction<string>) => {
+            if (state.currentSpace) {
+                state.currentSpace.wallpaper = action.payload;
+            }
+        },
         reorderSpacesOptimistic: (
             state,
             action: PayloadAction<SpaceData[]>
@@ -367,6 +372,12 @@ const spaceSlice = createSlice({
                 if (space) {
                     Object.assign(space, action.payload);
                 }
+                if (
+                    state.currentSpace &&
+                    state.currentSpace._id === action.payload._id
+                ) {
+                    Object.assign(state.currentSpace, action.payload);
+                }
             })
             .addCase(deleteSpace.fulfilled, (state, action) => {
                 const deletedSpaceId = action.payload;
@@ -438,5 +449,6 @@ export const {
     updateSpaceTaskOrderOptimistic,
     updateTaskOrderAfterReplace,
     removeTaskFromTaskOrder,
+    setWallpaper,
 } = spaceSlice.actions;
 export default spaceSlice.reducer;

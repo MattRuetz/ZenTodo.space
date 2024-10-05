@@ -12,12 +12,35 @@ export async function POST(req: NextRequest) {
                 { status: 400 }
             );
         }
+        const context = req.headers.get('Context');
 
         const buffer = await file.arrayBuffer();
-        const optimizedBuffer = await sharp(Buffer.from(buffer))
-            .resize(200, 200)
-            .toFormat('jpeg', { quality: 80 })
-            .toBuffer();
+
+        let optimizedBuffer;
+        if (context === 'wallpaper') {
+            const { width, height } = await sharp(
+                Buffer.from(buffer)
+            ).metadata();
+            if (width && height) {
+                optimizedBuffer = await sharp(Buffer.from(buffer))
+                    .resize({
+                        width: Math.min(width, 3840),
+                        height: Math.min(height, 2160),
+                    })
+                    .toFormat('jpeg', { quality: 90 })
+                    .toBuffer();
+            } else {
+                optimizedBuffer = await sharp(Buffer.from(buffer))
+                    .resize(1200, 800)
+                    .toFormat('jpeg', { quality: 80 })
+                    .toBuffer();
+            }
+        } else {
+            optimizedBuffer = await sharp(Buffer.from(buffer))
+                .resize(200, 200)
+                .toFormat('jpeg', { quality: 80 })
+                .toBuffer();
+        }
 
         return new NextResponse(optimizedBuffer, {
             status: 200,

@@ -63,11 +63,12 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId }) => {
     const isSubtaskDrawerOpen = useSelector(
         (state: RootState) => state.ui.isSubtaskDrawerOpen
     );
+    const wallpaper = useSelector(
+        (state: RootState) => state.spaces.currentSpace?.wallpaper || ''
+    );
 
     const { clearEmojis } = useClearEmojis(spaceId);
 
-    const [showSignUpForm, setShowSignUpForm] = useState(false);
-    const [formPosition, setFormPosition] = useState({ x: 0, y: 0 });
     const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
     const [maxZIndex, setMaxZIndex] = useState(currentSpace?.maxZIndex || 1);
     const [canCreateTask, setCanCreateTask] = useState(true);
@@ -204,10 +205,7 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId }) => {
             )
                 return;
 
-            if (!session) {
-                setFormPosition({ x: e.clientX, y: e.clientY });
-                setShowSignUpForm(true);
-            } else if (canCreateTask) {
+            if (canCreateTask) {
                 clearEmojis();
                 const spaceRect = spaceRef.current?.getBoundingClientRect();
                 if (spaceRect) {
@@ -238,9 +236,6 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId }) => {
         [session, canCreateTask, spaceId, getNewZIndex, dispatch]
     );
 
-    const handleFormDrag = (newPosition: { x: number; y: number }) =>
-        setFormPosition(newPosition);
-
     const handleDragStart = () => {
         isDraggingRef.current = true;
     };
@@ -264,21 +259,30 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId }) => {
             initial={{
                 opacity: 0,
                 scale: 0.8,
+                borderRadius: '200px',
             }}
             animate={{
                 opacity: 1,
                 scale: 1,
+                borderRadius: '0px',
             }}
             exit={{
                 opacity: 0,
                 scale: 0.9,
                 translateY: 20,
+                borderRadius: '500px',
             }}
-            transition={{ duration: 0.5, ease: 'easeInOut' }}
+            transition={{ duration: 0.6, ease: 'easeInOut' }}
             ref={spaceRef}
             className={`relative w-full h-screen space-${spaceId} overflow-hidden`}
             style={{
                 backgroundColor: `var(--${currentTheme}-space-background)`,
+                backgroundImage:
+                    wallpaper !== '/images/placeholder_image.webp'
+                        ? `url(${wallpaper})`
+                        : 'none',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
                 boxShadow: `0 4px 6px -1px var(--${currentTheme}-background-300), 0 2px 4px -1px var(--${currentTheme}-background-300)`,
                 outline: `8px solid ${spaceOutlineColor}`,
             }}
@@ -288,56 +292,52 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId }) => {
                 <TaskListView spaceId={spaceId} />
             ) : (
                 <>
-                    {!session && (
-                        <div
-                            ref={cursorEffectRef}
-                            className="cursor-effect"
-                            style={{
-                                background: `radial-gradient(
-                                    circle,
-                                    var(--${currentTheme}-background-100) 0%,
-                                    var(--${currentTheme}-background-200) 20%,
-                                    var(--${currentTheme}-background-300) 30%,
-                                    transparent 60%
-                                )`,
-                            }}
-                        />
-                    )}
                     {tasks.length === 0 && (
-                        <div className="flex flex-col items-center justify-center h-full pointer-events-none">
-                            <AnimatePresence>
-                                <motion.div>
-                                    <motion.div
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        exit={{ opacity: 0 }}
-                                        transition={{
-                                            duration: 3,
-                                            delay: 1,
-                                            ease: 'easeInOut',
-                                        }}
-                                    >
-                                        <h1 className="text-center text-gray-500 text-5xl font-thin">
-                                            emptiness is bliss
-                                        </h1>
-                                    </motion.div>
-                                    <motion.div
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        exit={{ opacity: 0 }}
-                                        transition={{
-                                            duration: 3,
-                                            delay: 2,
-                                            ease: 'easeInOut',
-                                        }}
-                                    >
-                                        <p className="text-center text-gray-500 text-xl font-normal p-2 mt-2">
-                                            click anywhere to add a task.
-                                        </p>
-                                    </motion.div>
+                        <AnimatePresence>
+                            <motion.div
+                                className="flex flex-col items-center justify-center h-full pointer-events-none"
+                                style={{
+                                    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                                }}
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{
+                                    duration: 3,
+                                    delay: 1,
+                                    ease: 'easeInOut',
+                                }}
+                            >
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{
+                                        duration: 3,
+                                        delay: 1,
+                                        ease: 'easeInOut',
+                                    }}
+                                >
+                                    <h1 className="text-center text-gray-200 text-5xl font-thin">
+                                        emptiness is bliss
+                                    </h1>
                                 </motion.div>
-                            </AnimatePresence>
-                        </div>
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{
+                                        duration: 3,
+                                        delay: 2,
+                                        ease: 'easeInOut',
+                                    }}
+                                >
+                                    <p className="text-center text-gray-300 text-xl font-normal p-2 mt-2">
+                                        click anywhere to add a task.
+                                    </p>
+                                </motion.div>
+                            </motion.div>
+                        </AnimatePresence>
                     )}
 
                     {tasks
