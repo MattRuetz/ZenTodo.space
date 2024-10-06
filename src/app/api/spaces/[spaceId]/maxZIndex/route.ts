@@ -1,25 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
-import connectToDatabase from '@/lib/mongodb';
+import { getUserIdFromClerk } from '@/app/utils/getUserIdFromClerk';
 import Space from '@/models/Space';
 import { ObjectId } from 'mongodb';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '../../../auth/[...nextauth]/route';
+import dbConnect from '@/lib/mongodb';
 
 export async function GET(
-    request: NextRequest,
+    req: NextRequest,
     { params }: { params: { spaceId: string } }
 ) {
-    await connectToDatabase();
-    const session = await getServerSession(authOptions);
+    await dbConnect();
 
-    if (!session) {
+    const userId = await getUserIdFromClerk(req);
+
+    if (!userId) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     try {
         const space = await Space.findOne({
             _id: new ObjectId(params.spaceId),
-            userId: new ObjectId(session.user.id),
+            userId,
         });
 
         if (!space) {

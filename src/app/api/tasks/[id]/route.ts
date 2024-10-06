@@ -2,8 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Task from '@/models/Task';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { getUserIdFromClerk } from '@/app/utils/getUserIdFromClerk';
 
 export async function GET(
     req: NextRequest,
@@ -11,9 +10,9 @@ export async function GET(
 ) {
     try {
         await dbConnect();
-        const session = await getServerSession(authOptions);
+        const userId = await getUserIdFromClerk(req);
 
-        if (!session) {
+        if (!userId) {
             return NextResponse.json(
                 { error: 'Unauthorized' },
                 { status: 401 }

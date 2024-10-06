@@ -26,6 +26,7 @@ import { isMobile } from 'react-device-detect';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import WallpaperSelector from '../Space/WallpaperSelector';
+import { useUser } from '@clerk/nextjs';
 interface ControlPanelContentProps {
     isOpen: boolean;
 }
@@ -39,7 +40,8 @@ const ControlPanelContent: React.FC<ControlPanelContentProps> = ({
     const currentTheme = useSelector(
         (state: RootState) => state.theme.currentTheme
     );
-    const user = useSelector((state: RootState) => state.user.user);
+    // const user = useSelector((state: RootState) => state.user.user);
+    const { user } = useUser();
     const [isLoadingUser, setIsLoadingUser] = useState(false);
 
     const handleThemeChange = (theme: ThemeName) => {
@@ -261,7 +263,7 @@ const ControlPanelContent: React.FC<ControlPanelContentProps> = ({
                         <>
                             <img
                                 src={
-                                    user?.profilePicture ||
+                                    user?.imageUrl ||
                                     '/images/profile_picture_default.webp'
                                 }
                                 alt="Profile"
@@ -269,7 +271,7 @@ const ControlPanelContent: React.FC<ControlPanelContentProps> = ({
                             />
                             <div className="col-span-2">
                                 <p className="font-medium text-lg truncate">
-                                    {user.name}
+                                    {user.fullName}
                                 </p>
                                 <p
                                     className="text-sm truncate"
@@ -277,7 +279,7 @@ const ControlPanelContent: React.FC<ControlPanelContentProps> = ({
                                         color: 'white',
                                     }}
                                 >
-                                    {user.email}
+                                    {user.primaryEmailAddress?.emailAddress}
                                 </p>
                                 <Link href="/profile/profile">
                                     <button

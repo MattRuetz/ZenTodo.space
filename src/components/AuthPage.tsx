@@ -1,10 +1,7 @@
 import React, { useState } from 'react';
-import { signIn } from 'next-auth/react';
-import { useAlert } from '@/hooks/useAlert';
 import { getQuoteForDay } from '@/hooks/useQuoteForDay';
 import Image from 'next/image';
 import { useIsMobileSize } from '@/hooks/useIsMobileSize';
-import { useRouter } from 'next/navigation';
 
 const AuthPage = () => {
     const isMobileSize = useIsMobileSize();
@@ -12,95 +9,14 @@ const AuthPage = () => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [showInvalidCredentials, setShowInvalidCredentials] = useState(false);
+    const [showInvalidCredentials] = useState(false);
     const [isPasswordReset, setIsPasswordReset] = useState(false);
-    const router = useRouter();
-
-    const { showAlert } = useAlert();
 
     const quote = getQuoteForDay();
 
-    const handleShowInvalidCredentials = () => {
-        setShowInvalidCredentials(true);
-        setTimeout(() => {
-            setShowInvalidCredentials(false);
-        }, 3000);
-    };
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (isLogin) {
-            const result = await signIn('credentials', {
-                redirect: false,
-                email,
-                password,
-            });
-            if (result?.error) {
-                if (result.error === 'CredentialsSignin') {
-                    handleShowInvalidCredentials();
-                    return;
-                }
-                showAlert(result.error, 'error');
-            } else {
-                showAlert('Welcome back!', 'welcome');
-                router.push('/');
-            }
-        } else {
-            const response = await fetch('/api/auth/signup', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, email, password }),
-            });
-            if (response.ok) {
-                showAlert('Account created successfully!', 'success');
-                // Sign in the user after successful signup
-                const result = await signIn('credentials', {
-                    redirect: false,
-                    email,
-                    password,
-                });
-                if (result?.error) {
-                    showAlert(result.error, 'error');
-                } else {
-                    showAlert('Welcome to ZenTodo!', 'welcome');
-                    router.push('/');
-                }
-            } else {
-                const data = await response.json();
-                showAlert(data.message || 'Failed to create account', 'error');
-            }
-        }
-    };
-
-    const handlePasswordReset = async (e: React.FormEvent) => {
-        e.preventDefault();
-        try {
-            const response = await fetch('/api/auth/reset-password', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email }),
-            });
-            if (response.ok) {
-                showAlert(
-                    'Password reset email sent. Please check your inbox.',
-                    'success'
-                );
-                setIsPasswordReset(false);
-            } else {
-                const data = await response.json();
-                showAlert(
-                    data.message || 'Failed to send reset email',
-                    'error'
-                );
-            }
-        } catch (error) {
-            showAlert('An error occurred. Please try again.', 'error');
-        }
-    };
-
     return (
         <>
-            {isMobileSize ? (
+            {/* {isMobileSize ? (
                 <div className="min-h-screen flex flex-col bg-black">
                     <div className="p-6 flex flex-col items-center justify-center w-11/12 mx-auto">
                         <Image
@@ -386,7 +302,8 @@ const AuthPage = () => {
                         </p>
                     </div>
                 </div>
-            )}
+            )} */}
+            AuthPage
         </>
     );
 };

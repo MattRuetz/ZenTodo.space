@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { User } from 'next-auth';
+import { useUser } from '@clerk/nextjs';
+import { User } from '@clerk/nextjs/server';
 
 interface UserState {
     user: any | null;

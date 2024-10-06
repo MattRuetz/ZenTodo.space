@@ -2,19 +2,19 @@
 'use client';
 import React, { useEffect } from 'react';
 import { redirect } from 'next/navigation';
-import AuthPage from '@/components/AuthPage';
-import { useSession } from 'next-auth/react';
+import { useAuth } from '@clerk/nextjs';
+import SignInPage from '../sign-in/[[...index]]/page';
 
 const LandingPage: React.FC = () => {
-    const { data: session, status } = useSession();
+    const { userId } = useAuth();
 
     useEffect(() => {
-        if (status === 'authenticated') {
+        if (userId) {
             redirect('/'); // Redirect to home if the user is authenticated
         }
-    }, [status]);
+    }, [userId]);
 
-    return <AuthPage />;
+    return <SignInPage />;
 };
 
 export default LandingPage;

@@ -1,12 +1,12 @@
 // src/app/components/ControlPanelToggle.tsx
 'use client';
 import React from 'react';
-import { useSession } from 'next-auth/react';
 import { EmojiFilter } from '../Space/EmojiFilter';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
 import { useClearEmojis } from '@/hooks/useClearEmojis';
 import { useTheme } from '@/hooks/useTheme';
+import { useUser } from '@clerk/nextjs';
 interface ControlPanelToggleProps {
     isOpen: boolean;
     setIsOpen: (isOpen: boolean) => void;
@@ -15,9 +15,9 @@ interface ControlPanelToggleProps {
 
 const ControlPanelToggle: React.FC<ControlPanelToggleProps> = React.memo(
     ({ isOpen, setIsOpen, isMobile }) => {
-        const { data: session } = useSession();
+        const { isSignedIn } = useUser();
         const currentTheme = useTheme();
-        if (!session) return null;
+        if (!isSignedIn) return null;
 
         const spaceId = useSelector(
             (state: RootState) => state.spaces.currentSpace?._id

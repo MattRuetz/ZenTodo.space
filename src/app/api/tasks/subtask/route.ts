@@ -1,22 +1,13 @@
 import dbConnect from '@/lib/mongodb';
-import { getServerSession } from 'next-auth';
+import { getAuth } from '@clerk/nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
-import { authOptions } from '../../auth/[...nextauth]/route';
 import Task from '@/models/Task';
-import Space from '@/models/Space';
-
-async function getUserId(req: NextRequest) {
-    const session = await getServerSession(authOptions);
-    if (!session || !session.user) {
-        throw new Error('Unauthorized');
-    }
-    return session.user.id;
-}
+import { getUserIdFromClerk } from '@/app/utils/getUserIdFromClerk';
 
 export async function POST(req: NextRequest) {
     try {
         await dbConnect();
-        const userId = await getUserId(req);
+        const userId = await getUserIdFromClerk(req);
         const body = await req.json();
         const {
             taskName,

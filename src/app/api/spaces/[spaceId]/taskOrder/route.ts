@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Space from '@/models/Space';
-import { getUserId } from '@/hooks/useGetUserId';
+import { getAuth } from '@clerk/nextjs/server';
+import User from '@/models/User';
+import { getUserIdFromClerk } from '@/app/utils/getUserIdFromClerk';
 
 export async function PATCH(
     req: NextRequest,
@@ -9,7 +11,7 @@ export async function PATCH(
 ) {
     try {
         await dbConnect();
-        const userId = await getUserId(req);
+        const userId = await getUserIdFromClerk(req);
         const { spaceId } = params;
         const { taskOrder } = await req.json();
 

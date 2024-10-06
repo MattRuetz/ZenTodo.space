@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import User from '@/models/User';
-import { getUserId } from '@/hooks/useGetUserId';
 import bcrypt from 'bcrypt';
 import sharp from 'sharp';
+import { getUserIdFromClerk } from '@/app/utils/getUserIdFromClerk';
 
 export async function PUT(req: NextRequest) {
     try {
         await dbConnect();
-        const userId = await getUserId(req);
+        const userId = await getUserIdFromClerk(req);
         const updateData = await req.json();
 
         // If password is being updated, hash it

@@ -44,16 +44,15 @@ export interface SpaceData {
 
 export interface User {
     _id?: string;
-    name: string;
-    profilePicture: string;
-    email: string;
-    password: string;
-    themePreference: string;
+    clerkId: string;
+    themePreference: ThemeName;
     spacesCount: number;
     totalTasksCreated: number;
     tasksCompleted: number;
     tasksInProgress: number;
+    createdAt?: Date;
 }
+
 export type SortOption =
     | 'custom'
     | 'name'
@@ -63,29 +62,3 @@ export type SortOption =
     | 'lastEdited';
 
 export type ThemeName = 'buji' | 'daigo' | 'enzu';
-
-// NextAuth type extensions
-declare module 'next-auth' {
-    interface User {
-        id: string;
-        name?: string | null;
-        email?: string | null;
-        image?: string | null;
-    }
-
-    interface Session {
-        user: User & {
-            id: string;
-            name?: string | null;
-            email?: string | null;
-            image?: string | null;
-            themePreference?: string | null;
-        };
-    }
-}
-
-declare module 'next-auth/jwt' {
-    interface JWT {
-        id: string;
-    }
-}

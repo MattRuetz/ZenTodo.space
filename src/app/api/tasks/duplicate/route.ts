@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Task from '@/models/Task';
-import { getUserId } from '@/hooks/useGetUserId';
+import { getAuth } from '@clerk/nextjs/server';
 import mongoose from 'mongoose';
+import { getUserIdFromClerk } from '@/app/utils/getUserIdFromClerk';
 
 export async function POST(req: NextRequest) {
     try {
         await dbConnect();
-        const userId = await getUserId(req);
+        const userId = await getUserIdFromClerk(req);
         const body = await req.json();
         const tasks = body.tasks;
 

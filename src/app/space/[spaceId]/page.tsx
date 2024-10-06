@@ -2,7 +2,7 @@
 'use client';
 import React, { useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { useSession } from 'next-auth/react';
+import { useUser } from '@clerk/nextjs';
 import { redirect } from 'next/navigation';
 import Space from '@/components/Space/Space';
 import { useSelector, useDispatch } from 'react-redux';
@@ -15,7 +15,7 @@ import Preloader from '@/components/SuperSpace/Preloader';
 
 const SpacePage: React.FC = () => {
     const { spaceId } = useParams();
-    const { data: session, status } = useSession();
+    const { isLoaded, isSignedIn, user } = useUser();
     const dispatch = useDispatch<AppDispatch>();
     const initialDataLoaded = useSelector(
         (state: RootState) => state.loading.initialDataLoaded
@@ -23,7 +23,7 @@ const SpacePage: React.FC = () => {
 
     useEffect(() => {
         const fetchData = async () => {
-            if (status === 'authenticated' && !initialDataLoaded) {
+            if (isSignedIn && !initialDataLoaded) {
                 await dispatch(fetchSpaces());
                 await dispatch(fetchTasks());
                 await dispatch(fetchTheme());
@@ -34,14 +34,14 @@ const SpacePage: React.FC = () => {
         if (typeof window !== 'undefined') {
             fetchData();
         }
-    }, [status, dispatch, initialDataLoaded]);
+    }, [isSignedIn, isLoaded, initialDataLoaded]);
 
-    if (status === 'loading' || !initialDataLoaded) {
+    if (!initialDataLoaded) {
         return <Preloader />;
     }
 
-    if (!session) {
-        redirect('/lander');
+    if (!isLoaded || !isSignedIn) {
+        redirect('/sign-in');
     }
 
     if (!spaceId) {

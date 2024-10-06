@@ -11,6 +11,7 @@
         "cron-test": "node --loader ts-node/esm src/cronTest.ts"
     },
     "dependencies": {
+        "@clerk/nextjs": "^5.7.1",
         "@edgestore/react": "^0.2.2",
         "@edgestore/server": "^0.2.2",
         "@emoji-mart/data": "^1.2.1",
@@ -24,7 +25,6 @@
         "lodash.debounce": "^4.0.8",
         "mongoose": "^8.6.1",
         "next": "14.2.7",
-        "next-auth": "^4.24.7",
         "next-redux-wrapper": "^8.1.0",
         "react": "^18",
         "react-datepicker": "^7.3.0",
@@ -42,6 +42,7 @@
         "react-tooltip": "^5.28.0",
         "resend": "^4.0.0",
         "sharp": "^0.33.5",
+        "svix": "^1.37.0",
         "zod": "^3.23.8"
     },
     "devDependencies": {
