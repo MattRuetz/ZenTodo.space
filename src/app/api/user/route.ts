@@ -4,20 +4,20 @@ import dbConnect from '@/lib/mongodb';
 import User from '@/models/User';
 import Task from '@/models/Task';
 import Space from '@/models/Space';
-import { getUserIdFromClerk } from '@/app/utils/getUserIdFromClerk';
+import { getAuth } from '@clerk/nextjs/server';
 
 export async function GET(req: NextRequest) {
     try {
         await dbConnect();
-        const userId = await getUserIdFromClerk(req);
-        if (!userId) {
+        const { userId: clerkId } = getAuth(req);
+        if (!clerkId) {
             return NextResponse.json(
                 { error: 'Unauthorized' },
                 { status: 401 }
             );
         }
 
-        const user = await User.findOne({ clerkId: userId });
+        const user = await User.findOne({ clerkId });
 
         if (!user) {
             return NextResponse.json(
@@ -27,14 +27,14 @@ export async function GET(req: NextRequest) {
         }
 
         // Calculate stats
-        const spacesCount = await Space.countDocuments({ userId: userId });
-        const totalTasksCreated = await Task.countDocuments({ user: userId });
+        const spacesCount = await Space.countDocuments({ userId: user._id });
+        const totalTasksCreated = await Task.countDocuments({ user: user._id });
         const tasksCompleted = await Task.countDocuments({
-            user: userId,
+            user: user._id,
             progress: 'Complete',
         });
         const tasksInProgress = await Task.countDocuments({
-            user: userId,
+            user: user._id,
             progress: 'In Progress',
         });
 
