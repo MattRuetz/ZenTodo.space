@@ -1,9 +1,8 @@
 'use client';
 import { useUser } from '@clerk/nextjs';
-import { redirect } from 'next/navigation';
 import SuperSpace from '@/components/SuperSpace/SuperSpace';
 import Preloader from '@/components/SuperSpace/Preloader';
-import { use, useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { fetchTasks } from '@/store/tasksSlice';
 import { fetchSpaces } from '@/store/spaceSlice';
 import { fetchTheme } from '@/store/themeSlice';

@@ -34,7 +34,7 @@ const SpacePage: React.FC = () => {
         if (typeof window !== 'undefined') {
             fetchData();
         }
-    }, [dispatch, initialDataLoaded]);
+    }, [isSignedIn, isLoaded, initialDataLoaded]);
 
     if (!initialDataLoaded) {
         return <Preloader />;
