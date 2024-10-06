@@ -127,20 +127,34 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
     useClickOutside([inputRef], () => handleBlur());
 
     const handleBlur = useCallback(() => {
-        if (isEditing === 'taskName' && !currentTaskNameRef.current.trim()) {
-            setLocalTask((prevTask) => ({
-                ...prevTask,
-                taskName: task.taskName,
-            }));
-            currentTaskNameRef.current = task.taskName;
-        } else if (isEditing && task._id) {
-            const updatedFields = {
-                [isEditing]: currentTaskNameRef.current,
-            };
+        if (!task._id) return;
+
+        let updatedFields: Partial<Task> = {};
+
+        if (isEditing === 'taskName') {
+            const trimmedTaskName = currentTaskNameRef.current.trim();
+            if (!trimmedTaskName) {
+                setLocalTask((prevTask) => ({
+                    ...prevTask,
+                    taskName: task.taskName,
+                }));
+                currentTaskNameRef.current = task.taskName;
+            } else if (trimmedTaskName !== task.taskName) {
+                updatedFields.taskName = trimmedTaskName;
+            }
+        } else if (isEditing === 'taskDescription') {
+            const trimmedDescription = localTask.taskDescription?.trim() || '';
+            if (trimmedDescription !== task.taskDescription) {
+                updatedFields.taskDescription = trimmedDescription;
+            }
+        }
+
+        if (Object.keys(updatedFields).length > 0) {
             dispatch(updateTask({ _id: task._id, ...updatedFields }));
         }
+
         setIsEditing(null);
-    }, [dispatch, isEditing, task]);
+    }, [dispatch, isEditing, task, localTask.taskDescription]);
 
     const handleProgressChange = useCallback(
         (newProgress: TaskProgress) => {

@@ -15,11 +15,12 @@ import Preloader from '@/components/SuperSpace/Preloader';
 
 const SpacePage: React.FC = () => {
     const { spaceId } = useParams();
-    const { isLoaded, isSignedIn, user } = useUser();
+    const { isLoaded, isSignedIn } = useUser();
     const dispatch = useDispatch<AppDispatch>();
     const initialDataLoaded = useSelector(
         (state: RootState) => state.loading.initialDataLoaded
     );
+    const spaces = useSelector((state: RootState) => state.spaces.spaces);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -34,7 +35,7 @@ const SpacePage: React.FC = () => {
         if (typeof window !== 'undefined') {
             fetchData();
         }
-    }, [isSignedIn, isLoaded, initialDataLoaded]);
+    }, [isSignedIn, isLoaded, initialDataLoaded, dispatch]);
 
     if (!initialDataLoaded) {
         return <Preloader />;
@@ -46,6 +47,12 @@ const SpacePage: React.FC = () => {
 
     if (!spaceId) {
         return <div>Space ID is required</div>;
+    }
+
+    const spaceExists = spaces.some((space) => space._id === spaceId);
+
+    if (!spaceExists) {
+        redirect('/');
     }
 
     return (

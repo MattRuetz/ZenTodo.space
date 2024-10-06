@@ -181,23 +181,35 @@ const SubtaskDrawerCard = React.memo(
         useClickOutside([inputRef], () => handleBlur());
 
         const handleBlur = useCallback(() => {
-            if (
-                isEditing === 'taskName' &&
-                !currentTaskNameRef.current.trim()
-            ) {
-                setLocalSubtask((prevSubtask) => ({
-                    ...prevSubtask,
-                    taskName: subtask.taskName,
-                }));
-                currentTaskNameRef.current = subtask.taskName;
-            } else if (isEditing && subtask._id) {
-                const updatedFields = {
-                    [isEditing]: currentTaskNameRef.current,
-                };
+            if (!subtask._id) return;
+
+            let updatedFields: Partial<Task> = {};
+
+            if (isEditing === 'taskName') {
+                const trimmedTaskName = currentTaskNameRef.current.trim();
+                if (!trimmedTaskName) {
+                    setLocalSubtask((prevSubtask) => ({
+                        ...prevSubtask,
+                        taskName: subtask.taskName,
+                    }));
+                    currentTaskNameRef.current = subtask.taskName;
+                } else if (trimmedTaskName !== subtask.taskName) {
+                    updatedFields.taskName = trimmedTaskName;
+                }
+            } else if (isEditing === 'taskDescription') {
+                const trimmedDescription =
+                    localSubtask.taskDescription?.trim() || '';
+                if (trimmedDescription !== subtask.taskDescription) {
+                    updatedFields.taskDescription = trimmedDescription;
+                }
+            }
+
+            if (Object.keys(updatedFields).length > 0) {
                 dispatch(updateTask({ _id: subtask._id, ...updatedFields }));
             }
+
             setIsEditing(null);
-        }, [dispatch, isEditing, subtask]);
+        }, [dispatch, isEditing, subtask, localSubtask.taskDescription]);
 
         const handleProgressChange = useCallback(
             (newProgress: TaskProgress) => {
