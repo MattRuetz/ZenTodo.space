@@ -12,6 +12,7 @@ interface ISpace extends Document {
     selectedEmojis: string[];
     taskOrder: string[];
     wallpaper: string;
+    backgroundColor: string;
 }
 
 const SpaceSchema = new mongoose.Schema({
@@ -28,6 +29,7 @@ const SpaceSchema = new mongoose.Schema({
     selectedEmojis: { type: [String], default: [] },
     taskOrder: { type: [String], default: [] },
     wallpaper: { type: String, default: '/images/placeholder_image.webp' },
+    backgroundColor: { type: String, default: '' },
 });
 
 export default mongoose.models.Space || mongoose.model('Space', SpaceSchema);

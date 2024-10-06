@@ -55,6 +55,7 @@ export async function PUT(
             'emoji',
             'maxZIndex',
             'wallpaper',
+            'backgroundColor',
         ];
         const filteredUpdateData: { [key: string]: any } = {};
 

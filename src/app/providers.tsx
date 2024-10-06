@@ -13,13 +13,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { EdgeStoreProvider } from '@/lib/edgestore';
 import CustomDragLayer from '@/layers/customDragLayer';
 import { MobileAlertProvider } from '@/hooks/useAlert';
-import {
-    ClerkProvider,
-    SignInButton,
-    SignedIn,
-    SignedOut,
-    UserButton,
-} from '@clerk/nextjs';
+import { ClerkProvider } from '@clerk/nextjs';
 
 export default function Providers({ children }: { children: React.ReactNode }) {
     const isMobileSize = useIsMobileSize();

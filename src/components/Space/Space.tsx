@@ -65,6 +65,9 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId }) => {
     const wallpaper = useSelector(
         (state: RootState) => state.spaces.currentSpace?.wallpaper || ''
     );
+    const customBackgroundColor = useSelector(
+        (state: RootState) => state.spaces.currentSpace?.backgroundColor || ''
+    );
 
     const { clearEmojis } = useClearEmojis(spaceId);
 
@@ -257,7 +260,9 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId }) => {
             ref={spaceRef}
             className={`relative w-full h-screen space-${spaceId} overflow-hidden`}
             style={{
-                backgroundColor: `var(--${currentTheme}-space-background)`,
+                backgroundColor: customBackgroundColor
+                    ? customBackgroundColor
+                    : `var(--${currentTheme}-space-background)`,
                 backgroundImage:
                     wallpaper !== '/images/placeholder_image.webp'
                         ? `url(${wallpaper})`
@@ -266,10 +271,11 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId }) => {
                 backgroundPosition: 'center',
                 boxShadow: `0 4px 6px -1px var(--${currentTheme}-background-300), 0 2px 4px -1px var(--${currentTheme}-background-300)`,
                 outline: `8px solid ${spaceOutlineColor}`,
+                transition: 'background-color 0.3s ease-in-out',
             }}
             onMouseDown={handleSpaceClick}
         >
-            {isMobileSize || isMobileDevice ? (
+            {isMobileSize ? (
                 <TaskListView spaceId={spaceId} />
             ) : (
                 <>

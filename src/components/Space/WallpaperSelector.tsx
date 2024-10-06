@@ -90,7 +90,7 @@ const WallpaperSelector = ({ space }: { space: SpaceData }) => {
     };
 
     return (
-        <div className="h-[100px] overflow-hidden relative rounded-lg border-2 border-transparent hover:border-white transition-all duration-300">
+        <div className="h-[80px] overflow-hidden relative rounded-lg border-2 border-transparent hover:border-white transition-all duration-300">
             <div className="h-full overflow-hidden">
                 <img
                     src={selectedWallpaper}
@@ -123,6 +123,7 @@ const WallpaperSelector = ({ space }: { space: SpaceData }) => {
                 className="btn btn-xs text-white rounded transition absolute bottom-1 right-1 hover:text-red-500"
                 onClick={() => {
                     setSelectedWallpaper('/images/placeholder_image.webp');
+                    dispatch(updateSpace({ ...space, wallpaper: '' }));
                     // Here you would also dispatch an action to update the wallpaper in the store
                 }}
             >

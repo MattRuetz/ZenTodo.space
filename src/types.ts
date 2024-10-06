@@ -40,6 +40,7 @@ export interface SpaceData {
     selectedEmojis: string[];
     taskOrder: string[];
     wallpaper: string;
+    backgroundColor: string;
 }
 
 export interface User {
