@@ -200,7 +200,7 @@ const SubtaskDrawer = React.memo(
                     ref={ref}
                     data-drawer-parent-id={parentTask?._id}
                     className={`subtask-drawer fixed top-0 right-0 h-full shadow-md transform w-[400px] border-l-2 ${
-                        isOpen ? 'opacity-90' : 'translate-x-full opacity-0'
+                        isOpen ? 'opacity-100' : 'translate-x-full opacity-0'
                     } transition-transform duration-300 ease-in-out h-full`}
                     style={{
                         backgroundColor: `var(--${currentTheme}-background-300)`, // Use theme color

@@ -114,7 +114,7 @@ const WallpaperSelector = ({ space }: { space: SpaceData }) => {
                 <FaPencilAlt className="text-white text-2xl" />
             </div>
             {isUploadingPhoto && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full">
+                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
                     <span className="loading loading-ring text-slate-200 h-12 w-12"></span>
                 </div>
             )}
