@@ -1,5 +1,5 @@
 'use client';
-import { useSession } from 'next-auth/react';
+import { useUser } from '@clerk/nextjs';
 import { redirect } from 'next/navigation';
 import SuperSpace from '@/components/SuperSpace/SuperSpace';
 import Preloader from '@/components/SuperSpace/Preloader';
@@ -10,18 +10,19 @@ import { fetchTheme } from '@/store/themeSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store/store';
 import { setInitialDataLoaded } from '@/store/loadingSlice';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
-    const { data: session, status } = useSession();
-    const [fadeOut, setFadeOut] = useState(false);
+    const { isSignedIn, isLoaded } = useUser();
     const dispatch = useDispatch<AppDispatch>();
+    const router = useRouter();
     const initialDataLoaded = useSelector(
         (state: RootState) => state.loading.initialDataLoaded
     );
 
     useEffect(() => {
         const fetchData = async () => {
-            if (status === 'authenticated' && !initialDataLoaded) {
+            if (isSignedIn && !initialDataLoaded) {
                 await dispatch(fetchSpaces());
                 await dispatch(fetchTasks());
                 await dispatch(fetchTheme());
@@ -32,14 +33,14 @@ export default function Home() {
         if (typeof window !== 'undefined') {
             fetchData();
         }
-    }, [status, dispatch, initialDataLoaded]);
+    }, [isSignedIn, isLoaded, initialDataLoaded]);
 
-    if (status === 'loading' || !initialDataLoaded) {
+    if (isSignedIn && !initialDataLoaded) {
         return <Preloader />;
     }
 
-    if (!session) {
-        redirect('/lander');
+    if (!isSignedIn) {
+        router.push('/sign-in');
     }
 
     return (

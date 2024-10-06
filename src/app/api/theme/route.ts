@@ -1,15 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '../auth/[...nextauth]/route';
 import dbConnect from '@/lib/mongodb';
 import User from '@/models/User';
+import { getUserIdFromClerk } from '@/app/utils/getUserIdFromClerk';
 
 export async function PUT(req: NextRequest) {
     try {
         await dbConnect();
-        const session = await getServerSession(authOptions);
+        const userId = await getUserIdFromClerk(req);
 
-        if (!session) {
+        if (!userId) {
             return NextResponse.json(
                 { error: 'Unauthorized' },
                 { status: 401 }
@@ -26,7 +25,7 @@ export async function PUT(req: NextRequest) {
         }
 
         const updatedUser = await User.findByIdAndUpdate(
-            session.user.id,
+            userId,
             { themePreference: theme },
             { new: true }
         );
@@ -51,16 +50,16 @@ export async function PUT(req: NextRequest) {
 export async function GET(req: NextRequest) {
     try {
         await dbConnect();
-        const session = await getServerSession(authOptions);
+        const userId = await getUserIdFromClerk(req);
 
-        if (!session) {
+        if (!userId) {
             return NextResponse.json(
                 { error: 'Unauthorized' },
                 { status: 401 }
             );
         }
 
-        const user = await User.findById(session.user.id);
+        const user = await User.findById(userId);
 
         if (!user) {
             return NextResponse.json(

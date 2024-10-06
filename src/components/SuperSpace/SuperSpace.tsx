@@ -13,8 +13,6 @@ import Space from '../Space/Space';
 import { AppDispatch, RootState } from '@/store/store';
 import { SpaceData, Task } from '@/types';
 import ControlPanel from './ControlPanel';
-import { useSession } from 'next-auth/react';
-import { Tooltip } from 'react-tooltip';
 import { generateRandomColor } from '@/app/utils/utils';
 import SpaceCard from './SpaceCard';
 import {
@@ -78,6 +76,7 @@ const SuperSpace = React.memo(() => {
             emoji: '',
             order: spaces.length,
             taskOrder: [],
+            wallpaper: '',
         };
         dispatch(createSpace(newSpace)).then(() => {
             setIsAdding(false);

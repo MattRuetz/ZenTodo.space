@@ -4,13 +4,20 @@ import dbConnect from '@/lib/mongodb';
 import User from '@/models/User';
 import Task from '@/models/Task';
 import Space from '@/models/Space';
-import { getUserId } from '@/hooks/useGetUserId';
+import { getUserIdFromClerk } from '@/app/utils/getUserIdFromClerk';
 
 export async function GET(req: NextRequest) {
     try {
         await dbConnect();
-        const userId = await getUserId(req);
-        const user = await User.findById(userId).select('-password');
+        const userId = await getUserIdFromClerk(req);
+        if (!userId) {
+            return NextResponse.json(
+                { error: 'Unauthorized' },
+                { status: 401 }
+            );
+        }
+
+        const user = await User.findOne({ clerkId: userId });
 
         if (!user) {
             return NextResponse.json(

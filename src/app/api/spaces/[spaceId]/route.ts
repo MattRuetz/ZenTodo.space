@@ -1,20 +1,18 @@
 // src/app/api/spaces/[spaceId]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import connectToDatabase from '@/lib/mongodb';
+import dbConnect from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
-
 import Space from '@/models/Space';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '../../auth/[...nextauth]/route';
-import { getUserId } from '@/hooks/useGetUserId';
+import { getUserIdFromClerk } from '@/app/utils/getUserIdFromClerk';
 
 export async function GET(
     req: NextRequest,
     { params }: { params: { spaceId: string } }
 ) {
     try {
-        await connectToDatabase();
-        const userId = await getUserId(req);
+        await dbConnect();
+        const userId = await getUserIdFromClerk(req);
+
         const { spaceId } = params;
 
         const space = await Space.findOne({ _id: spaceId, userId: userId });
@@ -36,21 +34,21 @@ export async function GET(
 }
 
 export async function PUT(
-    request: NextRequest,
+    req: NextRequest,
     { params }: { params: { spaceId: string } }
 ) {
     try {
-        await connectToDatabase();
-        const session = await getServerSession(authOptions);
+        await dbConnect();
+        const userId = await getUserIdFromClerk(req);
 
-        if (!session) {
+        if (!userId) {
             return NextResponse.json(
                 { error: 'Unauthorized' },
                 { status: 401 }
             );
         }
 
-        const updateData = await request.json();
+        const updateData = await req.json();
         const allowedFields = [
             'name',
             'color',
@@ -78,7 +76,7 @@ export async function PUT(
         const updatedSpace = await Space.findOneAndUpdate(
             {
                 _id: new ObjectId(params.spaceId),
-                userId: new ObjectId(session.user.id),
+                userId,
             },
             { $set: filteredUpdateData },
             { new: true }
@@ -102,21 +100,21 @@ export async function PUT(
 }
 
 export async function PATCH(
-    request: NextRequest,
+    req: NextRequest,
     { params }: { params: { spaceId: string } }
 ) {
     try {
-        await connectToDatabase();
-        const session = await getServerSession(authOptions);
+        await dbConnect();
+        const userId = await getUserIdFromClerk(req);
 
-        if (!session) {
+        if (!userId) {
             return NextResponse.json(
                 { error: 'Unauthorized' },
                 { status: 401 }
             );
         }
 
-        const updateData = await request.json();
+        const updateData = await req.json();
         const allowedFields = ['maxZIndex', 'selectedEmojis'];
         const filteredUpdateData: { [key: string]: any } = {};
 
@@ -149,7 +147,7 @@ export async function PATCH(
         const updatedSpace = await Space.findOneAndUpdate(
             {
                 _id: new ObjectId(params.spaceId),
-                userId: new ObjectId(session.user.id),
+                userId,
             },
             { $set: filteredUpdateData },
             { new: true }
@@ -173,14 +171,14 @@ export async function PATCH(
 }
 
 export async function DELETE(
-    request: NextRequest,
+    req: NextRequest,
     { params }: { params: { spaceId: string } }
 ) {
     try {
-        await connectToDatabase();
-        const session = await getServerSession(authOptions);
+        await dbConnect();
+        const userId = await getUserIdFromClerk(req);
 
-        if (!session) {
+        if (!userId) {
             return NextResponse.json(
                 { error: 'Unauthorized' },
                 { status: 401 }
@@ -189,7 +187,7 @@ export async function DELETE(
 
         const space = await Space.findOne({
             _id: new ObjectId(params.spaceId),
-            userId: new ObjectId(session.user.id),
+            userId,
         });
 
         if (!space) {

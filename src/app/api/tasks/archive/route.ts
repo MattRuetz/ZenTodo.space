@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Task from '@/models/Task';
-import { getUserId } from '@/hooks/useGetUserId';
 import mongoose from 'mongoose';
+import { getUserIdFromClerk } from '@/app/utils/getUserIdFromClerk';
 
 export async function PUT(req: NextRequest) {
     try {
         await dbConnect();
-        const userId = await getUserId(req);
+        const userId = await getUserIdFromClerk(req);
         const { taskId, parentTaskId } = await req.json();
 
         const session = await mongoose.startSession();

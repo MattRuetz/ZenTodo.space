@@ -8,12 +8,10 @@ import React, {
     useMemo,
 } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useSession } from 'next-auth/react';
 import { useDrop } from 'react-dnd';
 // Import the new TaskListView component
 import TaskListView from '../Mobile/TaskListView';
 import TaskCard from '../TaskCards/TaskCard';
-import SignUpForm from '../SignUpForm';
 import SubtaskDrawer from '../Subtask/SubtaskDrawer';
 import { RootState, AppDispatch } from '../../store/store';
 import { updateTask } from '../../store/tasksSlice';
@@ -32,6 +30,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useIsMobileSize } from '@/hooks/useIsMobileSize';
 import { isMobile, isTablet } from 'react-device-detect';
 import ControlPanel from '../SuperSpace/ControlPanel';
+// import { useSession } from '@clerk/nextjs';
 
 // Memoized selectors
 
@@ -51,7 +50,7 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId }) => {
     const isMobileSize = useIsMobileSize();
     const isMobileDevice = isMobile || isTablet;
 
-    const { data: session, status: sessionStatus } = useSession();
+    // const { data: session, status: sessionStatus } = useSession();
 
     const tasks = useSelector((state: RootState) =>
         selectTasksForSpace(state, spaceId)
@@ -165,24 +164,6 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId }) => {
         []
     );
 
-    useEffect(() => {
-        const handleMouseMove = (e: MouseEvent) => {
-            if (!session) {
-                setCursorPosition({ x: e.clientX, y: e.clientY });
-            }
-        };
-
-        window.addEventListener('mousemove', handleMouseMove);
-        return () => window.removeEventListener('mousemove', handleMouseMove);
-    }, [session]);
-
-    useEffect(() => {
-        if (cursorEffectRef.current) {
-            cursorEffectRef.current.style.left = `${cursorPosition.x}px`;
-            cursorEffectRef.current.style.top = `${cursorPosition.y}px`;
-        }
-    }, [cursorPosition]);
-
     const calculateSafePosition = (x: number, y: number) => {
         const spaceRect = spaceRef.current?.getBoundingClientRect();
         if (!spaceRect) return { x, y };
@@ -233,7 +214,7 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId }) => {
                 }
             }
         },
-        [session, canCreateTask, spaceId, getNewZIndex, dispatch]
+        [canCreateTask, spaceId, getNewZIndex, dispatch]
     );
 
     const handleDragStart = () => {

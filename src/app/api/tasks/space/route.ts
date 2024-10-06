@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Task from '@/models/Task';
 import mongoose from 'mongoose';
-import { getUserId } from '@/hooks/useGetUserId';
+import { getUserIdFromClerk } from '@/app/utils/getUserIdFromClerk';
 
 export async function DELETE(req: NextRequest) {
     const maxRetries = 5;
@@ -12,7 +12,7 @@ export async function DELETE(req: NextRequest) {
     while (retries < maxRetries) {
         try {
             await dbConnect();
-            const userId = await getUserId(req);
+            const userId = await getUserIdFromClerk(req);
             const url = new URL(req.url);
             const spaceId = url.searchParams.get('spaceId');
 

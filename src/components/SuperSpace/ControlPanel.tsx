@@ -1,7 +1,7 @@
 // src/app/components/ControlPanel.tsx
 'use client';
 import React, { useState } from 'react';
-import { useSession } from 'next-auth/react';
+import { useUser } from '@clerk/nextjs';
 import ControlPanelToggle from './ControlPanelToggle';
 import ControlPanelContent from './ControlPanelContent';
 import { useIsMobileSize } from '@/hooks/useIsMobileSize';
@@ -19,10 +19,10 @@ const ControlPanel: React.FC = React.memo(() => {
     const setIsOpen = (isOpen: boolean) => {
         dispatch(setControlPanelOpen(isOpen));
     };
-    const { data: session } = useSession();
+    const { isSignedIn } = useUser();
     const isMobileSize = useIsMobileSize();
     const isMobileDevice = isMobile || isTablet;
-    if (!session) return null;
+    if (!isSignedIn) return null;
 
     return (
         <div style={{ zIndex: 10000 }}>

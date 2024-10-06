@@ -3,12 +3,12 @@ import dbConnect from '@/lib/mongodb';
 import Task from '@/models/Task';
 import Space from '@/models/Space'; // Assuming Space model is imported
 import mongoose from 'mongoose';
-import { getUserId } from '@/hooks/useGetUserId';
+import { getUserIdFromClerk } from '@/app/utils/getUserIdFromClerk';
 
 export async function GET(req: NextRequest) {
     try {
         await dbConnect();
-        const userId = await getUserId(req);
+        const userId = await getUserIdFromClerk(req);
 
         const tasks = await Task.find({ user: userId }).sort({ createdAt: 1 });
 
@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
     try {
         await dbConnect();
-        const userId = await getUserId(req);
+        const userId = await getUserIdFromClerk(req);
         const body = await req.json();
         const {
             taskName,
@@ -107,7 +107,7 @@ export async function POST(req: NextRequest) {
 export async function PUT(req: NextRequest) {
     try {
         await dbConnect();
-        const userId = await getUserId(req);
+        const userId = await getUserIdFromClerk(req);
         const body = await req.json();
         // updateData can allow for partial updates
         const { _id, ...updateData } = body;
@@ -143,7 +143,7 @@ export async function DELETE(req: NextRequest) {
     while (retries < maxRetries) {
         try {
             await dbConnect();
-            const userId = await getUserId(req);
+            const userId = await getUserIdFromClerk(req);
             const url = new URL(req.url);
             const taskId = url.searchParams.get('id');
             const parentTaskId = url.searchParams.get('parentId');

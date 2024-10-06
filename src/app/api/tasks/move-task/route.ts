@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Task from '@/models/Task';
-import { getUserId } from '@/hooks/useGetUserId';
-import { space } from 'postcss/lib/list';
 import Space from '@/models/Space';
+import { getUserIdFromClerk } from '@/app/utils/getUserIdFromClerk';
 
 export async function PUT(req: NextRequest) {
     try {
         await dbConnect();
-        const userId = await getUserId(req);
+        const userId = await getUserIdFromClerk(req);
         const body = await req.json();
         const { parentId, newOrder, spaceId } = body;
 

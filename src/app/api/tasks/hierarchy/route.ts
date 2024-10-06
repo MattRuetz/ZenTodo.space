@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Task from '@/models/Task';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '../../auth/[...nextauth]/route';
 import { ObjectId } from 'mongodb';
 import mongoose from 'mongoose';
+import { getUserIdFromClerk } from '@/app/utils/getUserIdFromClerk';
 
 const MAX_RETRIES = 10;
 const INITIAL_BACKOFF = 100; // ms
@@ -27,9 +26,9 @@ export async function PUT(req: NextRequest) {
     while (retries < MAX_RETRIES) {
         try {
             await dbConnect();
-            const authSession = await getServerSession(authOptions);
+            const userId = await getUserIdFromClerk(req);
 
-            if (!authSession) {
+            if (!userId) {
                 return NextResponse.json(
                     { error: 'Unauthorized' },
                     { status: 401 }
