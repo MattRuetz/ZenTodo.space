@@ -331,14 +331,15 @@ const TaskCard = React.memo(
             });
         };
 
-        const handleDuplicateTask = () => {
+        const handleDuplicateTask = async () => {
             const space = spacesState.find((space) => space._id === task.space);
-            duplicateTask(task, tasksState);
+            const duplicateResult = await duplicateTask(task, tasksState); // Ensure duplicateTask returns a resolved value
+            const newTask = duplicateResult[0]; // Directly assign since duplicateResult is no longer an array
             if (space) {
                 dispatch(
                     updateSpaceTaskOrderAsync({
                         spaceId: space._id!,
-                        taskOrder: [...space.taskOrder, task._id!],
+                        taskOrder: [...space.taskOrder, newTask._id!],
                     })
                 );
             }

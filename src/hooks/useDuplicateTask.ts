@@ -14,6 +14,7 @@ import { useAlert } from './useAlert';
 export const useDuplicateTask = () => {
     const dispatch = useDispatch<AppDispatch>();
     const { showAlert } = useAlert();
+
     const duplicateTask = async (task: Task, tasksState: Task[]) => {
         if (!task._id) {
             console.error('Task ID is undefined');
@@ -50,6 +51,7 @@ export const useDuplicateTask = () => {
             const result = await dispatch(
                 duplicateTasksAsync(tasksToDuplicate)
             ).unwrap();
+            console.log('result', result);
             // Success
             showAlert(
                 `Duplicated task${
