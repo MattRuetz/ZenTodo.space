@@ -38,6 +38,8 @@ export interface SpaceData {
     maxZIndex: number;
     emoji: string;
     selectedEmojis: string[];
+    selectedProgresses: string[];
+    selectedDueDateRange: string | null;
     taskOrder: string[];
     wallpaper: string;
     backgroundColor: string;

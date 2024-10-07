@@ -10,6 +10,8 @@ interface ISpace extends Document {
     maxZIndex: number;
     emoji: string;
     selectedEmojis: string[];
+    selectedProgresses: string[];
+    selectedDueDateRange: string | null;
     taskOrder: string[];
     wallpaper: string;
     backgroundColor: string;
@@ -27,6 +29,12 @@ const SpaceSchema = new mongoose.Schema({
     maxZIndex: { type: Number, default: 1 },
     emoji: { type: String, default: '' },
     selectedEmojis: { type: [String], default: [] },
+    selectedProgresses: { type: [String], default: [] },
+    selectedDueDateRange: {
+        type: String || null,
+        enum: ['today', 'next 7 days', 'next 30 days'],
+        default: null,
+    },
     taskOrder: { type: [String], default: [] },
     wallpaper: { type: String, default: '/images/placeholder_image.webp' },
     backgroundColor: { type: String, default: '' },

@@ -53,18 +53,18 @@ const SortingDropdown: React.FC<SortingDropdownProps> = React.memo(
         };
 
         return (
-            <div className="relative">
+            <div className="">
                 <button
                     onClick={() => setIsOpen(!isOpen)}
-                    className="btn btn-sm btn-outline space-x-1 px-2 py-1"
+                    className="btn btn-md btn-outline"
                     style={{ color: btnColor }}
                 >
-                    <FaSort />
-                    <span>
+                    <div className="flex items-center gap-1">
+                        <FaSort />
                         {sortOption === 'custom'
                             ? 'Sort'
                             : sortOptionString[sortOption]}
-                    </span>
+                    </div>
                 </button>
                 {isOpen && (
                     <div
