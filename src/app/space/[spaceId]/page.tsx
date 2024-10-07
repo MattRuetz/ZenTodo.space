@@ -16,7 +16,7 @@ const Space = dynamic(() => import('@/components/Space/Space'), {
 
 const SpacePage: React.FC = () => {
     const { spaceId } = useParams();
-    const { isLoaded } = useUser();
+    const { isLoaded, isSignedIn } = useUser();
     const initialDataLoaded = useSelector(
         (state: RootState) => state.loading.initialDataLoaded
     );
@@ -24,6 +24,10 @@ const SpacePage: React.FC = () => {
 
     if (!isLoaded || !initialDataLoaded) {
         return <Preloader />;
+    }
+
+    if (!isSignedIn) {
+        redirect('/sign-in');
     }
 
     if (!spaceId) {

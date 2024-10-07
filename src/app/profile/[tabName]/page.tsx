@@ -3,6 +3,7 @@
 import React from 'react';
 import { useParams } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
+import { redirect } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
 import Preloader from '@/components/Preloader/Preloader';
@@ -19,7 +20,7 @@ const ProfileArchivePage = dynamic(
 const ProfilePage: React.FC = () => {
     const { tabName } = useParams();
 
-    const { isLoaded } = useUser();
+    const { isLoaded, isSignedIn } = useUser();
 
     const initialDataLoaded = useSelector(
         (state: RootState) => state.loading.initialDataLoaded
@@ -27,6 +28,10 @@ const ProfilePage: React.FC = () => {
 
     if (!isLoaded || !initialDataLoaded) {
         return <Preloader />;
+    }
+
+    if (!isSignedIn) {
+        redirect('/sign-in');
     }
 
     return <ProfileArchivePage activeTabStart={tabName as string} />;

@@ -9,11 +9,5 @@ const AuthPage = dynamic(() => import('@/components/AuthPage'), {
 });
 
 export default function SignInPage() {
-    const { isLoaded } = useSignIn();
-
-    if (!isLoaded) {
-        return <Preloader />;
-    }
-
     return <AuthPage action="sign-in" />;
 }
