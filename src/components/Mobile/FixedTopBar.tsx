@@ -5,14 +5,15 @@ import { Task } from '@/types';
 import { useSelector } from 'react-redux';
 import { setControlPanelOpen } from '@/store/uiSlice';
 import { useDispatch } from 'react-redux';
-import ControlPanelToggle from '../SuperSpace/ControlPanelToggle';
+import ControlPanelToggle from '../ControlPanel/ControlPanelToggle';
 import { useIsMobileSize } from '@/hooks/useIsMobileSize';
 import { useTheme } from '@/hooks/useTheme';
 import { useMemo, useState } from 'react';
 import { MobileEmojiFilter } from './MobileEmojiFilter';
 import { FaFilter } from 'react-icons/fa';
-import { FaAngleUp, FaGrip } from 'react-icons/fa6';
+import { FaAngleUp } from 'react-icons/fa6';
 import { AnimatePresence, motion } from 'framer-motion';
+import { getContrastingColor } from '@/app/utils/utils';
 
 const FixedTopBar = ({
     currentParent,
@@ -46,34 +47,60 @@ const FixedTopBar = ({
         );
     }, [tasksAtLevel, currentSpace?._id]);
 
+    const topBarBackgroundColor = useMemo(() => {
+        if (!currentSpace?.backgroundColor) {
+            return `var(--${currentTheme}-space-background)`;
+        }
+
+        const darkenColor = (color: string, amount: number) => {
+            const colorHex = color.startsWith('#') ? color.slice(1) : color;
+            const num = parseInt(colorHex, 16);
+            const r = (num >> 16) - amount < 0 ? 0 : (num >> 16) - amount;
+            const g =
+                ((num >> 8) & 0x00ff) - amount < 0
+                    ? 0
+                    : ((num >> 8) & 0x00ff) - amount;
+            const b =
+                (num & 0x0000ff) - amount < 0 ? 0 : (num & 0x0000ff) - amount;
+            return `#${(0x1000000 + (r << 16) + (g << 8) + b)
+                .toString(16)
+                .slice(1)}`;
+        };
+
+        return currentSpace?.backgroundColor
+            ? darkenColor(currentSpace.backgroundColor, 50) // Adjust the amount as needed
+            : `var(--${currentTheme}-space-background)`;
+    }, [currentSpace?.backgroundColor, currentTheme]);
+
+    const topBarTextColor = useMemo(() => {
+        return getContrastingColor(topBarBackgroundColor);
+    }, [topBarBackgroundColor]);
+
     return (
         <div
             className="header sticky top-0 flex flex-col items-start justify-between w-full shadow-sm"
             style={{ zIndex: 10000 }}
         >
             <div
-                className="header flex items-center justify-between p-2 w-full top-0 border-b"
+                className="header flex items-center justify-between p-2 w-full top-0"
                 style={{
-                    backgroundColor: `var(--${currentTheme}-space-background)`,
+                    backgroundColor: topBarBackgroundColor,
                     borderColor: `var(--${currentTheme}-background-200)`,
+                    color: topBarTextColor,
                 }}
             >
                 <ControlPanelToggle
                     isOpen={isControlPanelOpen}
                     setIsOpen={setIsOpen}
                     isMobile={isMobileSize}
+                    color={topBarTextColor}
                 />
-                <div
-                    className="flex items-center justify-center gap-4"
-                    style={{ color: `var(--${currentTheme}-text-default)` }}
-                >
+                <div className="flex items-center justify-center gap-4">
                     {hasRootLevelTasksWithEmojis && (
                         <button
-                            className="p-2 rounded-full shadow-sm"
+                            className="btn btn-sm btn-outline"
+                            style={{ color: topBarTextColor }}
                             onClick={() => setShowEmojiFilter((prev) => !prev)}
-                            style={{
-                                backgroundColor: `var(--${currentTheme}-accent-blue)`,
-                            }}
                         >
                             <div className="flex items-center justify-center gap-2">
                                 <FaFilter />
@@ -81,7 +108,9 @@ const FixedTopBar = ({
                             </div>
                         </button>
                     )}
-                    {tasksAtLevel.length > 1 && <SortingDropdown />}
+                    {tasksAtLevel.length > 1 && (
+                        <SortingDropdown btnColor={topBarTextColor} />
+                    )}
                 </div>
             </div>
             {currentParent ? (

@@ -11,10 +11,11 @@ interface ControlPanelToggleProps {
     isOpen: boolean;
     setIsOpen: (isOpen: boolean) => void;
     isMobile: boolean;
+    color: string;
 }
 
 const ControlPanelToggle: React.FC<ControlPanelToggleProps> = React.memo(
-    ({ isOpen, setIsOpen, isMobile }) => {
+    ({ isOpen, setIsOpen, isMobile, color }) => {
         const { isSignedIn } = useUser();
         const currentTheme = useTheme();
         if (!isSignedIn) return null;
@@ -27,7 +28,7 @@ const ControlPanelToggle: React.FC<ControlPanelToggleProps> = React.memo(
 
         return (
             <div
-                className="flex items-center justify-center gap-2 h-12"
+                className="flex items-center justify-center gap-2 h-8 w-8"
                 style={{
                     position: isMobile ? 'relative' : 'fixed',
                     top: isMobile ? '0' : '1rem',
@@ -39,15 +40,15 @@ const ControlPanelToggle: React.FC<ControlPanelToggleProps> = React.memo(
                     className={`z-20 btn btn-circle border`}
                     style={{
                         boxShadow: 'none',
-                        color: `var(--${currentTheme}-text-default)`, // Use theme color
                         backgroundColor: isMobile
                             ? 'transparent'
                             : `var(--${currentTheme}-background-200)`, // Use theme color
                         borderColor: isMobile ? 'transparent' : 'black',
+                        color: color,
                     }}
                     onClick={() => setIsOpen(!isOpen)}
                 >
-                    {isOpen ? '×' : '☰'}
+                    {isOpen && !isMobile ? '×' : '☰'}
                 </button>
                 <div
                     className="text-lg flex items-center justify-center"

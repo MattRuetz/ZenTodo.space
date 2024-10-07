@@ -193,7 +193,9 @@ const TaskListView: React.FC<TaskListViewProps> = ({ spaceId }) => {
                 {...handlers}
                 className="task-list-view h-full flex flex-col"
                 style={{
-                    backgroundColor: `var(--${currentTheme}-space-background)`,
+                    backgroundColor: space?.backgroundColor
+                        ? `${space.backgroundColor}`
+                        : `var(--${currentTheme}-space-background)`,
                 }}
             >
                 <FixedTopBar

@@ -1,40 +1,27 @@
 'use client';
 // src/components/SuperSpace.tsx
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
-    fetchSpaces,
     createSpace,
     setCurrentSpace,
     reorderSpacesOptimistic,
     reorderSpaces,
 } from '@/store/spaceSlice';
-import Space from '../Space/Space';
 import { AppDispatch, RootState } from '@/store/store';
-import { SpaceData, Task } from '@/types';
-import ControlPanel from './ControlPanel';
+import { SpaceData } from '@/types';
 import { generateRandomColor } from '@/app/utils/utils';
 import SpaceCard from './SpaceCard';
-import {
-    setSubtaskDrawerOpen,
-    setSubtaskDrawerParentId,
-} from '@/store/uiSlice';
+
 import { AnimatePresence, motion } from 'framer-motion';
 //---------------------------------------------------
 import { useAlert } from '@/hooks/useAlert';
-import { useTheme } from '@/hooks/useTheme';
 import { FaArrowLeft } from 'react-icons/fa6';
 import { FaPlusCircle } from 'react-icons/fa';
-import ProfileArchivePage from '../Profile_Archive/ProfileArchivePage';
-import { fetchUser, setUser } from '@/store/userSlice';
-import BottomSettings from './BottomSettings';
 import { useIsMobileSize } from '@/hooks/useIsMobileSize';
-import { isMobile } from 'react-device-detect';
 import { useDragLayer } from 'react-dnd';
 import { useAutoScroll } from '@/hooks/useAutoScroll';
 import { ComponentSpinner } from '../ComponentSpinner';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 
 const SuperSpace = React.memo(() => {
     const dispatch = useDispatch<AppDispatch>();

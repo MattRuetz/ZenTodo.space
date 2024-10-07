@@ -29,15 +29,13 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useTheme } from '@/hooks/useTheme';
 import { useIsMobileSize } from '@/hooks/useIsMobileSize';
 import { isMobile, isTablet } from 'react-device-detect';
-import ControlPanel from '../SuperSpace/ControlPanel';
-// import { useSession } from '@clerk/nextjs';
-
-// Memoized selectors
+import ControlPanel from '../ControlPanel/ControlPanel';
 
 interface SpaceProps {
     spaceId: string;
 }
 
+// Memoized selectors
 export const selectSelectedEmojis = createSelector(
     (state: RootState) => state.spaces.currentSpace,
     (currentSpace) => currentSpace?.selectedEmojis || []
@@ -49,8 +47,6 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId }) => {
 
     const isMobileSize = useIsMobileSize();
     const isMobileDevice = isMobile || isTablet;
-
-    // const { data: session, status: sessionStatus } = useSession();
 
     const tasks = useSelector((state: RootState) =>
         selectTasksForSpace(state, spaceId)

@@ -234,7 +234,11 @@ const ControlPanelContent: React.FC<ControlPanelContentProps> = ({
                                     }}
                                 >
                                     {/* Wallpaper picker with preview */}
-                                    <WallpaperSelector space={currentSpace} />
+                                    {!isMobile && (
+                                        <WallpaperSelector
+                                            space={currentSpace}
+                                        />
+                                    )}
                                     <SpaceBackgroundColorPicker
                                         space={currentSpace}
                                     />
