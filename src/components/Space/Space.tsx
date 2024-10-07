@@ -71,12 +71,10 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId }) => {
 
     const { clearEmojis } = useClearEmojis(spaceId);
 
-    const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
     const [maxZIndex, setMaxZIndex] = useState(currentSpace?.maxZIndex || 1);
     const [canCreateTask, setCanCreateTask] = useState(true);
 
     const isDraggingRef = useRef(false);
-    const cursorEffectRef = useRef<HTMLDivElement>(null);
     const subtaskDrawerRef = useRef<HTMLDivElement>(null);
     const spaceRef = useRef<HTMLDivElement>(null);
 

@@ -4,26 +4,19 @@ import { useTheme } from '@/hooks/useTheme';
 import { useUser, useAuth } from '@clerk/nextjs';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store/store';
-import { setUser, updateUserData } from '@/store/userSlice';
+import { fetchUser, setUser, updateUserData } from '@/store/userSlice';
 import { User } from '@clerk/backend';
-import { useEdgeStore } from '@/lib/edgestore';
 import { getQuoteForDay } from '@/hooks/useQuoteForDay';
-import {
-    FaChampagneGlasses,
-    FaEnvelope,
-    FaPencil,
-    FaSpinner,
-} from 'react-icons/fa6';
-import { ComponentSpinner } from '../ComponentSpinner';
+import { FaEnvelope, FaPencil, FaSpinner } from 'react-icons/fa6';
 import {
     FaAward,
-    FaCalendarAlt,
     FaCheckCircle,
     FaList,
     FaSignOutAlt,
     FaSpaceShuttle,
 } from 'react-icons/fa';
 import { formatUserSince } from '@/app/utils/dateUtils';
+import { fetchTheme } from '@/store/themeSlice';
 
 const ProfileSettings = () => {
     const currentTheme = useTheme();
@@ -35,32 +28,20 @@ const ProfileSettings = () => {
     const [profilePicture, setProfilePicture] = useState(
         clerkUser?.imageUrl || '/images/profile_picture_default.webp'
     );
-    const [name, setName] = useState(clerkUser?.firstName || '');
-    const [isLoading, setIsLoading] = useState(!isLoaded);
+    const [name, setName] = useState(clerkUser?.fullName || '');
     const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const { edgestore } = useEdgeStore();
-
     const quote = getQuoteForDay();
 
     useEffect(() => {
-        if (isLoaded && isSignedIn && clerkUser) {
-            dispatch(
-                setUser({
-                    id: clerkUser.id,
-                    name: clerkUser.firstName || '',
-                    email: clerkUser.primaryEmailAddress?.emailAddress || '',
-                    profilePicture:
-                        clerkUser.imageUrl ||
-                        '/images/profile_picture_default.webp',
-                    createdAt: clerkUser.createdAt,
-                    // Add other fields as necessary
-                })
+        if (clerkUser) {
+            setProfilePicture(
+                clerkUser.imageUrl || '/images/profile_picture_default.webp'
             );
-            setIsLoading(false);
+            setName(clerkUser.fullName || '');
         }
-    }, [isLoaded, isSignedIn, clerkUser, dispatch]);
+    }, [clerkUser]);
 
     const handleProfilePictureChange = async (
         e: React.ChangeEvent<HTMLInputElement>
@@ -69,9 +50,6 @@ const ProfileSettings = () => {
         if (file && clerkUser) {
             setIsUploadingPhoto(true);
             try {
-                // Optimize and upload image logic remains the same
-                // ...
-
                 // Update Clerk user profile
                 await clerkUser.setProfileImage({ file: file });
 
@@ -81,9 +59,6 @@ const ProfileSettings = () => {
 
                 // Update Redux store
                 dispatch(updateUserData({ imageUrl: clerkUser.imageUrl }));
-
-                // Delete old profile picture logic remains the same
-                // ...
             } catch (error) {
                 console.error('Error uploading profile picture:', error);
                 setIsUploadingPhoto(false);
@@ -95,8 +70,7 @@ const ProfileSettings = () => {
         try {
             if (clerkUser) {
                 await clerkUser.update({
-                    firstName: updateData.fullName || '',
-                    // Add other fields as necessary
+                    firstName: updateData.firstName || '',
                 });
                 dispatch(updateUserData(updateData));
             }
@@ -111,9 +85,9 @@ const ProfileSettings = () => {
         await handleUpdate({ fullName: name });
     };
 
-    if (isLoading) {
-        return <ComponentSpinner />;
-    }
+    // if (isLoading) {
+    //     return <ComponentSpinner />;
+    // }
 
     return (
         <div className="flex flex-col items-center justify-center p-8 w-full max-w-4xl mx-auto">
@@ -122,12 +96,10 @@ const ProfileSettings = () => {
                     <div className="relative flex flex-col items-center">
                         <div className="w-40 h-40 md:w-48 md:h-48 sm:w-64 sm:h-64 relative">
                             <Image
-                                src={
-                                    clerkUser?.imageUrl ||
-                                    '/images/profile_picture_default.webp'
-                                }
+                                src={profilePicture}
                                 alt="Profile Picture"
                                 layout="fill"
+                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                                 objectFit="cover"
                                 className="rounded-full shadow-md"
                                 style={{
@@ -191,7 +163,7 @@ const ProfileSettings = () => {
                                         color: `var(--${currentTheme}-text-default)`,
                                     }}
                                 >
-                                    {clerkUser?.firstName}
+                                    {clerkUser?.fullName}
                                 </h3>
                                 <h3
                                     className="font-semibold text-sm flex items-center gap-2"

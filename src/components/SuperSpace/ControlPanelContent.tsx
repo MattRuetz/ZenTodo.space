@@ -90,30 +90,6 @@ const ControlPanelContent: React.FC<ControlPanelContentProps> = ({
         taskProgressCounts[task.progress]++;
     });
 
-    // Make sure the user is set in the redux store
-    useEffect(() => {
-        if (!user) {
-            const fetchUserData = async () => {
-                try {
-                    setIsLoadingUser(true);
-                    const response = await fetch('/api/user');
-                    if (response.ok) {
-                        const userData = await response.json();
-                        dispatch(setUser(userData));
-                    }
-                } catch (error) {
-                    console.error('Error fetching user data:', error);
-                } finally {
-                    setIsLoadingUser(false);
-                }
-            };
-
-            fetchUserData();
-        } else {
-            setIsLoadingUser(false);
-        }
-    }, [dispatch, user]);
-
     return (
         <div
             className={`fixed left-0 top-0 h-full w-64 bg-black bg-opacity-80 flex flex-col justify-between transform ${
@@ -361,14 +337,16 @@ const ControlPanelContent: React.FC<ControlPanelContentProps> = ({
                 ) : (
                     user && (
                         <>
-                            <img
-                                src={
-                                    user?.imageUrl ||
-                                    '/images/profile_picture_default.webp'
-                                }
-                                alt="Profile"
-                                className="rounded-full col-span-1"
-                            />
+                            <div className="relative w-16 h-16 rounded-full overflow-hidden">
+                                <img
+                                    src={
+                                        user?.imageUrl ||
+                                        '/images/profile_picture_default.webp'
+                                    }
+                                    alt="Profile"
+                                    className="absolute inset-0 w-full h-full object-cover rounded-full"
+                                />
+                            </div>
                             <div className="col-span-2">
                                 <p className="font-medium text-lg truncate">
                                     {user.fullName}

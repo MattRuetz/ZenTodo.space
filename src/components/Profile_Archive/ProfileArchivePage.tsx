@@ -18,6 +18,7 @@ const ProfileArchivePage: React.FC<ProfileArchivePageProps> = ({
     const [activeTab, setActiveTab] = useState(activeTabStart);
     const theme = useTheme();
     const router = useRouter();
+
     return (
         <div
             className="mx-auto p-2 sm:p-4 w-full h-screen flex flex-col"

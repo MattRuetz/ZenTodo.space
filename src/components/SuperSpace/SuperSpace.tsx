@@ -26,7 +26,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { FaArrowLeft } from 'react-icons/fa6';
 import { FaPlusCircle } from 'react-icons/fa';
 import ProfileArchivePage from '../Profile_Archive/ProfileArchivePage';
-import { setUser } from '@/store/userSlice';
+import { fetchUser, setUser } from '@/store/userSlice';
 import BottomSettings from './BottomSettings';
 import { useIsMobileSize } from '@/hooks/useIsMobileSize';
 import { isMobile } from 'react-device-detect';
@@ -40,7 +40,6 @@ const SuperSpace = React.memo(() => {
     const dispatch = useDispatch<AppDispatch>();
     const isMobileSize = useIsMobileSize();
     const { spaces } = useSelector((state: RootState) => state.spaces);
-    const router = useRouter();
     const [isAdding, setIsAdding] = useState(false);
 
     const autoScrollRef = useRef<HTMLDivElement>(null);
@@ -77,6 +76,7 @@ const SuperSpace = React.memo(() => {
             order: spaces.length,
             taskOrder: [],
             wallpaper: '',
+            backgroundColor: '',
         };
         dispatch(createSpace(newSpace)).then(() => {
             setIsAdding(false);
@@ -102,23 +102,6 @@ const SuperSpace = React.memo(() => {
             opacity: 1,
         },
     };
-
-    // Make sure the user is set in the redux store
-    useEffect(() => {
-        const fetchUserData = async () => {
-            try {
-                const response = await fetch('/api/user');
-                if (response.ok) {
-                    const userData = await response.json();
-                    dispatch(setUser(userData));
-                }
-            } catch (error) {
-                console.error('Error fetching user data:', error);
-            }
-        };
-
-        fetchUserData();
-    }, [dispatch]);
 
     const { isDragging, currentOffset } = useDragLayer((monitor) => ({
         isDragging: monitor.isDragging(),

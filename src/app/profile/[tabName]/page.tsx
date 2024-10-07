@@ -1,11 +1,33 @@
 // src/app/lander/page.tsx
 'use client';
 import React from 'react';
-import ProfileArchivePage from '@/components/Profile_Archive/ProfileArchivePage';
 import { useParams } from 'next/navigation';
+import { useUser } from '@clerk/nextjs';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store/store';
+import Preloader from '@/components/Preloader/Preloader';
+import dynamic from 'next/dynamic';
+
+// Dynamic import allows for lazy loading of the Space component
+const ProfileArchivePage = dynamic(
+    () => import('@/components/Profile_Archive/ProfileArchivePage'),
+    {
+        loading: () => <Preloader />,
+    }
+);
 
 const ProfilePage: React.FC = () => {
     const { tabName } = useParams();
+
+    const { isLoaded } = useUser();
+
+    const initialDataLoaded = useSelector(
+        (state: RootState) => state.loading.initialDataLoaded
+    );
+
+    if (!isLoaded || !initialDataLoaded) {
+        return <Preloader />;
+    }
 
     return <ProfileArchivePage activeTabStart={tabName as string} />;
 };

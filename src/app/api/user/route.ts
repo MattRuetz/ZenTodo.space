@@ -18,6 +18,7 @@ export async function GET(req: NextRequest) {
         }
 
         const user = await User.findOne({ clerkId });
+        console.log('user', user);
 
         if (!user) {
             return NextResponse.json(

@@ -1,5 +1,4 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { useUser } from '@clerk/nextjs';
 import { User } from '@clerk/nextjs/server';
 
 interface UserState {
@@ -13,6 +12,21 @@ const initialState: UserState = {
     status: 'idle',
     error: null,
 };
+
+export const fetchUser = createAsyncThunk(
+    'user/fetchUser',
+    async (_, { rejectWithValue }) => {
+        try {
+            const response = await fetch(`/api/user/`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch user data');
+            }
+            return await response.json();
+        } catch (error) {
+            return rejectWithValue((error as Error).message);
+        }
+    }
+);
 
 export const updateUserData = createAsyncThunk(
     'user/updateUserData',
@@ -46,6 +60,22 @@ const userSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
+            .addCase(fetchUser.pending, (state) => {
+                state.status = 'loading';
+            })
+            .addCase(
+                fetchUser.fulfilled,
+                (state, action: PayloadAction<any>) => {
+                    console.log('action.payload', action.payload);
+                    state.status = 'succeeded';
+                    state.user = action.payload;
+                }
+            )
+            .addCase(fetchUser.rejected, (state, action) => {
+                state.status = 'failed';
+                state.error =
+                    action.error.message || 'Failed to fetch user data';
+            })
             .addCase(updateUserData.pending, (state) => {
                 state.status = 'loading';
             })
