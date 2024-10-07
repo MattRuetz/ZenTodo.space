@@ -56,7 +56,7 @@ const SortingDropdown: React.FC<SortingDropdownProps> = React.memo(
             <div className="">
                 <button
                     onClick={() => setIsOpen(!isOpen)}
-                    className="btn btn-md btn-outline"
+                    className="btn btn-sm md:btn-md btn-outline"
                     style={{ color: btnColor }}
                 >
                     <div className="flex items-center gap-1">
