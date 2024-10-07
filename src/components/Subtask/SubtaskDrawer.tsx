@@ -296,7 +296,11 @@ const SubtaskDrawer = React.memo(
                                     </p>
                                 </>
                             </div>
-                            <SortingDropdown />
+                            <div className="flex items-center">
+                                <SortingDropdown
+                                    btnColor={`var(--${currentTheme}-text-default)`}
+                                />
+                            </div>
                         </div>
                         <div
                             className="flex flex-row gap-2 h-0.5 w-full"

@@ -24,7 +24,7 @@ import {
     setSubtaskDrawerOpen,
     setSubtaskDrawerParentId,
 } from '@/store/uiSlice';
-import { isMobile } from 'react-device-detect';
+import { useIsMobileSize } from '@/hooks/useIsMobileSize';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import WallpaperSelector from '../Space/WallpaperSelector';
@@ -40,6 +40,7 @@ const ControlPanelContent: React.FC<ControlPanelContentProps> = ({
 }) => {
     const router = useRouter();
     const theme = useTheme();
+    const isMobileSize = useIsMobileSize();
     const dispatch = useDispatch<AppDispatch>();
     const currentTheme = useSelector(
         (state: RootState) => state.theme.currentTheme
@@ -100,7 +101,7 @@ const ControlPanelContent: React.FC<ControlPanelContentProps> = ({
                 backgroundColor: `var(--${theme}-controlpanel-background)`,
             }}
         >
-            {isMobile && (
+            {isMobileSize && (
                 <button
                     className="absolute top-4 left-2 p-2 text-3xl"
                     style={{
@@ -234,7 +235,7 @@ const ControlPanelContent: React.FC<ControlPanelContentProps> = ({
                                     }}
                                 >
                                     {/* Wallpaper picker with preview */}
-                                    {!isMobile && (
+                                    {!isMobileSize && (
                                         <WallpaperSelector
                                             space={currentSpace}
                                         />

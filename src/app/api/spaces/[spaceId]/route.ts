@@ -116,7 +116,12 @@ export async function PATCH(
         }
 
         const updateData = await req.json();
-        const allowedFields = ['maxZIndex', 'selectedEmojis'];
+        const allowedFields = [
+            'maxZIndex',
+            'selectedEmojis',
+            'selectedProgresses',
+            'selectedDueDateRange',
+        ];
         const filteredUpdateData: { [key: string]: any } = {};
 
         // Filter out any fields that are not allowed to be updated

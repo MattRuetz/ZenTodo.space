@@ -163,6 +163,54 @@ export const updateSpaceSelectedEmojis = createAsyncThunk(
     }
 );
 
+export const updateSpaceSelectedProgresses = createAsyncThunk(
+    'spaces/updateSelectedProgresses',
+    async ({
+        spaceId,
+        selectedProgresses,
+    }: {
+        spaceId: string;
+        selectedProgresses: string[];
+    }) => {
+        const response = await fetch(`/api/spaces/${spaceId}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ selectedProgresses }),
+        });
+        if (!response.ok) {
+            throw new Error('Failed to update space selectedProgresses');
+        }
+        const data = await response.json();
+        return data;
+    }
+);
+
+export const updateSpaceSelectedDueDateRange = createAsyncThunk(
+    'spaces/updateSelectedDueDateRange',
+    async ({
+        spaceId,
+        selectedDueDateRange,
+    }: {
+        spaceId: string;
+        selectedDueDateRange: string | null;
+    }) => {
+        const response = await fetch(`/api/spaces/${spaceId}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ selectedDueDateRange }),
+        });
+        if (!response.ok) {
+            throw new Error('Failed to update space selectedDueDateRange');
+        }
+        const data = await response.json();
+        return data;
+    }
+);
+
 export const updateSpaceTaskOrderAsync = createAsyncThunk(
     'spaces/updateSpaceTaskOrder',
     async (
@@ -359,6 +407,44 @@ const spaceSlice = createSlice({
                         action.payload.selectedEmojis;
                 }
             })
+            .addCase(
+                updateSpaceSelectedProgresses.fulfilled,
+                (state, action) => {
+                    const space = state.spaces.find(
+                        (s) => s._id === action.payload._id
+                    );
+                    if (space) {
+                        space.selectedProgresses =
+                            action.payload.selectedProgresses;
+                    }
+                    if (
+                        state.currentSpace &&
+                        state.currentSpace._id === action.payload._id
+                    ) {
+                        state.currentSpace.selectedProgresses =
+                            action.payload.selectedProgresses;
+                    }
+                }
+            )
+            .addCase(
+                updateSpaceSelectedDueDateRange.fulfilled,
+                (state, action) => {
+                    const space = state.spaces.find(
+                        (s) => s._id === action.payload._id
+                    );
+                    if (space) {
+                        space.selectedDueDateRange =
+                            action.payload.selectedDueDateRange;
+                    }
+                    if (
+                        state.currentSpace &&
+                        state.currentSpace._id === action.payload._id
+                    ) {
+                        state.currentSpace.selectedDueDateRange =
+                            action.payload.selectedDueDateRange;
+                    }
+                }
+            )
             .addCase(updateSpaceSelectedEmojis.rejected, (state, action) => {
                 console.error(
                     'Failed to update space selectedEmojis:',

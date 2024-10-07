@@ -41,6 +41,16 @@ export const selectSelectedEmojis = createSelector(
     (currentSpace) => currentSpace?.selectedEmojis || []
 );
 
+export const selectSelectedProgresses = createSelector(
+    (state: RootState) => state.spaces.currentSpace,
+    (currentSpace) => currentSpace?.selectedProgresses || []
+);
+
+export const selectSelectedDueDateRange = createSelector(
+    (state: RootState) => state.spaces.currentSpace,
+    (currentSpace) => currentSpace?.selectedDueDateRange || null
+);
+
 const Space: React.FC<SpaceProps> = React.memo(({ spaceId }) => {
     const dispatch = useDispatch<AppDispatch>();
     const currentTheme = useTheme();

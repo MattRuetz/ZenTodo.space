@@ -11,13 +11,29 @@ export const selectTasksForSpace = createSelector(
     ],
     (tasks, currentSpace, spaceId) => {
         const selectedEmojis = currentSpace?.selectedEmojis || [];
+        const selectedProgresses = currentSpace?.selectedProgresses || [];
+        const selectedDueDateRange = currentSpace?.selectedDueDateRange || null;
+
+        const today = new Date();
+        const next7Days = new Date(today);
+        next7Days.setDate(today.getDate() + 7);
+        const next30Days = new Date(today);
+        next30Days.setDate(today.getDate() + 30);
+
         const tasksInSpace = tasks.filter(
             (task) =>
                 task.space === spaceId &&
                 !task.parentTask &&
                 !task.isArchived &&
                 (selectedEmojis.length === 0 ||
-                    selectedEmojis.includes(task.emoji || ''))
+                    selectedEmojis.includes(task.emoji || '')) &&
+                (selectedProgresses.length === 0 ||
+                    selectedProgresses.includes(task.progress || '')) &&
+                (selectedDueDateRange === null ||
+                    isDateWithinRange(
+                        task.dueDate ? new Date(task.dueDate) : null,
+                        selectedDueDateRange
+                    ))
         );
 
         // return tasksInSpace;
@@ -59,3 +75,28 @@ export const selectTasksByIds = createSelector(
             .filter((task): task is Task => task !== undefined);
     }
 );
+
+// Helper - date is within range
+const isDateWithinRange = (date: Date | null, range: string) => {
+    if (!date) return false;
+    const today = new Date();
+    const next7Days = new Date(today);
+    next7Days.setDate(today.getDate() + 7);
+    const next30Days = new Date(today);
+    next30Days.setDate(today.getDate() + 30);
+
+    if (range === 'today') {
+        return date.getTime() === today.getTime();
+    } else if (range === 'next 7 days') {
+        return (
+            date.getTime() >= today.getTime() &&
+            date.getTime() <= next7Days.getTime()
+        );
+    } else if (range === 'next 30 days') {
+        return (
+            date.getTime() >= today.getTime() &&
+            date.getTime() <= next30Days.getTime()
+        );
+    }
+    return false;
+};

@@ -5,7 +5,6 @@ import { useSelector, useDispatch } from 'react-redux';
 import { FaFilter, FaX } from 'react-icons/fa6';
 import { AppDispatch, RootState } from '@/store/store';
 import { updateSpaceSelectedEmojis } from '@/store/spaceSlice';
-import { fetchTasks } from '@/store/tasksSlice';
 import { Tooltip } from 'react-tooltip';
 import { useTheme } from '@/hooks/useTheme';
 import { useIsMobileSize } from '@/hooks/useIsMobileSize';

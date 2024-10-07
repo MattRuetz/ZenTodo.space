@@ -1,7 +1,8 @@
 // src/app/components/ControlPanelToggle.tsx
 'use client';
 import React from 'react';
-import { EmojiFilter } from '../Space/EmojiFilter';
+// import { EmojiFilter } from '../Space/EmojiFilter';
+import { SpaceFilters } from '../Space/SpaceFilters';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
 import { useClearEmojis } from '@/hooks/useClearEmojis';
@@ -28,7 +29,7 @@ const ControlPanelToggle: React.FC<ControlPanelToggleProps> = React.memo(
 
         return (
             <div
-                className="flex items-center justify-center gap-2 h-8 w-8"
+                className="flex items-center justify-center gap-2 h-8 w-8 md:h-auto md:w-auto"
                 style={{
                     position: isMobile ? 'relative' : 'fixed',
                     top: isMobile ? '0' : '1rem',
@@ -56,10 +57,11 @@ const ControlPanelToggle: React.FC<ControlPanelToggleProps> = React.memo(
                         display: isMobile ? 'none' : 'block',
                     }}
                 >
-                    <EmojiFilter
+                    {/* <EmojiFilter
                         clearSelectedEmojis={clearEmojis}
                         spaceId={spaceId ?? ''}
-                    />
+                    /> */}
+                    <SpaceFilters spaceId={spaceId ?? ''} />
                 </div>
             </div>
         );

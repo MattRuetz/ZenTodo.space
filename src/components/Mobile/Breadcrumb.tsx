@@ -44,20 +44,20 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({ currentParent, onBack }) => {
                         <FaArrowLeft className="mr-2" />
                         {grandparentTask ? (
                             <>
-                                <span
-                                    className="line-clamp-2 max-w-[130px] py-1 px-4 rounded-md"
+                                <p
+                                    className="max-w-[120px] py-1 px-2 rounded-md truncate"
                                     style={{
                                         backgroundColor: `var(--${currentTheme}-background-300)`,
                                         border: `1px solid var(--${currentTheme}-accent-blue)`,
                                     }}
                                 >
                                     {grandparentTask.taskName}
-                                </span>
+                                </p>
                                 <span className="mx-2">/</span>
                             </>
                         ) : null}
                         <span
-                            className="line-clamp-2 max-w-[130px] py-1 px-4 rounded-md"
+                            className="max-w-[120px] py-1 px-2 rounded-md truncate"
                             style={{
                                 border: `1px solid var(--${currentTheme}-accent-grey)`,
                             }}
@@ -66,6 +66,7 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({ currentParent, onBack }) => {
                         </span>
                         <span className="mx-2">/</span>
                     </button>
+                    <p className="text-xs uppercase font-semibold">subtasks</p>
                 </div>
             )}
         </>

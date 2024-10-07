@@ -59,6 +59,8 @@ const SuperSpace = React.memo(() => {
             color: generateRandomColor(),
             maxZIndex: 1,
             selectedEmojis: [],
+            selectedProgresses: [],
+            selectedDueDateRange: null,
             emoji: '',
             order: spaces.length,
             taskOrder: [],
