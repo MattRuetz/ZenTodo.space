@@ -3,13 +3,14 @@ import {
     duplicateTasksOptimistic,
     duplicateTasksAsync,
 } from '../store/tasksSlice';
-import { Task } from '../types';
+import { Task, User } from '../types';
 import {
     duplicateTaskWithTempIds,
     fetchAllTasksFromState,
 } from '@/app/utils/optimisticUpdates';
 import { AppDispatch, store } from '@/store/store';
 import { useAlert } from './useAlert';
+import { adjustUserStats, updateUserData } from '@/store/userSlice';
 
 export const useDuplicateTask = () => {
     const dispatch = useDispatch<AppDispatch>();
@@ -48,10 +49,17 @@ export const useDuplicateTask = () => {
                 ...t,
                 isTemp: undefined,
             }));
+
             const result = await dispatch(
                 duplicateTasksAsync(tasksToDuplicate)
             ).unwrap();
-            console.log('result', result);
+
+            dispatch(
+                adjustUserStats({
+                    totalTasksCreated: tasksToDuplicate.length,
+                })
+            );
+
             // Success
             showAlert(
                 `Duplicated task${

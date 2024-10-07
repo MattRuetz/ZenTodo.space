@@ -5,7 +5,8 @@ import { useUser, useAuth } from '@clerk/nextjs';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store/store';
 import { fetchUser, setUser, updateUserData } from '@/store/userSlice';
-import { User } from '@clerk/backend';
+// import { User } from '@clerk/backend';
+import { User } from '@/types';
 import { getQuoteForDay } from '@/hooks/useQuoteForDay';
 import { FaEnvelope, FaPencil, FaSpinner } from 'react-icons/fa6';
 import {
@@ -21,8 +22,9 @@ import { fetchTheme } from '@/store/themeSlice';
 const ProfileSettings = () => {
     const currentTheme = useTheme();
     const { isLoaded, isSignedIn, user: clerkUser } = useUser();
-    const userMetadata = useSelector((state: RootState) => state.user.user);
-
+    const userMetadata = useSelector(
+        (state: RootState) => state.user?.user ?? null
+    );
     const { signOut } = useAuth();
     const dispatch = useDispatch<AppDispatch>();
     const [profilePicture, setProfilePicture] = useState(
@@ -58,7 +60,11 @@ const ProfileSettings = () => {
                 setIsUploadingPhoto(false);
 
                 // Update Redux store
-                dispatch(updateUserData({ imageUrl: clerkUser.imageUrl }));
+                dispatch(
+                    updateUserData({
+                        userData: { imageUrl: clerkUser.imageUrl },
+                    })
+                );
             } catch (error) {
                 console.error('Error uploading profile picture:', error);
                 setIsUploadingPhoto(false);
@@ -70,9 +76,9 @@ const ProfileSettings = () => {
         try {
             if (clerkUser) {
                 await clerkUser.update({
-                    firstName: updateData.firstName || '',
+                    firstName: updateData.fullName || '',
                 });
-                dispatch(updateUserData(updateData));
+                dispatch(updateUserData({ userData: updateData }));
             }
         } catch (error) {
             console.error('Error updating user data:', error);

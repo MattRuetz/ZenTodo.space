@@ -46,6 +46,8 @@ export interface SpaceData {
 export interface User {
     _id?: string;
     clerkId: string;
+    imageUrl?: string;
+    fullName?: string;
     themePreference: ThemeName;
     spacesCount: number;
     totalTasksCreated: number;

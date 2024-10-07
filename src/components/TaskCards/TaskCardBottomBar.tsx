@@ -39,6 +39,7 @@ const TaskCardBottomBar: React.FC<TaskCardBottomBarProps> = React.memo(
                         isSubtask={false}
                         taskId={task._id ?? ''}
                         onArchive={onArchive}
+                        currentProgress={task.progress}
                     />
                 </div>
                 <SubtaskProgresses

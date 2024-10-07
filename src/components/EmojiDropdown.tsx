@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { MyEmojiPicker } from './MyEmojiPicker';
 import { useTheme } from '@/hooks/useTheme';
+import { updateSpaceSelectedEmojis } from '@/store/spaceSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '@/store/store';
 
 interface EmojiDropdownProps {
     taskEmoji: string | React.JSX.Element;
@@ -19,8 +22,11 @@ const EmojiDropdown: React.FC<EmojiDropdownProps> = ({
     setIsOpen: externalSetIsOpen,
 }) => {
     const currentTheme = useTheme();
+    const dispatch = useDispatch<AppDispatch>();
     const [internalIsOpen, setInternalIsOpen] = useState(false);
-
+    const currentSpace = useSelector(
+        (state: RootState) => state.spaces.currentSpace
+    );
     const isOpen =
         externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
     const setIsOpen = externalSetIsOpen || setInternalIsOpen;
@@ -29,6 +35,19 @@ const EmojiDropdown: React.FC<EmojiDropdownProps> = ({
         e.preventDefault();
         e.stopPropagation();
         setIsOpen(!isOpen);
+    };
+
+    const handleSetEmoji = (emoji: string) => {
+        setTaskEmoji(emoji);
+        setIsOpen(false);
+        if (currentSpace?._id) {
+            dispatch(
+                updateSpaceSelectedEmojis({
+                    spaceId: currentSpace?._id,
+                    selectedEmojis: [],
+                })
+            );
+        }
     };
 
     if (isModal) {
@@ -47,10 +66,7 @@ const EmojiDropdown: React.FC<EmojiDropdownProps> = ({
                             }}
                         >
                             <MyEmojiPicker
-                                setTaskEmoji={(emoji) => {
-                                    setTaskEmoji(emoji);
-                                    setIsOpen(false);
-                                }}
+                                setTaskEmoji={handleSetEmoji}
                                 setIsOpen={setIsOpen}
                             />
                         </div>
@@ -71,7 +87,7 @@ const EmojiDropdown: React.FC<EmojiDropdownProps> = ({
             <div className={`emoji-dropdown-menu z-20 absolute`}>
                 {isOpen && (
                     <MyEmojiPicker
-                        setTaskEmoji={setTaskEmoji}
+                        setTaskEmoji={handleSetEmoji}
                         setIsOpen={setIsOpen}
                     />
                 )}

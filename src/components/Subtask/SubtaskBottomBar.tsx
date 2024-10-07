@@ -22,6 +22,7 @@ export const SubtaskBottomBar = ({
                 isSubtask={true}
                 taskId={subtask._id ?? ''}
                 onArchive={handleArchive}
+                currentProgress={subtask.progress}
             />
             <SubtaskProgresses task={subtask} />
         </div>

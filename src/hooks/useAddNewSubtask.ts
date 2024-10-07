@@ -8,6 +8,7 @@ import {
 import { Task } from '@/types';
 import { generateTempId } from '@/app/utils/utils';
 import { useAlert } from './useAlert';
+import { adjustUserStats } from '@/store/userSlice';
 
 export const useAddNewSubtask = () => {
     const dispatch = useDispatch<AppDispatch>();
@@ -88,7 +89,14 @@ export const useAddNewSubtask = () => {
                 })
             ).unwrap();
 
-            // Success: The new subtask with a real ID is added in the fulfilled case
+            // Update user stats
+            dispatch(
+                adjustUserStats({
+                    totalTasksCreated: 1,
+                })
+            );
+
+            // Success
             showAlert('Added subtask!', 'success');
         } catch (error) {
             // Error: rollback optimistic updates -- handled in the .rejected case in taskSlice extra reducers

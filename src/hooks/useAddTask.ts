@@ -13,6 +13,7 @@ import {
 import { Task } from '@/types';
 import { generateTempId } from '@/app/utils/utils';
 import { useAlert } from './useAlert';
+import { adjustUserStats } from '@/store/userSlice';
 
 export const useAddTask = () => {
     const dispatch = useDispatch<AppDispatch>();
@@ -83,6 +84,13 @@ export const useAddTask = () => {
                     spaceId: task.space as string,
                     tempId,
                     newTaskId: result.newTask._id,
+                })
+            );
+
+            // Update user stats
+            dispatch(
+                adjustUserStats({
+                    totalTasksCreated: 1,
                 })
             );
 

@@ -7,6 +7,8 @@ import { FaCheck, FaChevronDown } from 'react-icons/fa';
 import { FaBoxArchive } from 'react-icons/fa6';
 import { Tooltip } from 'react-tooltip';
 import { useDispatch } from 'react-redux';
+import { adjustUserStats } from '@/store/userSlice';
+import { AppDispatch } from '@/store/store';
 
 interface ProgressDropdownProps {
     progress: TaskProgress;
@@ -14,11 +16,12 @@ interface ProgressDropdownProps {
     isSubtask?: boolean;
     taskId: string;
     onArchive: () => void;
+    currentProgress: TaskProgress;
 }
 
 export const ProgressDropdown: React.FC<ProgressDropdownProps> = React.memo(
-    ({ progress, onProgressChange, onArchive, isSubtask, taskId }) => {
-        const dispatch = useDispatch();
+    ({ progress, onProgressChange, onArchive, taskId, currentProgress }) => {
+        const dispatch = useDispatch<AppDispatch>();
         const currentTheme = useTheme();
         const dropdownRef = useRef<HTMLDivElement>(null);
         const progressCardRef = useRef<HTMLDivElement>(null);
@@ -45,6 +48,14 @@ export const ProgressDropdown: React.FC<ProgressDropdownProps> = React.memo(
         };
 
         const handleProgressSelect = (newProgress: TaskProgress) => {
+            if (newProgress === 'Complete') {
+                dispatch(adjustUserStats({ tasksCompleted: 1 }));
+            } else if (
+                currentProgress === 'Complete' &&
+                newProgress !== 'Complete'
+            ) {
+                dispatch(adjustUserStats({ tasksCompleted: -1 }));
+            }
             onProgressChange(newProgress);
             setShouldOpenDropdown(false);
         };
