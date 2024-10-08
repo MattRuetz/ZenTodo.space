@@ -577,7 +577,6 @@ export const tasksSlice = createSlice({
                 newPosition: { x: number; y: number; zIndex: number };
             }>
         ) => {
-            console.log('updateTaskPositionOptimistic', action.payload);
             const { taskId, newPosition } = action.payload;
             const index = state.tasks.findIndex((task) => task._id === taskId);
             if (index !== -1) {
@@ -1127,7 +1126,6 @@ export const tasksSlice = createSlice({
                 state.tasks = state.tasks.filter((task) => !task.isArchived);
             })
             .addCase(updateMultipleTasks.fulfilled, (state, action) => {
-                console.log('updateMultipleTasks', action.payload);
                 action.payload.updatedTasks.forEach((updatedTask: Task) => {
                     const index = state.tasks.findIndex(
                         (task) => task._id === updatedTask._id

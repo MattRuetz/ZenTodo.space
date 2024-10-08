@@ -376,7 +376,7 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
                                 <h4 className="text-lg font-semibold mb-2">
                                     {tasks.length} Tasks
                                 </h4>
-                                <p className="text-sm grid md:grid-cols-1 lg:grid-cols-2 gap-2">
+                                <div className="text-sm grid md:grid-cols-1 lg:grid-cols-2 gap-2">
                                     {tasks.filter(
                                         (task) =>
                                             task.progress === 'Not Started'
@@ -443,7 +443,7 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
                                             Completed
                                         </div>
                                     )}
-                                </p>
+                                </div>
 
                                 {tasksDueToday.length > 0 && (
                                     <div>
