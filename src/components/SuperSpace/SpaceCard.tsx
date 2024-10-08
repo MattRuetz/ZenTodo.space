@@ -242,7 +242,7 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
-            className={`space rounded-lg shadow-md hover:shadow-xl p-4 md:p-8 cursor-pointer relative flex flex-row justify-start items-center gap-4 min-h-[150px] max-h-[300px] md:hover:-rotate-1 border-4 border-transparent md:hover:border-white transition-all duration-300 ease-in-out ${
+            className={`space rounded-lg shadow-md hover:shadow-xl p-5 cursor-pointer relative flex flex-row justify-start items-center gap-2 min-h-[150px] max-h-[300px] md:hover:-rotate-1 border-4 border-transparent md:hover:border-white transition-all duration-300 ease-in-out ${
                 isDragging || isShaking ? 'shake opacity-50' : ''
             }`}
             style={{

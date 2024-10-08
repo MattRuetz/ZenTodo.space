@@ -85,6 +85,12 @@ const isDateWithinRange = (date: Date | null, range: string) => {
     const next30Days = new Date(today);
     next30Days.setDate(today.getDate() + 30);
 
+    // Set time to start of the day
+    today.setHours(0, 0, 0, 0);
+    next7Days.setHours(0, 0, 0, 0);
+    next30Days.setHours(0, 0, 0, 0);
+    date.setHours(0, 0, 0, 0);
+
     if (range === 'today') {
         return date.getTime() === today.getTime();
     } else if (range === 'next 7 days') {
