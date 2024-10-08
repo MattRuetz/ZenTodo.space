@@ -30,6 +30,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useIsMobileSize } from '@/hooks/useIsMobileSize';
 import { isMobile, isTablet } from 'react-device-detect';
 import ControlPanel from '../ControlPanel/ControlPanel';
+import { useClearFilters } from '@/hooks/useClearFilters';
 
 interface SpaceProps {
     spaceId: string;
@@ -51,31 +52,44 @@ export const selectSelectedDueDateRange = createSelector(
     (currentSpace) => currentSpace?.selectedDueDateRange || null
 );
 
+export const selectCurrentSpace = createSelector(
+    (state: RootState) => state.spaces.currentSpace,
+    (currentSpace) => currentSpace
+);
+
+export const selectSpaceWallpaper = createSelector(
+    selectCurrentSpace,
+    (currentSpace) => currentSpace?.wallpaper || ''
+);
+
+export const selectSpaceBackgroundColor = createSelector(
+    selectCurrentSpace,
+    (currentSpace) => currentSpace?.backgroundColor || ''
+);
+
+export const selectIsSubtaskDrawerOpen = createSelector(
+    (state: RootState) => state.ui.isSubtaskDrawerOpen,
+    (isOpen) => isOpen
+);
+
 const Space: React.FC<SpaceProps> = React.memo(({ spaceId }) => {
     const dispatch = useDispatch<AppDispatch>();
     const currentTheme = useTheme();
 
     const isMobileSize = useIsMobileSize();
-    const isMobileDevice = isMobile || isTablet;
 
     const tasks = useSelector((state: RootState) =>
         selectTasksForSpace(state, spaceId)
     );
-    const currentSpace = useSelector(
-        (state: RootState) => state.spaces.currentSpace
-    );
+    const currentSpace = useSelector(selectCurrentSpace);
     const selectedEmojis = useSelector(selectSelectedEmojis);
-    const isSubtaskDrawerOpen = useSelector(
-        (state: RootState) => state.ui.isSubtaskDrawerOpen
-    );
-    const wallpaper = useSelector(
-        (state: RootState) => state.spaces.currentSpace?.wallpaper || ''
-    );
-    const customBackgroundColor = useSelector(
-        (state: RootState) => state.spaces.currentSpace?.backgroundColor || ''
-    );
+    const selectedProgresses = useSelector(selectSelectedProgresses);
+    const selectedDueDateRange = useSelector(selectSelectedDueDateRange);
+    const wallpaper = useSelector(selectSpaceWallpaper);
+    const customBackgroundColor = useSelector(selectSpaceBackgroundColor);
+    const isSubtaskDrawerOpen = useSelector(selectIsSubtaskDrawerOpen);
 
-    const { clearEmojis } = useClearEmojis(spaceId);
+    const { clearFilters } = useClearFilters(spaceId);
 
     const [maxZIndex, setMaxZIndex] = useState(currentSpace?.maxZIndex || 1);
     const [canCreateTask, setCanCreateTask] = useState(true);
@@ -194,7 +208,7 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId }) => {
                 return;
 
             if (canCreateTask) {
-                clearEmojis();
+                clearFilters();
                 const spaceRect = spaceRef.current?.getBoundingClientRect();
                 if (spaceRect) {
                     const { x: safeX, y: safeY } = calculateSafePosition(
@@ -326,6 +340,30 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId }) => {
                                     <p className="text-center text-gray-300 text-xl font-normal p-2 mt-2">
                                         click anywhere to add a task.
                                     </p>
+                                    {selectedEmojis.length > 0 ||
+                                        ((selectedProgresses.length > 0 ||
+                                            selectedDueDateRange) && (
+                                            <div
+                                                className="flex flex-col items-center justify-center p-4 rounded-lg shadow-md pointer-events-auto bg-red-50 border-2"
+                                                style={{
+                                                    borderColor: `var(--${currentTheme}-accent-red)`,
+                                                    color: `var(--${currentTheme}-text-default)`,
+                                                }}
+                                            >
+                                                <p className="text-center text-lg font-semibold mb-2">
+                                                    Some tasks are hidden by
+                                                    your filters
+                                                </p>
+                                                <button
+                                                    className="btn btn-sm btn-outline cursor-pointer text-black"
+                                                    onClick={() => {
+                                                        clearFilters();
+                                                    }}
+                                                >
+                                                    Clear Filters
+                                                </button>
+                                            </div>
+                                        ))}
                                 </motion.div>
                             </motion.div>
                         </AnimatePresence>
