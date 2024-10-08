@@ -95,7 +95,7 @@ export const useAddTask = () => {
             );
 
             // Success
-            showAlert('Task added!', 'success');
+            // showAlert('Task added!', 'success');
         } catch (error) {
             // Error: rollback optimistic updates
             dispatch(deleteTaskOptimistic([tempId]));

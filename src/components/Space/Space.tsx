@@ -23,14 +23,13 @@ import { setSubtaskDrawerOpen } from '@/store/uiSlice';
 import { TaskProgress, Task } from '@/types';
 import { selectTasksForSpace } from '@/store/selectors';
 import { createSelector } from '@reduxjs/toolkit';
-import { useClearEmojis } from '@/hooks/useClearEmojis';
 import { useAddTask } from '@/hooks/useAddTask';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useTheme } from '@/hooks/useTheme';
 import { useIsMobileSize } from '@/hooks/useIsMobileSize';
-import { isMobile, isTablet } from 'react-device-detect';
 import ControlPanel from '../ControlPanel/ControlPanel';
 import { useClearFilters } from '@/hooks/useClearFilters';
+import { useAlert } from '@/hooks/useAlert';
 
 interface SpaceProps {
     spaceId: string;
@@ -90,6 +89,7 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId }) => {
     const isSubtaskDrawerOpen = useSelector(selectIsSubtaskDrawerOpen);
 
     const { clearFilters } = useClearFilters(spaceId);
+    const { showAlert } = useAlert();
 
     const [maxZIndex, setMaxZIndex] = useState(currentSpace?.maxZIndex || 1);
     const [canCreateTask, setCanCreateTask] = useState(true);
@@ -207,8 +207,9 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId }) => {
             )
                 return;
 
+            clearFilters();
+
             if (canCreateTask) {
-                clearFilters();
                 const spaceRect = spaceRef.current?.getBoundingClientRect();
                 if (spaceRect) {
                     const { x: safeX, y: safeY } = calculateSafePosition(
@@ -235,7 +236,7 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId }) => {
                 }
             }
         },
-        [canCreateTask, spaceId, getNewZIndex, dispatch]
+        [canCreateTask, spaceId, getNewZIndex, dispatch, clearFilters]
     );
 
     const handleDragStart = () => {
