@@ -1,9 +1,9 @@
 import { useTheme } from '@/hooks/useTheme';
 import { Task } from '@/types';
-import { isMobile } from 'react-device-detect';
-import { FaClock, FaExclamationCircle, FaHourglassHalf } from 'react-icons/fa';
+import { FaHourglassHalf } from 'react-icons/fa';
 import { FaHourglassEnd, FaHourglassStart } from 'react-icons/fa6';
 import { Tooltip } from 'react-tooltip';
+import { useIsMobileSize } from '@/hooks/useIsMobileSize';
 
 export const DueDateIndicator = ({
     task,
@@ -13,6 +13,7 @@ export const DueDateIndicator = ({
     handleDueDateClick: () => void;
 }) => {
     const currentTheme = useTheme();
+    const isMobileSize = useIsMobileSize();
     const dueDateIsPast =
         new Date(task.dueDate as Date).getTime() < new Date().getTime() &&
         new Date(task.dueDate as Date).toLocaleDateString() !==
@@ -61,7 +62,7 @@ export const DueDateIndicator = ({
                     className="btn btn-sm btn-ghost cursor-pointer flex items-center gap-2"
                     onClick={handleDueDateClick}
                 >
-                    {isMobile && task.dueDate && (
+                    {isMobileSize && task.dueDate && (
                         <p
                             className="hover:saturate-150 transition-colors duration-200 text-sm"
                             style={{
@@ -119,34 +120,43 @@ export const DueDateIndicator = ({
                     )}
                 </button>
                 <div className="text-base">
-                    <Tooltip id={`due-date-tooltip-${task._id}`} place="top">
-                        {dueDateIsPast ? (
-                            <>
-                                <strong className="underline">Past Due</strong>
-                                <br />
-                                {new Date(
+                    {!isMobileSize && (
+                        <Tooltip
+                            id={`due-date-tooltip-${task._id}`}
+                            place="top"
+                        >
+                            {dueDateIsPast ? (
+                                <>
+                                    <strong className="underline">
+                                        Past Due
+                                    </strong>
+                                    <br />
+                                    {new Date(
+                                        task.dueDate as Date
+                                    ).toLocaleDateString()}
+                                </>
+                            ) : dueDateIsToday ? (
+                                'Due Today'
+                            ) : dueDateIsWithin7Days ? (
+                                <>
+                                    Due{' '}
+                                    {dueDateIsTomorrow
+                                        ? 'Tomorrow'
+                                        : dayOfWeek(
+                                              new Date(task.dueDate as Date)
+                                          )}
+                                    <br />
+                                    {new Date(
+                                        task.dueDate as Date
+                                    ).toLocaleDateString()}
+                                </>
+                            ) : (
+                                `Due ${new Date(
                                     task.dueDate as Date
-                                ).toLocaleDateString()}
-                            </>
-                        ) : dueDateIsToday ? (
-                            'Due Today'
-                        ) : dueDateIsWithin7Days ? (
-                            <>
-                                Due{' '}
-                                {dueDateIsTomorrow
-                                    ? 'Tomorrow'
-                                    : dayOfWeek(new Date(task.dueDate as Date))}
-                                <br />
-                                {new Date(
-                                    task.dueDate as Date
-                                ).toLocaleDateString()}
-                            </>
-                        ) : (
-                            `Due ${new Date(
-                                task.dueDate as Date
-                            ).toLocaleDateString()}`
-                        )}
-                    </Tooltip>
+                                ).toLocaleDateString()}`
+                            )}
+                        </Tooltip>
+                    )}
                 </div>
             </div>
         </>
