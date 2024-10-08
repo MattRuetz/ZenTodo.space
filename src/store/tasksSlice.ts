@@ -504,6 +504,38 @@ export const clearArchivedTasks = createAsyncThunk(
     }
 );
 
+export const updateTasksInDatabase = async (tasks: Partial<Task>[]) => {
+    const response = await fetch('/api/tasks/updateMultiple', {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ tasks }),
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to update tasks in the database');
+    }
+
+    return await response.json();
+};
+
+export const updateMultipleTasks = createAsyncThunk(
+    'tasks/updateMultiple',
+    async (updatedTasks: Partial<Task>[], { rejectWithValue }) => {
+        try {
+            // Update tasks in the database
+            const data = await updateTasksInDatabase(updatedTasks);
+            return data; // Assuming the response contains the updated tasks
+        } catch (error) {
+            if (error instanceof Error) {
+                return rejectWithValue(error.message);
+            }
+            return rejectWithValue('An unknown error occurred');
+        }
+    }
+);
+
 export const tasksSlice = createSlice({
     name: 'tasks',
     initialState,
@@ -536,6 +568,22 @@ export const tasksSlice = createSlice({
                     _id: action.payload.newTask._id,
                     clientId: action.payload.tempId, // Keep the clientId for stable rendering
                 };
+            }
+        },
+        updateTaskPositionOptimistic: (
+            state,
+            action: PayloadAction<{
+                taskId: string;
+                newPosition: { x: number; y: number; zIndex: number };
+            }>
+        ) => {
+            console.log('updateTaskPositionOptimistic', action.payload);
+            const { taskId, newPosition } = action.payload;
+            const index = state.tasks.findIndex((task) => task._id === taskId);
+            if (index !== -1) {
+                state.tasks[index].x = newPosition.x;
+                state.tasks[index].y = newPosition.y;
+                state.tasks[index].zIndex = newPosition.zIndex;
             }
         },
         addNewSubtaskOptimistic: (
@@ -1077,6 +1125,20 @@ export const tasksSlice = createSlice({
             })
             .addCase(clearArchivedTasks.fulfilled, (state) => {
                 state.tasks = state.tasks.filter((task) => !task.isArchived);
+            })
+            .addCase(updateMultipleTasks.fulfilled, (state, action) => {
+                console.log('updateMultipleTasks', action.payload);
+                action.payload.updatedTasks.forEach((updatedTask: Task) => {
+                    const index = state.tasks.findIndex(
+                        (task) => task._id === updatedTask._id
+                    );
+                    if (index !== -1) {
+                        state.tasks[index] = {
+                            ...state.tasks[index],
+                            ...updatedTask,
+                        };
+                    }
+                });
             });
     },
 });
@@ -1086,6 +1148,7 @@ export const selectSubtasksByParentId = (state: RootState, parentId: string) =>
 export const {
     // hideNewChildTask,
     duplicateTasksOptimistic,
+    updateTaskPositionOptimistic,
     updateTaskInPlace,
     convertTaskToSubtaskOptimistic,
     convertSubtaskToTaskOptimistic,

@@ -6,6 +6,7 @@ import { Task } from '@/types';
 import { DraggableData, DraggableEvent } from 'react-draggable';
 import { updateSpaceMaxZIndex } from '@/store/spaceSlice';
 import { useAlert } from '@/hooks/useAlert';
+import { updateTaskPositionOptimistic } from '@/store/tasksSlice';
 
 interface UseDragHandlersProps {
     task: Task;
@@ -98,6 +99,24 @@ export const useDragHandlers = ({
     const handleDragStop = useCallback(
         (e: DraggableEvent, data: DraggableData) => {
             if (!isDragging) return;
+
+            setLocalTask((prevTask) => {
+                const newTaskData = {
+                    x: data.x,
+                    y: data.y,
+                    zIndex: prevTask.zIndex,
+                };
+                dispatch(
+                    updateTaskPositionOptimistic({
+                        taskId: prevTask._id as string,
+                        newPosition: newTaskData,
+                    })
+                );
+
+                debouncedUpdate(newTaskData);
+                return { ...prevTask, ...newTaskData };
+            });
+
             if (!allowDropRef.current) {
                 setIsDragging(false);
                 onDragStop();
@@ -109,16 +128,6 @@ export const useDragHandlers = ({
             setAllowDrop(false);
             setIsDragging(false);
 
-            setLocalTask((prevTask) => {
-                const newTaskData = {
-                    x: data.x,
-                    y: data.y,
-                    zIndex: prevTask.zIndex,
-                };
-
-                debouncedUpdate(newTaskData);
-                return { ...prevTask, ...newTaskData };
-            });
             const spaceId = task.space;
             const newZIndex = getNewZIndex();
             dispatch(
@@ -224,29 +233,10 @@ export const useDragHandlers = ({
         [setLocalTask, updateTaskInStore, updateCardSize]
     );
 
-    const handleMouseDown = useCallback((e: React.MouseEvent) => {
-        if (cardRef.current) {
-            const rect = cardRef.current.getBoundingClientRect();
-            const isRightEdge = e.clientX > rect.right - 10;
-            const isBottomEdge = e.clientY > rect.bottom - 10;
-            if (isRightEdge || isBottomEdge) {
-                resizingRef.current = true;
-                startPosRef.current = { x: e.clientX, y: e.clientY };
-                startSizeRef.current = {
-                    width: rect.width,
-                    height: rect.height,
-                };
-                e.preventDefault();
-                e.stopPropagation();
-            }
-        }
-    }, []);
-
     return {
         handleDragStart,
         handleDragStop,
         handleInputChange,
         handleInputBlur,
-        handleMouseDown,
     };
 };

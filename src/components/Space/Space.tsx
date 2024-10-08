@@ -1,12 +1,6 @@
 // src/components/Space.tsx
 'use client';
-import React, {
-    useEffect,
-    useRef,
-    useState,
-    useCallback,
-    useMemo,
-} from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useDrop } from 'react-dnd';
 // Import the new TaskListView component
@@ -14,7 +8,7 @@ import TaskListView from '../Mobile/TaskListView';
 import TaskCard from '../TaskCards/TaskCard';
 import SubtaskDrawer from '../Subtask/SubtaskDrawer';
 import { RootState, AppDispatch } from '../../store/store';
-import { updateTask } from '../../store/tasksSlice';
+import { updateMultipleTasks, updateTask } from '../../store/tasksSlice';
 import {
     updateSpaceMaxZIndex,
     fetchSpaceMaxZIndex,
@@ -30,6 +24,7 @@ import { useIsMobileSize } from '@/hooks/useIsMobileSize';
 import ControlPanel from '../ControlPanel/ControlPanel';
 import { useClearFilters } from '@/hooks/useClearFilters';
 import { useAlert } from '@/hooks/useAlert';
+import debounce from 'lodash.debounce';
 
 interface SpaceProps {
     spaceId: string;
@@ -89,7 +84,6 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId }) => {
     const isSubtaskDrawerOpen = useSelector(selectIsSubtaskDrawerOpen);
 
     const { clearFilters } = useClearFilters(spaceId);
-    const { showAlert } = useAlert();
 
     const [maxZIndex, setMaxZIndex] = useState(currentSpace?.maxZIndex || 1);
     const [canCreateTask, setCanCreateTask] = useState(true);
@@ -185,18 +179,63 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId }) => {
         []
     );
 
-    const calculateSafePosition = (x: number, y: number) => {
+    const calculateSafePosition = (
+        x: number,
+        y: number,
+        taskWidth = 270, // Default width
+        taskHeight = 250 // Default height
+    ) => {
         const spaceRect = spaceRef.current?.getBoundingClientRect();
         if (!spaceRect) return { x, y };
-
-        const taskWidth = 270; // Minimum width of a task card
-        const taskHeight = 250; // Minimum height of a task card
 
         const safeX = Math.min(Math.max(x, 0), spaceRect.width - taskWidth);
         const safeY = Math.min(Math.max(y, 0), spaceRect.height - taskHeight);
 
         return { x: safeX, y: safeY };
     };
+
+    useEffect(() => {
+        const handleResize = debounce(() => {
+            const spaceRect = spaceRef.current?.getBoundingClientRect();
+            if (!spaceRect) return;
+
+            const updatedTasks = tasks.map((task) => {
+                const taskWidth = task.width || 270;
+                const taskHeight = task.height || 250;
+
+                const { x: safeX, y: safeY } = calculateSafePosition(
+                    task.x,
+                    task.y,
+                    taskWidth,
+                    taskHeight
+                );
+
+                if (safeX !== task.x || safeY !== task.y) {
+                    return { ...task, x: safeX, y: safeY };
+                }
+                return task;
+            });
+
+            const tasksToUpdate = updatedTasks.filter(
+                (task, index) =>
+                    task.x !== tasks[index].x || task.y !== tasks[index].y
+            );
+
+            if (tasksToUpdate.length > 0) {
+                dispatch(updateMultipleTasks(tasksToUpdate as Partial<Task>[]));
+            }
+        }, 250);
+
+        window.addEventListener('resize', handleResize);
+
+        // Run the handler once on mount to adjust positions
+        handleResize();
+
+        return () => {
+            window.removeEventListener('resize', handleResize);
+            handleResize.cancel();
+        };
+    }, [tasks, dispatch, calculateSafePosition]);
 
     const handleSpaceClick = useCallback(
         (e: React.MouseEvent<HTMLDivElement>) => {

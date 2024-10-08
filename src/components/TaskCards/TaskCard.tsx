@@ -38,7 +38,12 @@ interface TaskCardProps {
 }
 
 const TaskCard = React.memo(
-    ({ task, onDragStart, onDragStop, getNewZIndex }: TaskCardProps) => {
+    ({
+        task: initialTask,
+        onDragStart,
+        onDragStop,
+        getNewZIndex,
+    }: TaskCardProps) => {
         const dispatch = useDispatch<AppDispatch>();
         const currentTheme = useTheme();
 
@@ -52,6 +57,26 @@ const TaskCard = React.memo(
         );
 
         const tasksState = useSelector((state: RootState) => state.tasks.tasks);
+        // Use a selector to get the latest task data from the Redux store
+        const task = useSelector((state: RootState) => {
+            const foundTask = state.tasks.tasks.find(
+                (t) => t._id === initialTask._id
+            );
+            return foundTask
+                ? {
+                      ...foundTask,
+                      x: foundTask.x,
+                      y: foundTask.y,
+                      zIndex: foundTask.zIndex,
+                  }
+                : initialTask;
+        });
+
+        if (!task) {
+            console.error('Task not found in the store:', initialTask._id);
+            return null; // or some fallback UI
+        }
+
         const spacesState = useSelector(
             (state: RootState) => state.spaces.spaces
         );
@@ -174,7 +199,6 @@ const TaskCard = React.memo(
             handleDragStop,
             handleInputChange,
             handleInputBlur,
-            handleMouseDown,
         } = useDragHandlers({
             isDragging,
             setIsDragging,
@@ -449,7 +473,7 @@ const TaskCard = React.memo(
 
         return (
             <Draggable
-                defaultPosition={{ x: task.x, y: task.y }}
+                position={{ x: task.x, y: task.y }}
                 bounds="parent"
                 handle=".draggable-area"
                 onStart={(e, data) => {
@@ -467,7 +491,6 @@ const TaskCard = React.memo(
                     animate={{ opacity: shouldDelete ? 0 : 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.6 }}
-                    onMouseDown={handleMouseDown}
                     onMouseEnter={handleMouseEnter}
                     onMouseLeave={handleMouseLeave}
                     onContextMenu={handleContextMenu}

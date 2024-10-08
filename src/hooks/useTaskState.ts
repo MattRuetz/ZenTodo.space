@@ -1,13 +1,18 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Task } from '@/types';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store/store';
 
-export const useTaskState = (task: Task) => {
-    const [localTask, setLocalTask] = useState(task);
+export const useTaskState = (initialTask: Task) => {
+    const task = useSelector((state: RootState) =>
+        state.tasks.tasks.find((t) => t._id === initialTask._id)
+    );
+    const [localTask, setLocalTask] = useState(task || initialTask);
     const [isHovering, setIsHovering] = useState(false);
     const [isFocused, setIsFocused] = useState(false);
     const [cardSize, setCardSize] = useState({
-        width: task.width || 270,
-        height: task.height || 250,
+        width: task?.width || 270,
+        height: task?.height || 250,
     });
     const [isDragging, setIsDragging] = useState(false);
     const [isDraggingOver, setIsDraggingOver] = useState(false);
@@ -29,6 +34,10 @@ export const useTaskState = (task: Task) => {
     const isDraggingOverRef = useRef(false);
     const allowDropRef = useRef(false); // Use ref for allowDrop
     const isHoveringRef = useRef(false);
+
+    useEffect(() => {
+        setLocalTask(task || initialTask);
+    }, [task]);
 
     return {
         localTask,
