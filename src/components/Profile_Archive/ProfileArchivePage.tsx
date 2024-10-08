@@ -21,7 +21,7 @@ const ProfileArchivePage: React.FC<ProfileArchivePageProps> = ({
 
     return (
         <div
-            className="mx-auto p-2 sm:p-4 w-full h-screen flex flex-col"
+            className="mx-auto p-2 sm:p-4 w-full h-screen flex flex-col overflow-hidden"
             style={{
                 backgroundColor: `var(--${theme}-space-background)`,
             }}
