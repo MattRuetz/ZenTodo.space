@@ -33,15 +33,11 @@ export const useClearFilters = (spaceId: string) => {
     const selectedDueDateRange = useSelector(selectSelectedDueDateRange);
 
     const clearFilters = () => {
-        console.log('selectedEmojis', selectedEmojis);
-        console.log('selectedProgresses', selectedProgresses);
-        console.log('selectedDueDateRange', selectedDueDateRange);
         if (
             selectedEmojis.length === 0 &&
             selectedProgresses.length === 0 &&
             selectedDueDateRange === null
         ) {
-            showAlert('No filters applied.', 'notice');
             return;
         }
         if (spaceId) {

@@ -98,7 +98,7 @@ const ConfirmClearArchive: React.FC<ConfirmClearArchiveProps> = ({
                             Cancel
                         </button>
                         <button
-                            className="btn bg-red-500/30 hover:bg-red-600/50 border-red-500"
+                            className="relative btn bg-red-500/30 hover:bg-red-600/50 border-red-500 min-w-24"
                             style={{
                                 color: `var(--${currentTheme}-text-default)`,
                             }}
