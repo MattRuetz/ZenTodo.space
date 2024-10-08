@@ -709,9 +709,10 @@ export const tasksSlice = createSlice({
         ) => {
             const {
                 updatedSubtask,
-                updatedParentTask,
+                updatedParentTask, // This is now just a reference for the parent task
                 updatedGrandparentTask,
             } = action.payload;
+
             const subtaskIndex = state.tasks.findIndex(
                 (task) => task._id === updatedSubtask._id
             );
@@ -722,12 +723,23 @@ export const tasksSlice = createSlice({
                 (task) => task._id === updatedGrandparentTask?._id
             );
 
-            if (subtaskIndex !== -1 && parentTaskIndex !== -1) {
-                state.tasks[subtaskIndex] = updatedSubtask;
-                state.tasks[parentTaskIndex] = updatedParentTask;
+            if (subtaskIndex !== -1) {
+                state.tasks[subtaskIndex] = updatedSubtask; // Update the subtask
             }
+
+            if (parentTaskIndex !== -1) {
+                // Only update the subtasks array of the parent task
+                const parentTask = state.tasks[parentTaskIndex];
+                state.tasks[parentTaskIndex] = {
+                    ...parentTask, // Keep other properties intact
+                    subtasks: parentTask.subtasks.filter(
+                        (id) => id !== updatedSubtask._id
+                    ), // Update subtasks
+                };
+            }
+
             if (grandparentTaskIndex !== -1 && updatedGrandparentTask) {
-                state.tasks[grandparentTaskIndex] = updatedGrandparentTask;
+                state.tasks[grandparentTaskIndex] = updatedGrandparentTask; // Update grandparent if necessary
             }
         },
         moveSubtaskWithinLevelOptimistic: (

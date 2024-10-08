@@ -16,6 +16,7 @@ import useClickOutside from '@/hooks/useClickOutside';
 import { useTheme } from '@/hooks/useTheme';
 import { useArchiveTask } from '@/hooks/useArchiveTask';
 import { useClearFilters } from '@/hooks/useClearFilters';
+import { createSelector } from '@reduxjs/toolkit';
 interface SubtaskDrawerCardProps {
     subtask: Task;
     position: string;
@@ -23,6 +24,17 @@ interface SubtaskDrawerCardProps {
     setCurrentEmojiTask: (currentEmojiTask: string | null) => void;
     setIsEmojiPickerOpen: (isEmojiPickerOpen: boolean) => void;
 }
+
+const tasksStateSelecor = createSelector(
+    (state: RootState) => state.tasks.tasks,
+    (tasks) => tasks
+);
+
+const parentTaskSelector = createSelector(
+    (state: RootState, parentTaskId: string) =>
+        state.tasks.tasks.find((task) => task._id === parentTaskId),
+    (parentTask) => parentTask
+);
 
 const SubtaskDrawerCard = React.memo(
     ({
@@ -33,6 +45,11 @@ const SubtaskDrawerCard = React.memo(
         setCurrentEmojiTask,
     }: SubtaskDrawerCardProps) => {
         const dispatch = useDispatch<AppDispatch>();
+        const tasksState = useSelector(tasksStateSelecor);
+        const parentTask = useSelector((state: RootState) =>
+            parentTaskSelector(state, subtask.parentTask as string)
+        );
+
         const currentTheme = useTheme();
         const { showAlert } = useAlert();
         const archiveTask = useArchiveTask();
@@ -47,10 +64,6 @@ const SubtaskDrawerCard = React.memo(
         const ref = useRef<HTMLLIElement>(null);
 
         const { commitSubtaskOrder } = useMoveSubtask();
-
-        const parentTask = useSelector((state: RootState) =>
-            state.tasks.tasks.find((task) => task._id === subtask.parentTask)
-        );
 
         const { convertTaskToSubtask, convertSubtaskToTask } =
             useChangeHierarchy();
@@ -72,7 +85,8 @@ const SubtaskDrawerCard = React.memo(
                     ...subtask,
                     zIndex: maxZIndex ? maxZIndex + 1 : 0,
                 },
-                dropPosition
+                dropPosition,
+                tasksState
             );
             clearFilters();
         };

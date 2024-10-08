@@ -156,13 +156,13 @@ export const useChangeHierarchy = () => {
 
     const convertSubtaskToTask = async (
         subtask: Task,
-        dropPosition: { x: number; y: number } | undefined
+        dropPosition: { x: number; y: number } | undefined,
+        tasksState: Task[]
     ) => {
         if (!subtask._id || !subtask.parentTask) {
             console.error('Subtask ID or parent task ID is undefined');
             return;
         }
-
         const taskMap = fetchAllTasksFromState(tasksState);
 
         const parentTask = taskMap.get(subtask.parentTask as string);
