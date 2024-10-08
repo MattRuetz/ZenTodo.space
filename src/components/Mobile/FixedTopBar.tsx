@@ -73,8 +73,12 @@ const FixedTopBar = ({
     }, [currentSpace?.backgroundColor, currentTheme]);
 
     const topBarTextColor = useMemo(() => {
+        if (!currentSpace?.backgroundColor) {
+            return `var(--${currentTheme}-text-default)`;
+        }
+
         return getContrastingColor(topBarBackgroundColor);
-    }, [topBarBackgroundColor]);
+    }, [topBarBackgroundColor, currentSpace?.backgroundColor]);
 
     return (
         <div
@@ -82,7 +86,7 @@ const FixedTopBar = ({
             style={{ zIndex: 10000 }}
         >
             <div
-                className="header flex items-center justify-between p-2 w-full top-0"
+                className="header flex items-center justify-between p-3 w-full top-0"
                 style={{
                     backgroundColor: topBarBackgroundColor,
                     borderColor: `var(--${currentTheme}-background-200)`,

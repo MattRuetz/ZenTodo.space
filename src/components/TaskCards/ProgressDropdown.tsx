@@ -1,6 +1,5 @@
 import useClickOutside from '@/hooks/useClickOutside';
 import { useTheme } from '@/hooks/useTheme';
-import { updateTask } from '@/store/tasksSlice';
 import { TaskProgress } from '@/types';
 import React, { useEffect, useRef, useState } from 'react';
 import { FaCheck, FaChevronDown } from 'react-icons/fa';
@@ -9,6 +8,7 @@ import { Tooltip } from 'react-tooltip';
 import { useDispatch } from 'react-redux';
 import { adjustUserStats } from '@/store/userSlice';
 import { AppDispatch } from '@/store/store';
+import { useIsMobileSize } from '@/hooks/useIsMobileSize';
 
 interface ProgressDropdownProps {
     progress: TaskProgress;
@@ -23,11 +23,12 @@ export const ProgressDropdown: React.FC<ProgressDropdownProps> = React.memo(
     ({ progress, onProgressChange, onArchive, taskId, currentProgress }) => {
         const dispatch = useDispatch<AppDispatch>();
         const currentTheme = useTheme();
+        const isMobileSize = useIsMobileSize();
+
         const dropdownRef = useRef<HTMLDivElement>(null);
         const progressCardRef = useRef<HTMLDivElement>(null);
         const [isDropdownOpen, setIsDropdownOpen] = useState(false);
         const [shouldOpenDropdown, setShouldOpenDropdown] = useState(false);
-
         const PROGRESS_OPTIONS: TaskProgress[] = [
             'Not Started',
             'In Progress',
@@ -50,10 +51,7 @@ export const ProgressDropdown: React.FC<ProgressDropdownProps> = React.memo(
         const handleProgressSelect = (newProgress: TaskProgress) => {
             if (newProgress === 'Complete') {
                 dispatch(adjustUserStats({ tasksCompleted: 1 }));
-            } else if (
-                currentProgress === 'Complete' &&
-                newProgress !== 'Complete'
-            ) {
+            } else if (currentProgress === 'Complete') {
                 dispatch(adjustUserStats({ tasksCompleted: -1 }));
             }
             onProgressChange(newProgress);
@@ -101,14 +99,16 @@ export const ProgressDropdown: React.FC<ProgressDropdownProps> = React.memo(
                                     <FaCheck className="text-white" />
                                 )}
                             </div>
-                            <Tooltip
-                                id={`${taskId}-progress-tooltip`}
-                                place="top"
-                            >
-                                <div className="progressLabel">
-                                    <span>{progress}</span>
-                                </div>
-                            </Tooltip>
+                            {!isMobileSize && (
+                                <Tooltip
+                                    id={`${taskId}-progress-tooltip`}
+                                    place="top"
+                                >
+                                    <div className="progressLabel">
+                                        <span>{progress}</span>
+                                    </div>
+                                </Tooltip>
+                            )}
                             <FaChevronDown
                                 className={`transition-transform ${
                                     isDropdownOpen ? 'rotate-180' : ''
@@ -142,14 +142,16 @@ export const ProgressDropdown: React.FC<ProgressDropdownProps> = React.memo(
                             >
                                 <FaBoxArchive />
                             </button>
-                            <Tooltip
-                                id={`${taskId}-archive-tooltip`}
-                                place="top"
-                            >
-                                <div className="progressLabel">
-                                    <span>Send to Archive</span>
-                                </div>
-                            </Tooltip>
+                            {!isMobileSize && (
+                                <Tooltip
+                                    id={`${taskId}-archive-tooltip`}
+                                    place="top"
+                                >
+                                    <div className="progressLabel">
+                                        <span>Send to Archive</span>
+                                    </div>
+                                </Tooltip>
+                            )}
                         </div>
                     )}
                 </div>

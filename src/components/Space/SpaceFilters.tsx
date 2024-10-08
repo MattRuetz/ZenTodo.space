@@ -171,12 +171,12 @@ export const SpaceFilters: React.FC<SpaceFiltersProps> = React.memo(
                 {isOpen && (
                     <div
                         ref={filterRef}
-                        className="absolute top-0 left-full ml-2 p-3 rounded-lg shadow-lg z-50 w-96 opacity-90"
+                        className="absolute top-0 left-full ml-2 p-3 rounded-lg shadow-lg z-50 w-96 opacity-90 border border-black"
                         style={{
                             top: buttonRef.current
                                 ? buttonRef.current.offsetTop
                                 : 0,
-                            backgroundColor: `var(--${currentTheme}-background-100)`,
+                            backgroundColor: `var(--${currentTheme}-background-200)`,
                         }}
                     >
                         {/* Progress */}
@@ -267,6 +267,11 @@ export const SpaceFilters: React.FC<SpaceFiltersProps> = React.memo(
                             </h3>
                             <div className="overflow-x-auto overflow-y-hidden w-full pb-2 scrollbar-rounded-full">
                                 <div className="flex gap-2">
+                                    {availableEmojis.length === 0 && (
+                                        <div className="text-sm text-gray-500">
+                                            No emojis set for main tasks
+                                        </div>
+                                    )}
                                     {availableEmojis.map((emoji) => (
                                         <button
                                             key={emoji}

@@ -15,6 +15,7 @@ import { useAlert } from '@/hooks/useAlert';
 import useClickOutside from '@/hooks/useClickOutside';
 import { useTheme } from '@/hooks/useTheme';
 import { useArchiveTask } from '@/hooks/useArchiveTask';
+import { useClearFilters } from '@/hooks/useClearFilters';
 interface SubtaskDrawerCardProps {
     subtask: Task;
     position: string;
@@ -35,6 +36,7 @@ const SubtaskDrawerCard = React.memo(
         const currentTheme = useTheme();
         const { showAlert } = useAlert();
         const archiveTask = useArchiveTask();
+        const { clearFilters } = useClearFilters(subtask.space as string);
 
         const [localSubtask, setLocalSubtask] = useState(subtask || {});
         const [isEditing, setIsEditing] = useState<string | null>(null);
@@ -72,6 +74,7 @@ const SubtaskDrawerCard = React.memo(
                 },
                 dropPosition
             );
+            clearFilters();
         };
 
         const handleArchive = useCallback(() => {

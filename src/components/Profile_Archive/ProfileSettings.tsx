@@ -260,7 +260,7 @@ const ProfileSettings = () => {
                     <div className="flex items-center justify-center gap-4">
                         <FaList className="w-6 h-6" />
                         <div>
-                            <strong>Total Tasks:</strong>
+                            <strong>Tasks Created:</strong>
                             <span className="ml-2">
                                 {userMetadata?.totalTasksCreated || 0}
                             </span>

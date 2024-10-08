@@ -9,7 +9,7 @@ const Preloader: React.FC = React.memo(() => {
 
     return (
         <div className={`fixed inset-0 ${styles.background}`}>
-            <div className="h-full w-full flex flex-col items-center justify-center">
+            <div className="h-full w-full flex flex-col items-center justify-center px-8">
                 <span className="loading loading-ring text-slate-600 loading-lg"></span>
                 <p className="mt-4 text-slate-600">Loading space...</p>
                 <p className="mt-2 text-md text-neutral-content italic max-w-md text-center">

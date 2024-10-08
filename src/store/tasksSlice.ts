@@ -485,6 +485,25 @@ export const moveTaskWithinLevelAsync = createAsyncThunk(
     }
 );
 
+export const clearArchivedTasks = createAsyncThunk(
+    'tasks/clearArchivedTasks',
+    async (_, { rejectWithValue }) => {
+        try {
+            const response = await fetch(`/api/tasks/archive/clear`, {
+                method: 'DELETE',
+            });
+            if (!response.ok) {
+                throw new Error('Failed to clear archived tasks');
+            }
+            const data = await response.json();
+
+            return data;
+        } catch (error) {
+            return rejectWithValue((error as Error).message);
+        }
+    }
+);
+
 export const tasksSlice = createSlice({
     name: 'tasks',
     initialState,
@@ -1055,6 +1074,9 @@ export const tasksSlice = createSlice({
                             newOrder.indexOf(b._id as string)
                     );
                 }
+            })
+            .addCase(clearArchivedTasks.fulfilled, (state) => {
+                state.tasks = state.tasks.filter((task) => !task.isArchived);
             });
     },
 });

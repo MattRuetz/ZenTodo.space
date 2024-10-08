@@ -336,7 +336,7 @@ const ControlPanelContent: React.FC<ControlPanelContentProps> = ({
                 </div>
             </div>
             {/* Profile card */}
-            <div className="grid grid-cols-3 gap-4 items-center px-2 py-4 border-t border-white/25">
+            <div className="relative grid grid-cols-3 gap-4 items-center px-2 py-4 border-t border-white/25">
                 {isLoadingUser ? (
                     <ComponentSpinner />
                 ) : (

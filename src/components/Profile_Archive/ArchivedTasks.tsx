@@ -1,13 +1,19 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTheme } from '@/hooks/useTheme';
-import { FaArchive, FaFilter, FaSearch } from 'react-icons/fa';
+import { FaArchive, FaFilter, FaSearch, FaTrash } from 'react-icons/fa';
 import { SpaceData, Task } from '@/types';
-import { RootState } from '@/store/store';
+import { AppDispatch, RootState } from '@/store/store';
 import { useSelector } from 'react-redux';
 import ArchivedTaskCard from './ArchivedTaskCard';
+import { useDispatch } from 'react-redux';
+import { clearArchivedTasks } from '@/store/tasksSlice';
+import { useAlert } from '@/hooks/useAlert';
+import ConfirmClearArchive from './ConfirmClearArchive';
 
 const ArchivedTasks: React.FC = () => {
     const currentTheme = useTheme();
+    const dispatch = useDispatch<AppDispatch>();
+    const { showAlert } = useAlert();
 
     const archivedTasks = useSelector((state: RootState) =>
         state.tasks.tasks.filter((task: Task) => task.isArchived)
@@ -16,6 +22,7 @@ const ArchivedTasks: React.FC = () => {
 
     const [searchQuery, setSearchQuery] = useState('');
     const [sortBy, setSortBy] = useState<'date' | 'name'>('date');
+    const [showConfirmClear, setShowConfirmClear] = useState(false);
 
     const filteredTasks = useMemo(() => {
         let filtered = archivedTasks.filter((task: Task) =>
@@ -36,6 +43,14 @@ const ArchivedTasks: React.FC = () => {
         return filtered;
     }, [searchQuery, archivedTasks, sortBy]);
 
+    const handleClearArchiveClick = () => {
+        setShowConfirmClear(true);
+    };
+
+    const cancelClearArchive = () => {
+        setShowConfirmClear(false);
+    };
+
     return (
         <div
             className="p-4 sm:p-6 w-full rounded-lg py-8 sm:py-12 max-w-screen-md mx-auto"
@@ -43,10 +58,27 @@ const ArchivedTasks: React.FC = () => {
                 color: `var(--${currentTheme}-text-default)`,
             }}
         >
-            <h2 className="text-xl sm:text-2xl font-bold mb-6 bg-transparent flex items-center gap-2">
-                <FaArchive className="mr-2" />
-                Archived Tasks
-            </h2>
+            <div className="flex items-center justify-between">
+                <h2 className="text-xl sm:text-2xl font-bold mb-6 bg-transparent flex items-center gap-2">
+                    <FaArchive className="mr-2" />
+                    Archived Tasks
+                </h2>
+                {archivedTasks.length > 0 && (
+                    <button
+                        className="btn btn-sm btn-outline"
+                        onClick={handleClearArchiveClick}
+                    >
+                        <FaTrash className="mr-2" />
+                        Clear Archive
+                    </button>
+                )}
+                {showConfirmClear && (
+                    <ConfirmClearArchive
+                        cancelClearArchive={cancelClearArchive}
+                        archivedTasksCount={archivedTasks.length}
+                    />
+                )}
+            </div>
             <div className="mb-6 space-y-4 h-full">
                 <div className="flex flex-col sm:flex-row gap-4">
                     <div className="relative flex-grow">
@@ -74,7 +106,7 @@ const ArchivedTasks: React.FC = () => {
                             border: `1px solid var(--${currentTheme}-card-border-color)`,
                         }}
                     >
-                        <option value="date">Sort by Date</option>
+                        <option value="date">Sort by Date Archived</option>
                         <option value="name">Sort by Name</option>
                     </select>
                 </div>
