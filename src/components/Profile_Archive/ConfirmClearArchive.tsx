@@ -1,12 +1,15 @@
-import { motion } from 'framer-motion';
-import { useState } from 'react';
-import { useTheme } from '@/hooks/useTheme';
-import { FaTrash } from 'react-icons/fa';
-import { ComponentSpinner } from '../ComponentSpinner';
+// src/components/Profile_Archive/ConfirmClearArchive.tsx
+import React, { useState, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/store/store';
 import { clearArchivedTasks } from '@/store/tasksSlice';
+import { motion } from 'framer-motion';
+import { FaTrash } from 'react-icons/fa';
+
 import { useAlert } from '@/hooks/useAlert';
+import { useTheme } from '@/hooks/useTheme';
+
+import { ComponentSpinner } from '../ComponentSpinner';
 
 interface ConfirmClearArchiveProps {
     cancelClearArchive: () => void;
@@ -22,28 +25,31 @@ const ConfirmClearArchive: React.FC<ConfirmClearArchiveProps> = ({
     const currentTheme = useTheme();
     const { showAlert } = useAlert();
 
-    const handleClearArchive = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        setIsDeleting(true);
-        dispatch(clearArchivedTasks())
-            .unwrap()
-            .then(() => {
-                showAlert(
-                    'All archived tasks have been permanently deleted.',
-                    'success'
-                );
-                cancelClearArchive();
-            })
-            .catch((error) => {
-                showAlert(
-                    'Failed to delete archived tasks. Please try again.',
-                    'error'
-                );
-            })
-            .finally(() => {
-                setIsDeleting(false);
-            });
-    };
+    const handleClearArchive = useCallback(
+        (e: React.MouseEvent) => {
+            e.stopPropagation();
+            setIsDeleting(true);
+            dispatch(clearArchivedTasks())
+                .unwrap()
+                .then(() => {
+                    showAlert(
+                        'All archived tasks have been permanently deleted.',
+                        'success'
+                    );
+                    cancelClearArchive();
+                })
+                .catch(() => {
+                    showAlert(
+                        'Failed to delete archived tasks. Please try again.',
+                        'error'
+                    );
+                })
+                .finally(() => {
+                    setIsDeleting(false);
+                });
+        },
+        [dispatch, showAlert, cancelClearArchive]
+    );
 
     return (
         <>

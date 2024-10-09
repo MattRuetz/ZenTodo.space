@@ -1,13 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
-import { useTheme } from '@/hooks/useTheme';
-import { useUser, useAuth } from '@clerk/nextjs';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store/store';
-import { fetchUser, setUser, updateUserData } from '@/store/userSlice';
-// import { User } from '@clerk/backend';
-import { User } from '@/types';
-import { getQuoteForDay } from '@/hooks/useQuoteForDay';
+import { updateUserData } from '@/store/userSlice';
+import { useUser, useAuth } from '@clerk/nextjs';
 import { FaEnvelope, FaPencil, FaSpinner } from 'react-icons/fa6';
 import {
     FaAward,
@@ -16,23 +12,29 @@ import {
     FaSignOutAlt,
     FaSpaceShuttle,
 } from 'react-icons/fa';
-import { formatUserSince } from '@/app/utils/dateUtils';
-import { fetchTheme } from '@/store/themeSlice';
 
-const ProfileSettings = () => {
+import { formatUserSince } from '@/app/utils/dateUtils';
+
+import { getQuoteForDay } from '@/hooks/useQuoteForDay';
+import { useTheme } from '@/hooks/useTheme';
+
+import { User } from '@/types';
+
+const ProfileSettings: React.FC = () => {
     const currentTheme = useTheme();
-    const { isLoaded, isSignedIn, user: clerkUser } = useUser();
+    const { user: clerkUser } = useUser();
     const userMetadata = useSelector(
         (state: RootState) => state.user?.user ?? null
     );
     const { signOut } = useAuth();
     const dispatch = useDispatch<AppDispatch>();
-    const [profilePicture, setProfilePicture] = useState(
+
+    const [profilePicture, setProfilePicture] = useState<string>(
         clerkUser?.imageUrl || '/images/profile_picture_default.webp'
     );
-    const [name, setName] = useState(clerkUser?.fullName || '');
-    const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
-    const [isEditing, setIsEditing] = useState(false);
+    const [name, setName] = useState<string>(clerkUser?.fullName || '');
+    const [isUploadingPhoto, setIsUploadingPhoto] = useState<boolean>(false);
+    const [isEditing, setIsEditing] = useState<boolean>(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const quote = getQuoteForDay();
 
@@ -52,14 +54,8 @@ const ProfileSettings = () => {
         if (file && clerkUser) {
             setIsUploadingPhoto(true);
             try {
-                // Update Clerk user profile
-                await clerkUser.setProfileImage({ file: file });
-
-                // Update local state
+                await clerkUser.setProfileImage({ file });
                 setProfilePicture(clerkUser.imageUrl || '');
-                setIsUploadingPhoto(false);
-
-                // Update Redux store
                 dispatch(
                     updateUserData({
                         userData: { imageUrl: clerkUser.imageUrl },
@@ -67,21 +63,22 @@ const ProfileSettings = () => {
                 );
             } catch (error) {
                 console.error('Error uploading profile picture:', error);
+            } finally {
                 setIsUploadingPhoto(false);
             }
         }
     };
 
     const handleUpdate = async (updateData: Partial<User>) => {
-        try {
-            if (clerkUser) {
+        if (clerkUser) {
+            try {
                 await clerkUser.update({
                     firstName: updateData.fullName || '',
                 });
                 dispatch(updateUserData({ userData: updateData }));
+            } catch (error) {
+                console.error('Error updating user data:', error);
             }
-        } catch (error) {
-            console.error('Error updating user data:', error);
         }
     };
 
@@ -90,10 +87,6 @@ const ProfileSettings = () => {
         setIsEditing(false);
         await handleUpdate({ fullName: name });
     };
-
-    // if (isLoading) {
-    //     return <ComponentSpinner />;
-    // }
 
     return (
         <div className="flex flex-col items-center justify-center p-8 w-full max-w-4xl mx-auto">
@@ -130,7 +123,6 @@ const ProfileSettings = () => {
                                 {isUploadingPhoto ? '...' : <FaPencil />}
                             </button>
                         </div>
-
                         <input
                             type="file"
                             ref={fileInputRef}
