@@ -22,12 +22,12 @@ const SpacePage: React.FC = () => {
     );
     const spaces = useSelector((state: RootState) => state.spaces.spaces);
 
-    if (!isLoaded || !initialDataLoaded) {
-        return <Preloader />;
-    }
-
     if (!isSignedIn) {
         redirect('/sign-in');
+    }
+
+    if (!isLoaded || !initialDataLoaded) {
+        return <Preloader />;
     }
 
     if (!spaceId) {

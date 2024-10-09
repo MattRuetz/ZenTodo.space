@@ -24,7 +24,6 @@ const ProfilePage: React.FC = () => {
     const { tabName } = useParams();
     const dispatch = useDispatch<AppDispatch>();
     const { isLoaded, isSignedIn } = useUser();
-    const [userDataLoaded, setUserDataLoaded] = useState(false);
 
     const initialDataLoaded = useSelector(
         (state: RootState) => state.loading.initialDataLoaded
@@ -32,13 +31,12 @@ const ProfilePage: React.FC = () => {
 
     // Need to fetch user stats when the user is loaded and the initial data is loaded
     useEffect(() => {
-        if (isLoaded && initialDataLoaded && !userDataLoaded) {
+        if (isLoaded && initialDataLoaded) {
             console.log('Fetching user stats');
             dispatch(fetchUser())
                 .then((action) => {
                     if (fetchUser.fulfilled.match(action)) {
                         console.log('User fetch succeeded:', action.payload);
-                        setUserDataLoaded(true);
                     } else if (fetchUser.rejected.match(action)) {
                         console.error('User fetch failed:', action.error);
                     }
@@ -47,14 +45,14 @@ const ProfilePage: React.FC = () => {
                     console.error('Error in fetchUser dispatch:', error);
                 });
         }
-    }, [isLoaded, dispatch, initialDataLoaded, userDataLoaded]);
-
-    if (!isLoaded || !userDataLoaded || !initialDataLoaded) {
-        return <Preloader />;
-    }
+    }, [isLoaded, dispatch, initialDataLoaded]);
 
     if (!isSignedIn) {
         redirect('/sign-in');
+    }
+
+    if (!isLoaded || !initialDataLoaded) {
+        return <Preloader />;
     }
 
     return <ProfileArchivePage activeTabStart={tabName as string} />;

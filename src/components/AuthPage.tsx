@@ -69,7 +69,6 @@ const AuthPage: React.FC<AuthPageProps> = ({ action }) => {
                     </div>
                 </div>
             )}
-            AuthPage
         </>
     );
 };

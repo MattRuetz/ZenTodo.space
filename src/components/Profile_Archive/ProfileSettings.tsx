@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store/store';
@@ -12,6 +12,7 @@ import {
     FaSignOutAlt,
     FaSpaceShuttle,
 } from 'react-icons/fa';
+import { useRouter } from 'next/navigation';
 
 import { formatUserSince } from '@/app/utils/dateUtils';
 
@@ -28,6 +29,7 @@ const ProfileSettings: React.FC = () => {
     );
     const { signOut } = useAuth();
     const dispatch = useDispatch<AppDispatch>();
+    const router = useRouter();
 
     const [profilePicture, setProfilePicture] = useState<string>(
         clerkUser?.imageUrl || '/images/profile_picture_default.webp'
@@ -88,6 +90,17 @@ const ProfileSettings: React.FC = () => {
         await handleUpdate({ fullName: name });
     };
 
+    const handleSignOut = useCallback(async () => {
+        try {
+            await signOut();
+            setTimeout(() => {
+                router.push('/sign-in');
+            }, 5000);
+        } catch (error) {
+            console.error('Error signing out:', error);
+        }
+    }, [signOut, router]);
+
     return (
         <div className="flex flex-col items-center justify-center p-8 w-full max-w-4xl mx-auto">
             <div className="w-full">
@@ -97,10 +110,10 @@ const ProfileSettings: React.FC = () => {
                             <Image
                                 src={profilePicture}
                                 alt="Profile Picture"
-                                layout="fill"
                                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                objectFit="cover"
                                 className="rounded-full shadow-md"
+                                width={192}
+                                height={192}
                                 style={{
                                     backgroundColor: `var(--${currentTheme}-background-300)`,
                                 }}
@@ -207,7 +220,7 @@ const ProfileSettings: React.FC = () => {
                                         color: `var(--${currentTheme}-text-default)`,
                                         backgroundColor: `var(--${currentTheme}-background-100)`,
                                     }}
-                                    onClick={() => signOut()}
+                                    onClick={handleSignOut}
                                 >
                                     <FaSignOutAlt /> Log out
                                 </button>

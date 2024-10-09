@@ -19,10 +19,6 @@ const selectTasks = createSelector(
     (state: RootState) => state.tasks.tasks,
     (tasks) => tasks.filter((task) => !task.parentTask)
 );
-const selectCurrentSpace = createSelector(
-    (state: RootState) => state.spaces.currentSpace,
-    (currentSpace) => currentSpace as SpaceData
-);
 
 const SpaceFilters: React.FC<{ spaceId: string }> = React.memo(
     ({ spaceId }) => {
@@ -31,7 +27,9 @@ const SpaceFilters: React.FC<{ spaceId: string }> = React.memo(
         const isMobileSize = useIsMobileSize();
 
         const tasks = useSelector(selectTasks);
-        const currentSpace = useSelector(selectCurrentSpace);
+        const currentSpace = useSelector(
+            (state: RootState) => state.spaces.currentSpace
+        );
 
         const selectedProgresses = currentSpace?.selectedProgresses || [];
         const selectedDueDateRange = currentSpace?.selectedDueDateRange || null;

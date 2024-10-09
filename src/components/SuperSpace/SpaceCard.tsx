@@ -15,6 +15,7 @@ import ConfirmDelete from '../TaskCards/ConfirmDelete';
 import EmojiDropdown from '../EmojiDropdown';
 
 import { SpaceData, Task } from '@/types';
+import { createSelector } from '@reduxjs/toolkit';
 
 interface SpaceCardProps {
     space: SpaceData;
@@ -23,6 +24,12 @@ interface SpaceCardProps {
     handleDragEnd: () => void;
     onClick: () => void;
 }
+
+const tasksInSpace = createSelector(
+    (state: RootState) => state.tasks.tasks,
+    (state: RootState, spaceId: string) => spaceId,
+    (tasks, spaceId) => tasks.filter((task: Task) => task.space === spaceId)
+);
 
 const SpaceCard: React.FC<SpaceCardProps> = ({
     space,
@@ -45,6 +52,10 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
     const touchStartPos = useRef<{ x: number; y: number } | null>(null);
     const emojiInputRef = useRef<HTMLInputElement>(null);
     const LONG_PRESS_DELAY = 300; // 300ms delay
+
+    const tasks = useSelector((state: RootState) =>
+        tasksInSpace(state, space._id as string)
+    );
 
     useEffect(() => {
         if (!isMobile) {
@@ -81,10 +92,6 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
         setIsShaking(false);
         touchStartPos.current = null;
     }, []);
-
-    const tasks = useSelector((state: RootState) =>
-        state.tasks.tasks.filter((task: Task) => task.space === space._id)
-    );
 
     const tasksDueToday = tasks.filter((task: Task) => {
         const dueDate = new Date(task.dueDate || '');
