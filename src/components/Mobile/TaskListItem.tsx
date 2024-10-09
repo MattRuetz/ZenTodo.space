@@ -5,7 +5,7 @@ import { useDrag, useDrop } from 'react-dnd';
 import { AppDispatch, RootState, store } from '../../store/store';
 
 import { TaskListItemTopBar } from './TaskListItemTopBar';
-import { SubtaskBottomBar } from '../Subtask/SubtaskBottomBar';
+import SubtaskBottomBar from '../Subtask/SubtaskBottomBar';
 
 import { useChangeHierarchy } from '@/hooks/useChangeHierarchy';
 import { useAlert } from '@/hooks/useAlert';

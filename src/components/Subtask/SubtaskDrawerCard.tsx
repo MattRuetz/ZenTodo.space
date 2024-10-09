@@ -1,14 +1,13 @@
-import React, { useCallback, useState, useEffect, useRef } from 'react';
+// src/components/Subtask/SubtaskDrawerCard.tsx
+import React, { useCallback, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-
 import { AppDispatch, RootState } from '../../store/store';
 import { updateTask } from '@/store/tasksSlice';
 import { Task, TaskProgress } from '@/types';
 import { useDrag, useDrop } from 'react-dnd';
-import { store } from '@/store/store';
 import { setSimplicityModalOpen, setSubtaskDrawerOpen } from '@/store/uiSlice';
 import { SubtaskTopBar } from './SubtaskTopBar';
-import { SubtaskBottomBar } from './SubtaskBottomBar';
+import SubtaskBottomBar from './SubtaskBottomBar';
 import { useChangeHierarchy } from '@/hooks/useChangeHierarchy';
 import { useMoveSubtask } from '@/hooks/useMoveSubtask';
 import { useAlert } from '@/hooks/useAlert';
@@ -17,6 +16,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useArchiveTask } from '@/hooks/useArchiveTask';
 import { useClearFilters } from '@/hooks/useClearFilters';
 import { createSelector } from '@reduxjs/toolkit';
+
 interface SubtaskDrawerCardProps {
     subtask: Task;
     position: string;
@@ -25,7 +25,8 @@ interface SubtaskDrawerCardProps {
     setIsEmojiPickerOpen: (isEmojiPickerOpen: boolean) => void;
 }
 
-const tasksStateSelecor = createSelector(
+// Memoized selectors
+const tasksStateSelector = createSelector(
     (state: RootState) => state.tasks.tasks,
     (tasks) => tasks
 );
@@ -36,16 +37,16 @@ const parentTaskSelector = createSelector(
     (parentTask) => parentTask
 );
 
-const SubtaskDrawerCard = React.memo(
+const SubtaskDrawerCard: React.FC<SubtaskDrawerCardProps> = React.memo(
     ({
         subtask,
         position,
         maxZIndex,
         setIsEmojiPickerOpen,
         setCurrentEmojiTask,
-    }: SubtaskDrawerCardProps) => {
+    }) => {
         const dispatch = useDispatch<AppDispatch>();
-        const tasksState = useSelector(tasksStateSelecor);
+        const tasksState = useSelector(tasksStateSelector);
         const parentTask = useSelector((state: RootState) =>
             parentTaskSelector(state, subtask.parentTask as string)
         );
@@ -55,7 +56,7 @@ const SubtaskDrawerCard = React.memo(
         const archiveTask = useArchiveTask();
         const { clearFilters } = useClearFilters(subtask.space as string);
 
-        const [localSubtask, setLocalSubtask] = useState(subtask || {});
+        const [localSubtask, setLocalSubtask] = useState(subtask);
         const [isEditing, setIsEditing] = useState<string | null>(null);
         const [isSubtaskMenuOpen, setIsSubtaskMenuOpen] = useState(false);
 
@@ -64,32 +65,33 @@ const SubtaskDrawerCard = React.memo(
         const ref = useRef<HTMLLIElement>(null);
 
         const { commitSubtaskOrder } = useMoveSubtask();
-
         const { convertTaskToSubtask, convertSubtaskToTask } =
             useChangeHierarchy();
 
-        const handleConvertTaskToSubtask = (
-            task: Task,
-            parentTaskId: string
-        ) => {
-            convertTaskToSubtask(task, parentTaskId);
-        };
+        const handleConvertTaskToSubtask = useCallback(
+            (task: Task, parentTaskId: string) => {
+                convertTaskToSubtask(task, parentTaskId);
+            },
+            [convertTaskToSubtask]
+        );
 
-        const handleConvertSubtaskToTask = (
-            subtask: Task,
-            dropPosition: { x: number; y: number } | undefined
-        ) => {
-            // Pass updated highest zIndex in space
-            convertSubtaskToTask(
-                {
-                    ...subtask,
-                    zIndex: maxZIndex ? maxZIndex + 1 : 0,
-                },
-                dropPosition,
-                tasksState
-            );
-            clearFilters();
-        };
+        const handleConvertSubtaskToTask = useCallback(
+            (
+                subtask: Task,
+                dropPosition: { x: number; y: number } | undefined
+            ) => {
+                convertSubtaskToTask(
+                    {
+                        ...subtask,
+                        zIndex: maxZIndex ? maxZIndex + 1 : 0,
+                    },
+                    dropPosition,
+                    tasksState
+                );
+                clearFilters();
+            },
+            [convertSubtaskToTask, maxZIndex, tasksState, clearFilters]
+        );
 
         const handleArchive = useCallback(() => {
             archiveTask(subtask);
@@ -100,7 +102,6 @@ const SubtaskDrawerCard = React.memo(
             () => ({
                 type: 'SUBTASK',
                 item: () => {
-                    // Check if the click originated from an input or textarea
                     if (
                         document.activeElement instanceof HTMLInputElement ||
                         document.activeElement instanceof HTMLTextAreaElement
@@ -114,7 +115,6 @@ const SubtaskDrawerCard = React.memo(
                         x: number;
                         y: number;
                     };
-
                     if (
                         item &&
                         dropResult &&
@@ -128,7 +128,7 @@ const SubtaskDrawerCard = React.memo(
                     isDragging: monitor.isDragging(),
                 }),
             }),
-            [localSubtask, dispatch, position]
+            [localSubtask, position]
         );
 
         const handleDropOnSelf = useCallback(() => {
@@ -140,9 +140,7 @@ const SubtaskDrawerCard = React.memo(
         const handleDrop = useCallback(
             (item: Task) => {
                 const targetSubtask = subtask;
-                // Fetch the latest version of the dragged task from the Redux store
-                const state = store.getState() as RootState;
-                const draggedSubtask = state.tasks.tasks.find(
+                const draggedSubtask = tasksState.find(
                     (task) => task._id === item._id
                 );
 
@@ -151,14 +149,13 @@ const SubtaskDrawerCard = React.memo(
                     showAlert('An unknown error occurred', 'error');
                     return;
                 }
-                // Check if the dropped task is already a parent of the target subtask
+
                 const isAlreadyParent =
                     draggedSubtask.subtasks.length > 0 ||
                     (draggedSubtask.ancestors &&
                         draggedSubtask.ancestors.length > 1);
 
                 if (draggedSubtask._id === targetSubtask._id) {
-                    // If it drops on itself, change order
                     handleDropOnSelf();
                     return;
                 } else if (!isAlreadyParent) {
@@ -170,22 +167,20 @@ const SubtaskDrawerCard = React.memo(
                         ...prevSubtask,
                         subtasks: [
                             ...prevSubtask.subtasks,
-                            draggedSubtask,
-                        ] as string[],
+                            draggedSubtask._id as string,
+                        ],
                     }));
                 } else {
                     dispatch(setSimplicityModalOpen(true));
                 }
             },
-            [dispatch, subtask, localSubtask]
+            [dispatch, subtask, handleConvertTaskToSubtask, tasksState]
         );
 
         const [{ isOver }, drop] = useDrop(
             () => ({
                 accept: 'SUBTASK',
-                drop: (item: Task) => {
-                    handleDrop(item);
-                },
+                drop: (item: Task) => handleDrop(item),
                 collect: (monitor) => ({
                     isOver: !!monitor.isOver(),
                 }),
@@ -243,7 +238,6 @@ const SubtaskDrawerCard = React.memo(
             dispatch(updateTask({ _id: subtask._id, dueDate: date || null }));
         };
 
-        // Right click card opens the menu
         const handleContextMenu = useCallback((e: React.MouseEvent) => {
             e.preventDefault();
             setIsSubtaskMenuOpen(true);
@@ -269,23 +263,22 @@ const SubtaskDrawerCard = React.memo(
 
         return (
             <li
-                ref={ref as unknown as React.RefObject<HTMLLIElement>}
+                ref={ref}
                 key={subtask._id}
                 onContextMenu={handleContextMenu}
                 className={`p-2 rounded-lg my-0 transition-colors duration-200 shadow-md border-2 relative`}
                 style={{
                     opacity: isDragging ? 0.5 : 1,
                     cursor: 'move',
-                    backgroundColor: `var(--${currentTheme}-background-100)`, // Use theme color
+                    backgroundColor: `var(--${currentTheme}-background-100)`,
                     borderColor:
                         isOver && !isDragging
-                            ? `var(--${currentTheme}-accent-blue)` // Use theme color
-                            : `var(--${currentTheme}-card-border-color)`, // Use theme color
+                            ? `var(--${currentTheme}-accent-blue)`
+                            : `var(--${currentTheme}-card-border-color)`,
                 }}
             >
                 <SubtaskTopBar
                     subtask={subtask}
-                    handleProgressChange={handleProgressChange}
                     handleSetDueDate={handleSetDueDate}
                     isSubtaskMenuOpen={isSubtaskMenuOpen}
                     setIsSubtaskMenuOpen={setIsSubtaskMenuOpen}
@@ -299,10 +292,10 @@ const SubtaskDrawerCard = React.memo(
                             : 'border-transparent'
                     } font-semibold rounded-lg py-1 px-2 mb-2 transition-colors duration-200 border-2`}
                     style={{
-                        backgroundColor: `var(--${currentTheme}-background-200)`, // Use theme color
+                        backgroundColor: `var(--${currentTheme}-background-200)`,
                         borderColor:
                             isEditing === 'taskName'
-                                ? `var(--${currentTheme}-accent-grey)` // Use theme color
+                                ? `var(--${currentTheme}-accent-grey)`
                                 : localSubtask.taskName === 'New Subtask'
                                 ? `var(--${currentTheme}-accent-red)`
                                 : 'transparent',

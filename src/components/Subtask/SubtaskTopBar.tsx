@@ -1,22 +1,23 @@
-import { FaCalendar, FaPlus, FaTag, FaTrash } from 'react-icons/fa6';
-import { TaskProgress } from '@/types';
-import { FaEllipsisV, FaInfoCircle } from 'react-icons/fa';
-import { useEffect, useRef, useState } from 'react';
-import { TaskDetails } from '../TaskDetails';
-import { TaskDueDatePicker } from '../TaskCards/TaskDueDatePicker';
-import { DueDateIndicator } from '../TaskCards/DueDateIndicator';
-import { useAddNewSubtask } from '@/hooks/useAddNewSubtask';
-import { useDeleteTask } from '@/hooks/useDeleteTask';
-import EmojiDropdown from '../EmojiDropdown';
-import { updateTask } from '@/store/tasksSlice';
+// src/components/Subtask/SubtaskTopBar.tsx
+import React, { useRef, useState, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store/store';
-import ConfirmDelete from '../TaskCards/ConfirmDelete';
+import { updateTask } from '@/store/tasksSlice';
+import { FaCalendar, FaPlus, FaTag, FaTrash } from 'react-icons/fa6';
+import { FaEllipsisV, FaInfoCircle } from 'react-icons/fa';
+
+import { useAddNewSubtask } from '@/hooks/useAddNewSubtask';
 import useClickOutside from '@/hooks/useClickOutside';
+import { useDeleteTask } from '@/hooks/useDeleteTask';
 import { useTheme } from '@/hooks/useTheme';
+
+import ConfirmDelete from '../TaskCards/ConfirmDelete';
+import { DueDateIndicator } from '../TaskCards/DueDateIndicator';
+import { TaskDetails } from '../TaskDetails';
+import { TaskDueDatePicker } from '../TaskCards/TaskDueDatePicker';
+
 interface SubtaskTopBarProps {
     subtask: any;
-    handleProgressChange: (TaskProgress: TaskProgress) => void;
     handleSetDueDate: (dueDate: Date | undefined) => void;
     isSubtaskMenuOpen: boolean;
     setIsSubtaskMenuOpen: (isSubtaskMenuOpen: boolean) => void;
@@ -26,7 +27,6 @@ interface SubtaskTopBarProps {
 
 export const SubtaskTopBar = ({
     subtask,
-    handleProgressChange,
     handleSetDueDate,
     isSubtaskMenuOpen,
     setIsSubtaskMenuOpen,
@@ -37,7 +37,6 @@ export const SubtaskTopBar = ({
     const dispatch = useDispatch<AppDispatch>();
     const [showDetails, setShowDetails] = useState(false);
     const [showDatePicker, setShowDatePicker] = useState(false);
-    const [deletingTasks, setDeletingTasks] = useState<Set<string>>(new Set());
 
     const menuRef = useRef<HTMLDivElement>(null);
     const datePickerRef = useRef<HTMLDivElement>(null);
@@ -56,18 +55,18 @@ export const SubtaskTopBar = ({
     useClickOutside([menuRef], () => setIsSubtaskMenuOpen(false));
     useClickOutside([datePickerRef], () => setShowDatePicker(false));
 
-    const openSubtaskMenu = (id: string) => {
+    const openSubtaskMenu = useCallback(() => {
         setIsSubtaskMenuOpen(true);
-    };
+    }, [setIsSubtaskMenuOpen]);
 
-    const handleShowDetails = () => {
+    const handleShowDetails = useCallback(() => {
         setShowDetails(true);
         setIsSubtaskMenuOpen(false);
-    };
+    }, [setIsSubtaskMenuOpen]);
 
     const { addNewSubtask } = useAddNewSubtask();
 
-    const handleAddSubtask = () => {
+    const handleAddSubtask = useCallback(() => {
         addNewSubtask({
             subtask: {
                 taskName: 'New Subtask',
@@ -84,13 +83,16 @@ export const SubtaskTopBar = ({
             parentId: subtask._id,
             position: 'start',
         });
-    };
+    }, [addNewSubtask, currentSpaceId, subtask._id]);
 
-    const handleSetSubtaskEmoji = (emoji: string) => {
-        if (subtask._id) {
-            dispatch(updateTask({ _id: subtask._id, emoji: emoji }));
-        }
-    };
+    const handleSetSubtaskEmoji = useCallback(
+        (emoji: string) => {
+            if (subtask._id) {
+                dispatch(updateTask({ _id: subtask._id, emoji: emoji }));
+            }
+        },
+        [dispatch, subtask._id]
+    );
 
     return (
         <div
@@ -214,7 +216,7 @@ export const SubtaskTopBar = ({
                     style={{
                         color: `var(--${currentTheme}-emphasis-light)`, // Use theme color
                     }}
-                    onClick={() => openSubtaskMenu(subtask._id as string)}
+                    onClick={openSubtaskMenu}
                 />
             </div>
         </div>

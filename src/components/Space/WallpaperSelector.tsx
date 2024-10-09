@@ -1,3 +1,4 @@
+// src/components/Space/WallpaperSelector.tsx
 import React, { useState, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/store/store';
