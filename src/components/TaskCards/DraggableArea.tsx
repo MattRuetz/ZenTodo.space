@@ -1,20 +1,21 @@
 // src/components/DraggableArea.tsx
 import React from 'react';
-import { Task } from '@/types';
 
 interface DraggableAreaProps {
     children: React.ReactNode;
-    className: String;
+    className?: string; // Use optional chaining for className
 }
 
 const DraggableArea: React.FC<DraggableAreaProps> = React.memo(
-    ({ children, className }) => {
-        const handleMouseDown = (e: React.MouseEvent) => {
+    ({ children, className = '' }) => {
+        // Default to an empty string if className is not provided
+        const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
             // Prevent dragging when interacting with input fields or buttons
+            const target = e.target as HTMLElement; // Type assertion for better type safety
             if (
-                e.target instanceof HTMLInputElement ||
-                e.target instanceof HTMLTextAreaElement ||
-                e.target instanceof HTMLButtonElement
+                target.tagName === 'INPUT' ||
+                target.tagName === 'TEXTAREA' ||
+                target.tagName === 'BUTTON'
             ) {
                 e.stopPropagation();
             }

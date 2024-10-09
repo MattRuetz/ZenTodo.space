@@ -57,17 +57,17 @@ export const useAddNewSubtask = () => {
         }
 
         const tempId = generateTempId();
-        const tempSubtask: Task = {
-            ...subtask,
-            _id: tempId,
-            isTemp: true,
-            subtasks: [],
-            ancestors: parentTask?.ancestors
-                ? [...parentTask.ancestors, parentTask._id as string]
-                : [parentTask?._id as string],
-            parentTask: parentId,
-            clientId: tempId,
-        };
+        // const tempSubtask: Task = {
+        //     ...subtask,
+        //     _id: tempId,
+        //     isTemp: true,
+        //     subtasks: [],
+        //     ancestors: parentTask?.ancestors
+        //         ? [...parentTask.ancestors, parentTask._id as string]
+        //         : [parentTask?._id as string],
+        //     parentTask: parentId,
+        //     clientId: tempId,
+        // };
         // Dispatch optimistic update
         // Disabled because could not figure out how to update without a rerender
         // dispatch(

@@ -1,5 +1,6 @@
+// src/components/Mobile/TaskListItemMenu.tsx
 import useClickOutside from '@/hooks/useClickOutside';
-import { useRef } from 'react';
+import { useRef, useCallback } from 'react';
 import {
     FaArrowsAlt,
     FaCalendar,
@@ -10,7 +11,6 @@ import {
 } from 'react-icons/fa';
 
 interface TaskListItemMenuProps {
-    isMenuOpen: boolean;
     currentTheme: string;
     handleShowDetails: () => void;
     setShowDatePicker: (show: boolean) => void;
@@ -23,8 +23,7 @@ interface TaskListItemMenuProps {
     isSubtask: boolean;
 }
 
-const TaskListItemMenu = ({
-    isMenuOpen,
+const TaskListItemMenu: React.FC<TaskListItemMenuProps> = ({
     currentTheme,
     handleShowDetails,
     setShowDatePicker,
@@ -35,7 +34,7 @@ const TaskListItemMenu = ({
     onDelete,
     onMakeMainTask,
     isSubtask,
-}: TaskListItemMenuProps) => {
+}) => {
     const menuRef = useRef<HTMLDivElement>(null);
     const datePickerRef = useRef<HTMLDivElement>(null);
     const moveOptionsRef = useRef<HTMLDivElement>(null);
@@ -46,13 +45,28 @@ const TaskListItemMenu = ({
         setShowMoveOptions(false);
     });
 
+    const handleButtonClick = useCallback(
+        (action: () => void) => {
+            action();
+            setIsMenuOpen(false);
+        },
+        [setIsMenuOpen]
+    );
+
+    const themeStyles = {
+        backgroundColor: `var(--${currentTheme}-background-200)`,
+        border: `1px solid var(--${currentTheme}-accent-grey)`,
+        textColor: `var(--${currentTheme}-text-default)`,
+        deleteColor: `var(--${currentTheme}-accent-red)`,
+    };
+
     return (
         <div
             ref={menuRef}
             className="absolute top-10 right-0 w-48 rounded-md shadow-lg z-10"
             style={{
-                backgroundColor: `var(--${currentTheme}-background-200)`, // Use theme color
-                border: `1px solid var(--${currentTheme}-accent-grey)`, // Use theme color
+                backgroundColor: themeStyles.backgroundColor,
+                border: themeStyles.border,
             }}
         >
             <div
@@ -64,88 +78,65 @@ const TaskListItemMenu = ({
                 <button
                     className="flex items-center px-4 py-2 text-sm hover:bg-black/20"
                     style={{
-                        color: `var(--${currentTheme}-text-default)`, // Use theme color
+                        color: themeStyles.textColor,
                     }}
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        handleShowDetails();
-                    }}
+                    onClick={() => handleButtonClick(handleShowDetails)}
                 >
                     <FaInfoCircle className="mr-2" /> Details
                 </button>
                 <button
                     className="flex items-center px-4 py-2 text-sm hover:bg-black/20"
                     style={{
-                        color: `var(--${currentTheme}-text-default)`, // Use theme color
+                        color: themeStyles.textColor,
                     }}
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        setShowDatePicker(true);
-                        setIsMenuOpen(false);
-                    }}
+                    onClick={() =>
+                        handleButtonClick(() => {
+                            setShowDatePicker(true);
+                        })
+                    }
                 >
                     <FaCalendar className="mr-2" /> Set Due Date
                 </button>
                 <button
                     className="flex items-center px-4 py-2 text-sm hover:bg-black/20"
                     style={{
-                        color: `var(--${currentTheme}-text-default)`, // Use theme color
+                        color: themeStyles.textColor,
                     }}
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        onAddSubtask();
-                        setIsMenuOpen(false);
-                    }}
+                    onClick={() => handleButtonClick(onAddSubtask)}
                 >
                     <FaPlus className="mr-2" /> Add Subtask
                 </button>
                 {isSubtask ? (
-                    <>
-                        <button
-                            className="flex items-center px-4 py-2 text-sm w-full hover:bg-black/20"
-                            style={{
-                                color: `var(--${currentTheme}-text-default)`,
-                            }}
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                e.preventDefault();
-                                onMakeMainTask();
-                                setIsMenuOpen(false);
-                            }}
-                        >
-                            <FaArrowsAlt className="mr-2" /> Make Main Task
-                        </button>
-                    </>
+                    <button
+                        className="flex items-center px-4 py-2 text-sm w-full hover:bg-black/20"
+                        style={{
+                            color: themeStyles.textColor,
+                        }}
+                        onClick={() => handleButtonClick(onMakeMainTask)}
+                    >
+                        <FaArrowsAlt className="mr-2" /> Make Main Task
+                    </button>
                 ) : (
                     <>
                         <button
                             className="flex items-center px-4 py-2 text-sm w-full hover:bg-black/20"
                             style={{
-                                color: `var(--${currentTheme}-text-default)`,
+                                color: themeStyles.textColor,
                             }}
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                e.preventDefault();
-                                setShowMoveOptions(true);
-                                setIsMenuOpen(false);
-                            }}
+                            onClick={() =>
+                                handleButtonClick(() =>
+                                    setShowMoveOptions(true)
+                                )
+                            }
                         >
                             <FaArrowsAlt className="mr-2" /> Move Task
                         </button>
                         <button
                             className="flex items-center px-4 py-2 text-sm w-full hover:bg-black/20"
                             style={{
-                                color: `var(--${currentTheme}-text-default)`,
+                                color: themeStyles.textColor,
                             }}
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                e.preventDefault();
-                                onDuplicateTask();
-                                setIsMenuOpen(false);
-                            }}
+                            onClick={() => handleButtonClick(onDuplicateTask)}
                         >
                             <FaCopy className="mr-2" /> Duplicate Task
                         </button>
@@ -154,14 +145,9 @@ const TaskListItemMenu = ({
                 <button
                     className="flex items-center px-4 py-2 text-sm hover:bg-black/20"
                     style={{
-                        color: `var(--${currentTheme}-accent-red)`, // Use theme color
+                        color: themeStyles.deleteColor,
                     }}
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        onDelete();
-                        setIsMenuOpen(false);
-                    }}
+                    onClick={() => handleButtonClick(onDelete)}
                 >
                     <FaTrash className="mr-2" /> Delete
                 </button>

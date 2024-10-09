@@ -1,8 +1,11 @@
-import { useRef, useState } from 'react';
+// src/components/TaskCards/TaskDueDatePicker.tsx
+import React, { useState, useCallback } from 'react';
 import ReactDatePicker from 'react-datepicker';
-import { useTheme } from '@/hooks/useTheme';
 import { FaTrash } from 'react-icons/fa';
 import { Tooltip } from 'react-tooltip';
+
+import { useTheme } from '@/hooks/useTheme';
+
 import { Task } from '@/types';
 
 interface TaskDueDatePickerProps {
@@ -13,21 +16,25 @@ interface TaskDueDatePickerProps {
     task: Task;
 }
 
-export const TaskDueDatePicker = ({
+export const TaskDueDatePicker: React.FC<TaskDueDatePickerProps> = ({
     onSetDueDate,
     setShowDatePicker,
     setIsMenuOpen,
     datePickerRef,
     task,
-}: TaskDueDatePickerProps) => {
+}) => {
     const [dueDate, setDueDate] = useState<Date | null>(task.dueDate || null);
     const currentTheme = useTheme();
-    const handleSetDueDate = (dueDate: Date | undefined) => {
-        onSetDueDate(dueDate || undefined);
-        setDueDate(dueDate || null);
-        setShowDatePicker(false);
-        setIsMenuOpen(false);
-    };
+
+    const handleSetDueDate = useCallback(
+        (date: Date | undefined) => {
+            onSetDueDate(date || undefined);
+            setDueDate(date || null);
+            setShowDatePicker(false);
+            setIsMenuOpen(false);
+        },
+        [onSetDueDate, setShowDatePicker, setIsMenuOpen]
+    );
 
     return (
         <div
@@ -52,9 +59,7 @@ export const TaskDueDatePicker = ({
             />
             <div className="flex flex-row justify-between gap-2">
                 <button
-                    onClick={() => {
-                        handleSetDueDate(dueDate || undefined);
-                    }}
+                    onClick={() => handleSetDueDate(dueDate || undefined)}
                     style={{
                         marginTop: '0.25rem', // Equivalent to mt-1
                         backgroundColor: `var(--${currentTheme}-accent-blue)`, // Use theme color
@@ -68,8 +73,6 @@ export const TaskDueDatePicker = ({
                 <button
                     data-tooltip-id="delete-due-date-tooltip"
                     onClick={() => {
-                        setShowDatePicker(false);
-                        setIsMenuOpen(false);
                         handleSetDueDate(undefined);
                     }}
                     style={{

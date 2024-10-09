@@ -1,5 +1,6 @@
+// src/components/MyEmojiPicker.tsx
 import Picker from '@emoji-mart/react';
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { FaTrash, FaX } from 'react-icons/fa6';
 import { useTheme } from '@/hooks/useTheme';
 
@@ -8,11 +9,12 @@ interface MyEmojiPickerProps {
     setIsOpen: (isOpen: boolean) => void;
 }
 
-export const MyEmojiPicker = ({
+export const MyEmojiPicker: React.FC<MyEmojiPickerProps> = ({
     setTaskEmoji,
     setIsOpen,
-}: MyEmojiPickerProps) => {
+}) => {
     const currentTheme = useTheme();
+
     // useEffect to close the emoji picker when the user clicks outside of it
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
@@ -27,10 +29,40 @@ export const MyEmojiPicker = ({
                 setIsOpen(false);
             }
         };
+
         document.addEventListener('mousedown', handleClickOutside);
         return () =>
             document.removeEventListener('mousedown', handleClickOutside);
     }, [setIsOpen]);
+
+    const handleNoEmojiClick = useCallback(
+        (e: React.MouseEvent) => {
+            e.stopPropagation();
+            if (setTaskEmoji) {
+                setTaskEmoji('');
+                setIsOpen(false);
+            }
+        },
+        [setTaskEmoji, setIsOpen]
+    );
+
+    const handleCloseClick = useCallback(
+        (e: React.MouseEvent) => {
+            e.stopPropagation();
+            setIsOpen(false);
+        },
+        [setIsOpen]
+    );
+
+    const handleEmojiSelect = useCallback(
+        (emoji: any) => {
+            if (setTaskEmoji) {
+                setTaskEmoji(emoji.native);
+            }
+            setIsOpen(false);
+        },
+        [setTaskEmoji, setIsOpen]
+    );
 
     return (
         <div
@@ -45,13 +77,7 @@ export const MyEmojiPicker = ({
                     style={{
                         color: `var(--${currentTheme}-text-default)`, // Use theme color
                     }}
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        if (setTaskEmoji) {
-                            setTaskEmoji('');
-                            setIsOpen(false);
-                        }
-                    }}
+                    onClick={handleNoEmojiClick}
                 >
                     <FaTrash
                         className="w-4 h-4"
@@ -65,10 +91,7 @@ export const MyEmojiPicker = ({
                     style={{
                         color: `var(--${currentTheme}-text-default)`, // Use theme color
                     }}
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        setIsOpen(false);
-                    }}
+                    onClick={handleCloseClick}
                 >
                     <FaX
                         className="w-4 h-4"
@@ -83,12 +106,7 @@ export const MyEmojiPicker = ({
                     onClick={(e: any) => {
                         e.stopPropagation();
                     }}
-                    onEmojiSelect={(emoji: any) => {
-                        if (setTaskEmoji) {
-                            setTaskEmoji(emoji.native);
-                        }
-                        setIsOpen(false);
-                    }}
+                    onEmojiSelect={handleEmojiSelect}
                     set="native"
                     theme="dark"
                     perLine={7}

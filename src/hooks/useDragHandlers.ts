@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '../store/store';
 import { setGlobalDragging, setDraggingCardId } from '../store/uiSlice';
@@ -6,25 +6,18 @@ import { Task } from '@/types';
 import { DraggableData, DraggableEvent } from 'react-draggable';
 import { updateSpaceMaxZIndex } from '@/store/spaceSlice';
 import { useAlert } from '@/hooks/useAlert';
-import { updateTaskPositionOptimistic } from '@/store/tasksSlice';
+import { updateTaskOptimistic } from '@/store/tasksSlice';
 
 interface UseDragHandlersProps {
     task: Task;
     localTask: Task;
     setLocalTask: (task: (prev: Task) => Task) => void;
-    setCardSize: (size: { width: number; height: number }) => void;
     onDragStart: () => void;
     onDragStop: () => void;
     getNewZIndex: () => number;
     pushChildTask: (task: Task, parentId: string) => void;
     debouncedUpdate: (task: Partial<Task>) => void;
-    updateCardSize: () => void;
-    updateTaskInStore: (task: Partial<Task>) => void;
     setIsFocused: (isFocused: boolean) => void;
-    cardRef: React.RefObject<HTMLDivElement>;
-    resizingRef: React.MutableRefObject<boolean>;
-    startPosRef: React.MutableRefObject<{ x: number; y: number }>;
-    startSizeRef: React.MutableRefObject<{ width: number; height: number }>;
     isDragging: boolean;
     setIsDragging: (isDragging: boolean) => void;
     allowDropRef: React.MutableRefObject<boolean>;
@@ -34,23 +27,17 @@ interface UseDragHandlersProps {
 
 export const useDragHandlers = ({
     task,
+    localTask,
     setLocalTask,
     onDragStart,
     onDragStop,
     getNewZIndex,
     pushChildTask,
     debouncedUpdate,
-    updateCardSize,
-    updateTaskInStore,
     setIsFocused,
-    cardRef,
-    resizingRef,
-    startPosRef,
-    startSizeRef,
     isDragging,
     setIsDragging,
     allowDropRef,
-    allowDrop,
     setAllowDrop,
 }: UseDragHandlersProps) => {
     const dispatch = useDispatch<AppDispatch>();
@@ -100,18 +87,27 @@ export const useDragHandlers = ({
         (e: DraggableEvent, data: DraggableData) => {
             if (!isDragging) return;
 
-            setLocalTask((prevTask) => {
+            const newZIndex = getNewZIndex();
+
+            const updatedTask: Task = {
+                ...localTask,
+                x: data.x,
+                y: data.y,
+                zIndex: newZIndex,
+            };
+
+            dispatch(
+                updateTaskOptimistic({
+                    updatedTask,
+                })
+            );
+
+            setLocalTask((prevTask: Task) => {
                 const newTaskData = {
                     x: data.x,
                     y: data.y,
-                    zIndex: prevTask.zIndex,
+                    zIndex: newZIndex,
                 };
-                dispatch(
-                    updateTaskPositionOptimistic({
-                        taskId: prevTask._id as string,
-                        newPosition: newTaskData,
-                    })
-                );
 
                 debouncedUpdate(newTaskData);
                 return { ...prevTask, ...newTaskData };
@@ -129,7 +125,6 @@ export const useDragHandlers = ({
             setIsDragging(false);
 
             const spaceId = task.space;
-            const newZIndex = getNewZIndex();
             dispatch(
                 updateSpaceMaxZIndex({
                     spaceId: spaceId as string,
@@ -201,42 +196,8 @@ export const useDragHandlers = ({
         ]
     );
 
-    const handleInputChange = useCallback(
-        (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-            const { name, value } = e.target;
-            setLocalTask(
-                (prev: Task): Task => ({
-                    ...prev,
-                    [name]: value,
-                })
-            );
-            updateCardSize();
-        },
-        [updateCardSize, setLocalTask]
-    );
-
-    const handleInputBlur = useCallback(
-        (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-            setIsFocused(false);
-            const fieldName = e.target.name;
-            const fieldValue = e.target.value;
-
-            setLocalTask((prevTask) => {
-                const newTaskData = { [fieldName]: fieldValue };
-                // Do not use debouncedUpdate here.
-                // This is because we do not want the update to be inter
-                updateTaskInStore(newTaskData);
-                return { ...prevTask, ...newTaskData };
-            });
-            updateCardSize();
-        },
-        [setLocalTask, updateTaskInStore, updateCardSize]
-    );
-
     return {
         handleDragStart,
         handleDragStop,
-        handleInputChange,
-        handleInputBlur,
     };
 };

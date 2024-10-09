@@ -1,62 +1,79 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { useTheme } from '@/hooks/useTheme';
-import { FaArchive, FaFilter, FaSearch, FaTrash } from 'react-icons/fa';
-import { SpaceData, Task } from '@/types';
-import { AppDispatch, RootState } from '@/store/store';
+// src/components/Profile_Archive/ArchivedTasks.tsx
+import React, { useMemo, useState, useCallback } from 'react';
 import { useSelector } from 'react-redux';
+import { createSelector } from '@reduxjs/toolkit';
+import { FaArchive, FaSearch, FaTrash } from 'react-icons/fa';
+
+import { useTheme } from '@/hooks/useTheme';
+
 import ArchivedTaskCard from './ArchivedTaskCard';
-import { useDispatch } from 'react-redux';
-import { clearArchivedTasks } from '@/store/tasksSlice';
-import { useAlert } from '@/hooks/useAlert';
 import ConfirmClearArchive from './ConfirmClearArchive';
+
+import { RootState } from '@/store/store';
+import { Task } from '@/types';
+
+// Memoized selectors
+const selectArchivedTasks = createSelector(
+    (state: RootState) => state.tasks.tasks,
+    (tasks) => tasks.filter((task: Task) => task.isArchived)
+);
+
+const selectSpaces = (state: RootState) => state.spaces.spaces;
 
 const ArchivedTasks: React.FC = () => {
     const currentTheme = useTheme();
-    const dispatch = useDispatch<AppDispatch>();
-    const { showAlert } = useAlert();
 
-    const archivedTasks = useSelector((state: RootState) =>
-        state.tasks.tasks.filter((task: Task) => task.isArchived)
-    );
-    const spaces = useSelector((state: RootState) => state.spaces.spaces);
+    const archivedTasks = useSelector(selectArchivedTasks);
+    const spaces = useSelector(selectSpaces);
 
     const [searchQuery, setSearchQuery] = useState('');
     const [sortBy, setSortBy] = useState<'date' | 'name'>('date');
     const [showConfirmClear, setShowConfirmClear] = useState(false);
 
     const filteredTasks = useMemo(() => {
-        let filtered = archivedTasks.filter((task: Task) =>
-            task.taskName.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-
-        filtered.sort((a: Task, b: Task) => {
-            if (sortBy === 'date') {
-                return (
-                    +new Date(b.archivedAt || 0).getTime() -
-                    new Date(a.archivedAt || 0).getTime()
-                );
-            } else {
-                return a.taskName.localeCompare(b.taskName);
-            }
-        });
-
-        return filtered;
+        const lowercaseQuery = searchQuery.toLowerCase();
+        return archivedTasks
+            .filter((task: Task) =>
+                task.taskName.toLowerCase().includes(lowercaseQuery)
+            )
+            .sort((a: Task, b: Task) => {
+                if (sortBy === 'date') {
+                    return (
+                        new Date(b.archivedAt as Date).getTime() -
+                        new Date(a.archivedAt as Date).getTime()
+                    );
+                } else {
+                    return a.taskName.localeCompare(b.taskName);
+                }
+            });
     }, [searchQuery, archivedTasks, sortBy]);
 
-    const handleClearArchiveClick = () => {
+    const handleClearArchiveClick = useCallback(() => {
         setShowConfirmClear(true);
-    };
+    }, []);
 
-    const cancelClearArchive = () => {
+    const cancelClearArchive = useCallback(() => {
         setShowConfirmClear(false);
-    };
+    }, []);
+
+    const handleSearchChange = useCallback(
+        (e: React.ChangeEvent<HTMLInputElement>) => {
+            setSearchQuery(e.target.value);
+        },
+        []
+    );
+
+    const handleSortChange = useCallback(
+        (e: React.ChangeEvent<HTMLSelectElement>) => {
+            setSortBy(e.target.value as 'date' | 'name');
+        },
+        []
+    );
 
     return (
         <div
-            className="p-4 sm:p-6 w-full rounded-lg py-8 sm:py-12 max-w-screen-md mx-auto"
-            style={{
-                color: `var(--${currentTheme}-text-default)`,
-            }}
+            className="p-8 w-full rounded-lg py-8 sm:py-12 max-w-screen-md mx-auto"
+            style={{ color: `var(--${currentTheme}-text-default)` }}
         >
             <div className="flex items-center justify-between">
                 <h2 className="text-xl sm:text-2xl font-bold mb-6 bg-transparent flex items-center gap-2">
@@ -67,9 +84,12 @@ const ArchivedTasks: React.FC = () => {
                     <button
                         className="btn btn-sm btn-outline"
                         onClick={handleClearArchiveClick}
+                        style={{
+                            color: `var(--${currentTheme}-text-default)`,
+                        }}
                     >
                         <FaTrash className="mr-2" />
-                        Clear Archive
+                        Delete All
                     </button>
                 )}
                 {showConfirmClear && (
@@ -86,7 +106,7 @@ const ArchivedTasks: React.FC = () => {
                             type="text"
                             placeholder="Search tasks..."
                             value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onChange={handleSearchChange}
                             className="w-full p-2 pl-10 rounded-lg"
                             style={{
                                 backgroundColor: `var(--${currentTheme}-background-200)`,
@@ -97,9 +117,7 @@ const ArchivedTasks: React.FC = () => {
                     </div>
                     <select
                         value={sortBy}
-                        onChange={(e) =>
-                            setSortBy(e.target.value as 'date' | 'name')
-                        }
+                        onChange={handleSortChange}
                         className="p-2 rounded-lg"
                         style={{
                             backgroundColor: `var(--${currentTheme}-background-100)`,
@@ -113,7 +131,7 @@ const ArchivedTasks: React.FC = () => {
             </div>
             <div className="space-y-4 pb-10">
                 {filteredTasks.length === 0 ? (
-                    <div className="flex flex-col items-center gap-4 min-h-[200px]  justify-center">
+                    <div className="flex flex-col items-center gap-4 min-h-[200px] justify-center">
                         <FaSearch className="text-4xl" />
                         <div
                             className="text-center text-sm"
@@ -138,4 +156,4 @@ const ArchivedTasks: React.FC = () => {
     );
 };
 
-export default ArchivedTasks;
+export default React.memo(ArchivedTasks);

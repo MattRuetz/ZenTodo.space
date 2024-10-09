@@ -1,16 +1,21 @@
+// src/components/SuperSpace/SpaceCard.tsx
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { SpaceData, Task } from '@/types';
-import { deleteSpace, reorderSpaces, updateSpace } from '@/store/spaceSlice';
 import { AppDispatch, RootState } from '@/store/store';
-import EmojiDropdown from '../EmojiDropdown';
+import { updateSpace } from '@/store/spaceSlice';
 import { FaClock, FaTag } from 'react-icons/fa';
-import { getComplementaryColor, getContrastingColor } from '@/app/utils/utils';
-import { FaClockRotateLeft, FaPalette, FaTrash } from 'react-icons/fa6';
+import { FaPalette, FaTrash } from 'react-icons/fa6';
 import { useDrag, useDrop } from 'react-dnd';
-import ConfirmDelete from '../TaskCards/ConfirmDelete';
 import { isMobile } from 'react-device-detect';
 import { useRouter } from 'next/navigation';
+
+import { getComplementaryColor, getContrastingColor } from '@/app/utils/utils';
+
+import ConfirmDelete from '../TaskCards/ConfirmDelete';
+import EmojiDropdown from '../EmojiDropdown';
+
+import { SpaceData, Task } from '@/types';
+import { createSelector } from '@reduxjs/toolkit';
 
 interface SpaceCardProps {
     space: SpaceData;
@@ -19,6 +24,12 @@ interface SpaceCardProps {
     handleDragEnd: () => void;
     onClick: () => void;
 }
+
+const tasksInSpace = createSelector(
+    (state: RootState) => state.tasks.tasks,
+    (state: RootState, spaceId: string) => spaceId,
+    (tasks, spaceId) => tasks.filter((task: Task) => task.space === spaceId)
+);
 
 const SpaceCard: React.FC<SpaceCardProps> = ({
     space,
@@ -41,6 +52,10 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
     const touchStartPos = useRef<{ x: number; y: number } | null>(null);
     const emojiInputRef = useRef<HTMLInputElement>(null);
     const LONG_PRESS_DELAY = 300; // 300ms delay
+
+    const tasks = useSelector((state: RootState) =>
+        tasksInSpace(state, space._id as string)
+    );
 
     useEffect(() => {
         if (!isMobile) {
@@ -65,28 +80,18 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
         const deltaY = Math.abs(touch.clientY - touchStartPos.current.y);
 
         if (deltaX > 10 || deltaY > 10) {
-            if (longPressTimer.current) {
-                clearTimeout(longPressTimer.current);
-                longPressTimer.current = null;
-            }
+            clearTimeout(longPressTimer.current!);
             setIsDragEnabled(false);
             setIsShaking(false);
         }
     }, []);
 
     const handleTouchEnd = useCallback(() => {
-        if (longPressTimer.current) {
-            clearTimeout(longPressTimer.current);
-            longPressTimer.current = null;
-        }
+        clearTimeout(longPressTimer.current!);
         setIsDragEnabled(false);
         setIsShaking(false);
         touchStartPos.current = null;
     }, []);
-
-    const tasks = useSelector((state: RootState) =>
-        state.tasks.tasks.filter((task: Task) => task.space === space._id)
-    );
 
     const tasksDueToday = tasks.filter((task: Task) => {
         const dueDate = new Date(task.dueDate || '');

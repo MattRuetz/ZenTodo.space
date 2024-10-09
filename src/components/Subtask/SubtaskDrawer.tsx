@@ -1,3 +1,4 @@
+// src/components/Subtask/SubtaskDrawer.tsx
 import React, {
     forwardRef,
     ForwardedRef,
@@ -5,24 +6,40 @@ import React, {
     useCallback,
     useState,
     useEffect,
+    useRef,
 } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { AppDispatch, RootState } from '@/store/store';
-import { Task } from '@/types';
-import SubtaskDrawerCard from './SubtaskDrawerCard';
+import {
+    setSubtaskDrawerParentId,
+    setSimplicityModalOpen,
+} from '@/store/uiSlice';
+import { updateTask } from '@/store/tasksSlice';
 import { FaAngleRight, FaXmark } from 'react-icons/fa6';
-import { setSubtaskDrawerParentId } from '@/store/uiSlice';
-import SubtaskDropZone from './SubtaskDropZone';
-import SortingDropdown from './SortingDropdown';
-import SimplicityModal from '../SimplicityModal';
-import { setSimplicityModalOpen } from '@/store/uiSlice';
-import { useTheme } from '@/hooks/useTheme';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useDragLayer } from 'react-dnd';
+
 import { useAutoScroll } from '@/hooks/useAutoScroll';
-import { useRef } from 'react';
+import { useTheme } from '@/hooks/useTheme';
+
 import EmojiDropdown from '../EmojiDropdown';
-import { updateTask } from '@/store/tasksSlice';
+import SimplicityModal from '../SimplicityModal';
+import SortingDropdown from './SortingDropdown';
+import SubtaskDrawerCard from './SubtaskDrawerCard';
+import SubtaskDropZone from './SubtaskDropZone';
+
+import { Task } from '@/types';
+
+// Memoized selectors
+const selectTasks = (state: RootState) => state.tasks.tasks;
+const selectSimplicityModalOpen = (state: RootState) =>
+    state.ui.isSimplicityModalOpen;
+const selectGlobalDragging = (state: RootState) => state.ui.isGlobalDragging;
+const selectSortOption = (state: RootState) => state.ui.sortOption;
+const selectIsReversed = (state: RootState) => state.ui.isReversed;
+const selectSubtaskDrawerParentId = (state: RootState) =>
+    state.ui.subtaskDrawerParentId;
+
 interface SubtaskDrawerProps {
     isOpen: boolean;
     onClose: () => void;
@@ -44,28 +61,18 @@ const SubtaskDrawer = React.memo(
             >(null);
 
             const isSimplicityModalOpen = useSelector(
-                (state: RootState) => state.ui.isSimplicityModalOpen
+                selectSimplicityModalOpen
             );
-
-            const isGlobalDragging = useSelector(
-                (state: RootState) => state.ui.isGlobalDragging
-            );
-            const sortOption = useSelector(
-                (state: RootState) => state.ui.sortOption
-            );
-            const isReversed = useSelector(
-                (state: RootState) => state.ui.isReversed
-            );
-            const parentTaskId = useSelector(
-                (state: RootState) => state.ui.subtaskDrawerParentId
-            );
-            const allTasks = useSelector(
-                (state: RootState) => state.tasks.tasks
-            );
+            const isGlobalDragging = useSelector(selectGlobalDragging);
+            const sortOption = useSelector(selectSortOption);
+            const isReversed = useSelector(selectIsReversed);
+            const parentTaskId = useSelector(selectSubtaskDrawerParentId);
+            const allTasks = useSelector(selectTasks);
 
             const parentTask = useMemo(() => {
-                if (!parentTaskId) return null;
-                return allTasks.find((t) => t._id === parentTaskId);
+                return parentTaskId
+                    ? allTasks.find((t) => t._id === parentTaskId)
+                    : null;
             }, [allTasks, parentTaskId]);
 
             const allSubtasksOfParent = useMemo(() => {
@@ -78,8 +85,9 @@ const SubtaskDrawer = React.memo(
             }, [allTasks, parentTask]);
 
             const grandparentTask = useMemo(() => {
-                if (!parentTask?.parentTask) return null;
-                return allTasks.find((t) => t._id === parentTask?.parentTask);
+                return parentTask?.parentTask
+                    ? allTasks.find((t) => t._id === parentTask.parentTask)
+                    : null;
             }, [allTasks, parentTask]);
 
             const handleSwitchParentTask = useCallback(
@@ -90,7 +98,7 @@ const SubtaskDrawer = React.memo(
             );
 
             const sortedSubtasks = useMemo(() => {
-                let sorted = [...allSubtasksOfParent];
+                const sorted = [...allSubtasksOfParent];
                 switch (sortOption) {
                     case 'name':
                         sorted.sort((a, b) =>
@@ -100,8 +108,8 @@ const SubtaskDrawer = React.memo(
                     case 'dueDate':
                         sorted.sort(
                             (a, b) =>
-                                new Date(a.dueDate as Date).getTime() -
-                                new Date(b.dueDate as Date).getTime()
+                                (a.dueDate as Date).getTime() -
+                                (b.dueDate as Date).getTime()
                         );
                         break;
                     case 'progress':
@@ -112,24 +120,21 @@ const SubtaskDrawer = React.memo(
                     case 'created':
                         sorted.sort(
                             (a, b) =>
-                                new Date(b.createdAt as Date).getTime() -
-                                new Date(a.createdAt as Date).getTime()
+                                (b.createdAt as Date).getTime() -
+                                (a.createdAt as Date).getTime()
                         );
                         break;
                     case 'lastEdited':
                         sorted.sort(
                             (a, b) =>
-                                new Date(b.updatedAt as Date).getTime() -
-                                new Date(a.updatedAt as Date).getTime()
+                                (b.updatedAt as Date).getTime() -
+                                (a.updatedAt as Date).getTime()
                         );
                         break;
                     default:
                         break;
                 }
-                if (isReversed) {
-                    sorted.reverse();
-                }
-                return sorted;
+                return isReversed ? sorted.reverse() : sorted;
             }, [allSubtasksOfParent, sortOption, isReversed]);
 
             const [isTaskCardOver, setIsTaskCardOver] = useState(false);
@@ -142,23 +147,21 @@ const SubtaskDrawer = React.memo(
                     }
                     if (ref && 'current' in ref && ref.current) {
                         const rect = ref.current.getBoundingClientRect();
-                        const isOver =
+                        setIsTaskCardOver(
                             e.clientX >= rect.left &&
-                            e.clientX <= rect.right &&
-                            e.clientY >= rect.top &&
-                            e.clientY <= rect.bottom;
-                        setIsTaskCardOver(isOver);
+                                e.clientX <= rect.right &&
+                                e.clientY >= rect.top &&
+                                e.clientY <= rect.bottom
+                        );
                     }
                 };
                 document.addEventListener('mousemove', handleMouseMove);
-
                 return () => {
                     document.removeEventListener('mousemove', handleMouseMove);
                 };
-            }, [isTaskCardOver, isGlobalDragging]);
+            }, [isGlobalDragging]);
 
             useEffect(() => {
-                // Check if there are no subtasks and close the drawer
                 if (isOpen && sortedSubtasks.length === 0) {
                     if (grandparentTask) {
                         handleSwitchParentTask(grandparentTask as Task);
@@ -166,18 +169,14 @@ const SubtaskDrawer = React.memo(
                         onClose();
                     }
                 }
-            }, [isOpen, sortedSubtasks, isGlobalDragging]);
+            }, [isOpen, sortedSubtasks, grandparentTask, onClose]);
 
             const { isDragging, currentOffset } = useDragLayer((monitor) => ({
                 isDragging: monitor.isDragging(),
                 currentOffset: monitor.getSourceClientOffset(),
             }));
 
-            useAutoScroll(
-                autoScrollRef as React.RefObject<HTMLDivElement>,
-                isDragging,
-                currentOffset
-            );
+            useAutoScroll(autoScrollRef, isDragging, currentOffset);
 
             const taskVariants = {
                 hidden: { opacity: 0, y: 50 },
@@ -187,9 +186,7 @@ const SubtaskDrawer = React.memo(
 
             const handleSetSubtaskEmoji = (emoji: string) => {
                 if (currentEmojiTask) {
-                    dispatch(
-                        updateTask({ _id: currentEmojiTask, emoji: emoji })
-                    );
+                    dispatch(updateTask({ _id: currentEmojiTask, emoji }));
                 }
                 setIsEmojiPickerOpen(false);
                 setCurrentEmojiTask(null);
@@ -199,14 +196,14 @@ const SubtaskDrawer = React.memo(
                 <div
                     ref={ref}
                     data-drawer-parent-id={parentTask?._id}
-                    className={`subtask-drawer fixed top-0 right-0 h-full shadow-md transform w-[400px] border-l-2 ${
+                    className={`subtask-drawer fixed top-0 right-0 h-full shadow-md transform w-[400px] ${
                         isOpen ? 'opacity-100' : 'translate-x-full opacity-0'
-                    } transition-transform duration-300 ease-in-out h-full`}
+                    } transition-transform duration-300 ease-in-out`}
                     style={{
-                        backgroundColor: `var(--${currentTheme}-background-300)`, // Use theme color
+                        backgroundColor: `var(--${currentTheme}-background-300)`,
                         borderColor: isTaskCardOver
                             ? `var(--${currentTheme}-accent-blue)`
-                            : 'transparent', // Use theme color
+                            : 'transparent',
                         zIndex: isTaskCardOver ? 1 : 9999,
                     }}
                 >

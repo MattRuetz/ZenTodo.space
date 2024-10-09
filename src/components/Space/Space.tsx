@@ -2,11 +2,6 @@
 'use client';
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useDrop } from 'react-dnd';
-// Import the new TaskListView component
-import TaskListView from '../Mobile/TaskListView';
-import TaskCard from '../TaskCards/TaskCard';
-import SubtaskDrawer from '../Subtask/SubtaskDrawer';
 import { RootState, AppDispatch } from '../../store/store';
 import { updateMultipleTasks, updateTask } from '../../store/tasksSlice';
 import {
@@ -14,21 +9,24 @@ import {
     fetchSpaceMaxZIndex,
 } from '../../store/spaceSlice';
 import { setSubtaskDrawerOpen } from '@/store/uiSlice';
-import { TaskProgress, Task } from '@/types';
-import { selectTasksForSpace } from '@/store/selectors';
 import { createSelector } from '@reduxjs/toolkit';
-import { useAddTask } from '@/hooks/useAddTask';
+import { useDrop } from 'react-dnd';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useTheme } from '@/hooks/useTheme';
-import { useIsMobileSize } from '@/hooks/useIsMobileSize';
-import ControlPanel from '../ControlPanel/ControlPanel';
-import { useClearFilters } from '@/hooks/useClearFilters';
-import { useAlert } from '@/hooks/useAlert';
 import debounce from 'lodash.debounce';
 
-interface SpaceProps {
-    spaceId: string;
-}
+import { useAddTask } from '@/hooks/useAddTask';
+import { useClearFilters } from '@/hooks/useClearFilters';
+import { useIsMobileSize } from '@/hooks/useIsMobileSize';
+import { useTheme } from '@/hooks/useTheme';
+
+import ControlPanel from '../ControlPanel/ControlPanel';
+import SubtaskDrawer from '../Subtask/SubtaskDrawer';
+import TaskCard from '../TaskCards/TaskCard';
+import TaskListView from '../Mobile/TaskListView';
+
+import { TaskProgress, Task } from '@/types';
+
+import { selectTasksForSpace } from '@/store/selectors';
 
 // Memoized selectors
 export const selectSelectedEmojis = createSelector(
@@ -46,44 +44,36 @@ export const selectSelectedDueDateRange = createSelector(
     (currentSpace) => currentSpace?.selectedDueDateRange || null
 );
 
-export const selectCurrentSpace = createSelector(
-    (state: RootState) => state.spaces.currentSpace,
-    (currentSpace) => currentSpace
-);
+const selectIsSubtaskDrawerOpen = (state: RootState) =>
+    state.ui.isSubtaskDrawerOpen;
 
-export const selectSpaceWallpaper = createSelector(
-    selectCurrentSpace,
-    (currentSpace) => currentSpace?.wallpaper || ''
-);
-
-export const selectSpaceBackgroundColor = createSelector(
-    selectCurrentSpace,
-    (currentSpace) => currentSpace?.backgroundColor || ''
-);
-
-export const selectIsSubtaskDrawerOpen = createSelector(
-    (state: RootState) => state.ui.isSubtaskDrawerOpen,
-    (isOpen) => isOpen
-);
-
-const Space: React.FC<SpaceProps> = React.memo(({ spaceId }) => {
+const Space: React.FC<{ spaceId: string }> = React.memo(({ spaceId }) => {
     const dispatch = useDispatch<AppDispatch>();
     const currentTheme = useTheme();
 
     const isMobileSize = useIsMobileSize();
 
-    const tasks = useSelector((state: RootState) =>
-        selectTasksForSpace(state, spaceId)
-    );
-    const currentSpace = useSelector(selectCurrentSpace);
+    const tasks = useSelector(selectTasksForSpace);
+
     const selectedEmojis = useSelector(selectSelectedEmojis);
     const selectedProgresses = useSelector(selectSelectedProgresses);
     const selectedDueDateRange = useSelector(selectSelectedDueDateRange);
-    const wallpaper = useSelector(selectSpaceWallpaper);
-    const customBackgroundColor = useSelector(selectSpaceBackgroundColor);
+    const currentSpace = useSelector(
+        (state: RootState) => state.spaces.currentSpace
+    );
+    const wallpaper = useSelector(
+        (state: RootState) => state.spaces.currentSpace?.wallpaper
+    );
+    const customBackgroundColor = useSelector(
+        (state: RootState) => state.spaces.currentSpace?.backgroundColor
+    );
     const isSubtaskDrawerOpen = useSelector(selectIsSubtaskDrawerOpen);
+    const spaceOutlineColor = useSelector(
+        (state: RootState) => state.spaces.currentSpace?.color
+    );
 
     const { clearFilters } = useClearFilters(spaceId);
+    const { addTask } = useAddTask();
 
     const [maxZIndex, setMaxZIndex] = useState(currentSpace?.maxZIndex || 1);
     const [canCreateTask, setCanCreateTask] = useState(true);
@@ -94,16 +84,12 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId }) => {
 
     const COOLDOWN_TIME = 500; // ms
 
-    const { addTask } = useAddTask();
-
     const normalizeZIndexValues = useCallback(() => {
         const sortedTasks = [...tasks].sort((a, b) => a.zIndex - b.zIndex);
-        let newMaxZIndex = 0;
-
-        const updatedTasks = sortedTasks.map((task, index) => {
-            newMaxZIndex = index + 1;
-            return { ...task, zIndex: newMaxZIndex };
-        });
+        const updatedTasks = sortedTasks.map((task, index) => ({
+            ...task,
+            zIndex: index + 1,
+        }));
 
         updatedTasks.forEach((task) => {
             dispatch(
@@ -114,17 +100,17 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId }) => {
             );
         });
 
+        const newMaxZIndex = updatedTasks.length;
         setMaxZIndex(newMaxZIndex);
         dispatch(updateSpaceMaxZIndex({ spaceId, maxZIndex: newMaxZIndex }));
     }, [tasks, spaceId, dispatch]);
 
     useEffect(() => {
-        const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+        const handleBeforeUnload = () => {
             normalizeZIndexValues();
         };
 
         window.addEventListener('beforeunload', handleBeforeUnload);
-
         return () => {
             window.removeEventListener('beforeunload', handleBeforeUnload);
         };
@@ -137,7 +123,6 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId }) => {
         return newZIndex;
     }, [maxZIndex, spaceId, dispatch]);
 
-    // Use this effect to fetch the maxZIndex from the database
     useEffect(() => {
         dispatch(fetchSpaceMaxZIndex(spaceId));
     }, [spaceId, dispatch]);
@@ -182,8 +167,8 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId }) => {
     const calculateSafePosition = (
         x: number,
         y: number,
-        taskWidth = 270, // Default width
-        taskHeight = 250 // Default height
+        taskWidth = 270,
+        taskHeight = 250
     ) => {
         const spaceRect = spaceRef.current?.getBoundingClientRect();
         if (!spaceRect) return { x, y };
@@ -195,6 +180,7 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId }) => {
     };
 
     useEffect(() => {
+        if (isMobileSize) return;
         const handleResize = debounce(() => {
             const spaceRect = spaceRef.current?.getBoundingClientRect();
             if (!spaceRect) return;
@@ -210,10 +196,9 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId }) => {
                     taskHeight
                 );
 
-                if (safeX !== task.x || safeY !== task.y) {
-                    return { ...task, x: safeX, y: safeY };
-                }
-                return task;
+                return safeX !== task.x || safeY !== task.y
+                    ? { ...task, x: safeX, y: safeY }
+                    : task;
             });
 
             const tasksToUpdate = updatedTasks.filter(
@@ -227,9 +212,7 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId }) => {
         }, 250);
 
         window.addEventListener('resize', handleResize);
-
-        // Run the handler once on mount to adjust positions
-        handleResize();
+        handleResize(); // Run the handler once on mount to adjust positions
 
         return () => {
             window.removeEventListener('resize', handleResize);
@@ -242,7 +225,7 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId }) => {
             if (
                 e.target !== e.currentTarget ||
                 isDraggingRef.current ||
-                e.button !== 0 // only left click
+                e.button !== 0
             )
                 return;
 
@@ -281,33 +264,21 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId }) => {
     const handleDragStart = () => {
         isDraggingRef.current = true;
     };
+
     const handleDragStop = () => {
         isDraggingRef.current = false;
     };
 
-    // Combine the drop ref with the space ref
     useEffect(() => {
         if (spaceRef.current) {
             drop(spaceRef);
         }
     }, [drop]);
 
-    const spaceOutlineColor = useSelector(
-        (state: RootState) => state.spaces.currentSpace?.color
-    );
-
     return (
         <motion.div
-            initial={{
-                opacity: 0,
-                scale: 0.8,
-                borderRadius: '200px',
-            }}
-            animate={{
-                opacity: 1,
-                scale: 1,
-                borderRadius: '0px',
-            }}
+            initial={{ opacity: 0, scale: 0.8, borderRadius: '200px' }}
+            animate={{ opacity: 1, scale: 1, borderRadius: '0px' }}
             exit={{
                 opacity: 0,
                 scale: 0.9,
@@ -318,9 +289,9 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId }) => {
             ref={spaceRef}
             className={`relative w-full h-screen space-${spaceId} overflow-hidden`}
             style={{
-                backgroundColor: customBackgroundColor
-                    ? customBackgroundColor
-                    : `var(--${currentTheme}-space-background)`,
+                backgroundColor:
+                    customBackgroundColor ||
+                    `var(--${currentTheme}-space-background)`,
                 backgroundImage:
                     wallpaper !== '/images/placeholder_image.webp'
                         ? `url(${wallpaper})`
@@ -396,9 +367,7 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId }) => {
                                                 </p>
                                                 <button
                                                     className="btn btn-sm btn-outline cursor-pointer text-black"
-                                                    onClick={() => {
-                                                        clearFilters();
-                                                    }}
+                                                    onClick={clearFilters}
                                                 >
                                                     Clear Filters
                                                 </button>
@@ -412,7 +381,6 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId }) => {
                     {tasks
                         .filter(
                             (task) =>
-                                // !task.parentTask &&
                                 selectedEmojis.length === 0 ||
                                 selectedEmojis.includes(task.emoji || '')
                         )
@@ -427,7 +395,7 @@ const Space: React.FC<SpaceProps> = React.memo(({ spaceId }) => {
                         ))}
                     <SubtaskDrawer
                         ref={subtaskDrawerRef}
-                        isOpen={isSubtaskDrawerOpen as boolean}
+                        isOpen={isSubtaskDrawerOpen}
                         onClose={handleCloseDrawer}
                         maxZIndex={maxZIndex}
                     />

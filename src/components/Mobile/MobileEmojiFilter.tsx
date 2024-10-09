@@ -1,87 +1,108 @@
+// src/components/Mobile/MobileEmojiFilter.tsx
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { AppDispatch, RootState } from '@/store/store';
+
 import { updateSpaceSelectedEmojis } from '@/store/spaceSlice';
-import { fetchTasks } from '@/store/tasksSlice';
+
 import { useTheme } from '@/hooks/useTheme';
-import { FaFilter } from 'react-icons/fa';
+import { selectAllTasks } from '@/store/selectors';
 
 interface MobileEmojiFilterProps {
     spaceId: string;
 }
 
-export const MobileEmojiFilter: React.FC<MobileEmojiFilterProps> = ({
-    spaceId,
-}) => {
-    const dispatch = useDispatch<AppDispatch>();
-    const currentTheme = useTheme();
-    const selectedEmojis = useSelector(
-        (state: RootState) => state.spaces.currentSpace?.selectedEmojis || []
-    );
-    const [availableEmojis, setAvailableEmojis] = useState<string[]>([]);
+export const MobileEmojiFilter: React.FC<MobileEmojiFilterProps> = React.memo(
+    ({ spaceId }) => {
+        const dispatch = useDispatch<AppDispatch>();
+        const currentTheme = useTheme();
 
-    const tasks = useSelector((state: RootState) => state.tasks.tasks);
+        // Memoized selectors
+        const selectedEmojis = useSelector(
+            (state: RootState) =>
+                state.spaces.currentSpace?.selectedEmojis || []
+        );
 
-    useEffect(() => {
-        if (tasks.length > 0) {
-            const nonChildCards = tasks.filter(
-                (task) => !task.parentTask && task.space === spaceId
+        const tasks = useSelector(selectAllTasks);
+
+        const [availableEmojis, setAvailableEmojis] = useState<string[]>([]);
+
+        // Function to extract unique emojis from tasks
+        const extractUniqueEmojis = (tasks: any[], spaceId: string) => {
+            return Array.from(
+                new Set(
+                    tasks
+                        .filter(
+                            (task) => !task.parentTask && task.space === spaceId
+                        )
+                        .map((task) => task.emoji)
+                        .filter(Boolean)
+                )
             );
-            const uniqueEmojis = Array.from(
-                new Set(nonChildCards.map((task) => task.emoji).filter(Boolean))
-            );
-            setAvailableEmojis(uniqueEmojis.filter(Boolean) as string[]);
+        };
+
+        useEffect(() => {
+            if (tasks.length > 0) {
+                const uniqueEmojis = extractUniqueEmojis(tasks, spaceId);
+                setAvailableEmojis(uniqueEmojis);
+            }
+        }, [tasks, spaceId]);
+
+        const toggleEmoji = (emoji: string) => {
+            const newSelectedEmojis = selectedEmojis.includes(emoji)
+                ? selectedEmojis.filter((e) => e !== emoji)
+                : [...selectedEmojis, emoji];
+
+            if (spaceId) {
+                dispatch(
+                    updateSpaceSelectedEmojis({
+                        spaceId,
+                        selectedEmojis: newSelectedEmojis,
+                    })
+                );
+            }
+        };
+
+        // Early return if no available emojis
+        if (availableEmojis.length === 0) {
+            return null;
         }
-    }, [tasks, spaceId]);
 
-    const toggleEmoji = (emoji: string) => {
-        const newSelectedEmojis = selectedEmojis.includes(emoji)
-            ? selectedEmojis.filter((e) => e !== emoji)
-            : [...selectedEmojis, emoji];
-
-        if (spaceId) {
-            dispatch(
-                updateSpaceSelectedEmojis({
-                    spaceId,
-                    selectedEmojis: newSelectedEmojis,
-                })
-            );
-        }
-    };
-
-    return (
-        <div
-            className="w-full p-2 border-b border-t"
-            style={{
-                display: availableEmojis.length > 0 ? 'block' : 'none',
-                borderColor: `var(--${currentTheme}-background-200)`,
-                backgroundColor: `var(--${currentTheme}-background-100)`,
-            }}
-        >
+        return (
             <div
-                className="flex w-full space-x-2 px-2 overflow-x-auto scrollbar-thin scrollbar-thumb-rounded-full scrollbar-thumb-gray-400 p-1 rounded-lg"
+                className="w-full p-2 border-b border-t"
                 style={{
-                    backgroundColor: `var(--${currentTheme}-background-200)`,
+                    borderColor: `var(--${currentTheme}-background-200)`,
+                    backgroundColor: `var(--${currentTheme}-background-100)`,
                 }}
             >
-                {availableEmojis.map((emoji, index) => (
-                    <button
-                        key={index}
-                        onClick={() => toggleEmoji(emoji)}
-                        className={`text-lg p-1 rounded-full transition-colors duration-200 flex-shrink-0`}
-                        style={{
-                            backgroundColor: selectedEmojis.includes(emoji)
-                                ? `var(--${currentTheme}-accent-blue)`
-                                : 'transparent',
-                            color: selectedEmojis.includes(emoji)
-                                ? `var(--${currentTheme}-text-default)`
-                                : `var(--${currentTheme}-text-subtle)`,
-                        }}
-                    >
-                        {emoji}
-                    </button>
-                ))}
+                <div
+                    className="flex w-full space-x-2 px-2 overflow-x-auto scrollbar-thin scrollbar-thumb-rounded-full scrollbar-thumb-gray-400 p-1 rounded-lg"
+                    style={{
+                        backgroundColor: `var(--${currentTheme}-background-200)`,
+                    }}
+                >
+                    {availableEmojis.map((emoji, index) => (
+                        <button
+                            key={index}
+                            onClick={() => toggleEmoji(emoji)}
+                            className={`text-lg p-1 rounded-full transition-colors duration-200 flex-shrink-0`}
+                            style={{
+                                backgroundColor: selectedEmojis.includes(emoji)
+                                    ? `var(--${currentTheme}-accent-blue)`
+                                    : 'transparent',
+                                color: selectedEmojis.includes(emoji)
+                                    ? `var(--${currentTheme}-text-default)`
+                                    : `var(--${currentTheme}-text-subtle)`,
+                            }}
+                        >
+                            {emoji}
+                        </button>
+                    ))}
+                </div>
             </div>
-        </div>
-    );
-};
+        );
+    }
+);
+
+export default MobileEmojiFilter;

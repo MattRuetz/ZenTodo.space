@@ -19,13 +19,11 @@ export const fetchUser = createAsyncThunk(
     'user/fetchUser',
     async (_, { rejectWithValue }) => {
         try {
-            console.log('Fetching user data...');
             const response = await fetch(`/api/user/`);
             if (!response.ok) {
                 throw new Error('Failed to fetch user data');
             }
             const data = await response.json();
-            console.log('Fetched user data:', data);
             return data;
         } catch (error) {
             console.error('Error fetching user data:', error);
@@ -68,8 +66,6 @@ export const adjustUserStats = createAsyncThunk(
             return rejectWithValue('User not found');
         }
 
-        console.log('statsDelta', statsDelta);
-
         const updatedUser = {
             ...user,
             ...Object.keys(statsDelta).reduce((acc, key) => {
@@ -80,8 +76,6 @@ export const adjustUserStats = createAsyncThunk(
                 return acc;
             }, {} as Record<string, number>),
         };
-
-        console.log('updatedUser', updatedUser);
 
         try {
             const response = await fetch('/api/user/update', {
@@ -113,19 +107,16 @@ const userSlice = createSlice({
     extraReducers: (builder) => {
         builder
             .addCase(fetchUser.pending, (state) => {
-                console.log('fetchUser.pending');
                 state.status = 'loading';
             })
             .addCase(
                 fetchUser.fulfilled,
                 (state, action: PayloadAction<any>) => {
-                    console.log('fetchUser.fulfilled', action.payload);
                     state.status = 'succeeded';
                     state.user = action.payload;
                 }
             )
             .addCase(fetchUser.rejected, (state, action) => {
-                console.log('fetchUser.rejected', action.error);
                 state.status = 'failed';
                 state.error =
                     action.error.message || 'Failed to fetch user data';

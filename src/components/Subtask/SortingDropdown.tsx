@@ -1,6 +1,8 @@
-import { RootState } from '@/store/store';
+// src/components/Subtask/SortingDropdown.tsx
+import React, { useState, useCallback } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '@/store/store';
 import { setIsReversed, setSortOption } from '@/store/uiSlice';
-import React, { useState } from 'react';
 import {
     FaSort,
     FaSortAlphaDown,
@@ -10,9 +12,8 @@ import {
     FaSignal,
     FaPizzaSlice,
 } from 'react-icons/fa';
-import { useDispatch, useSelector } from 'react-redux';
-import { useTheme } from '@/hooks/useTheme';
 import { FaHourglassHalf } from 'react-icons/fa6';
+import { useTheme } from '@/hooks/useTheme';
 import { SortOption } from '@/types';
 
 interface SortingDropdownProps {
@@ -21,8 +22,9 @@ interface SortingDropdownProps {
 
 const SortingDropdown: React.FC<SortingDropdownProps> = React.memo(
     ({ btnColor }) => {
-        const dispatch = useDispatch();
+        const dispatch = useDispatch<AppDispatch>();
         const currentTheme = useTheme();
+
         // Imported selectors
         const sortOption = useSelector(
             (state: RootState) => state.ui.sortOption
@@ -33,17 +35,20 @@ const SortingDropdown: React.FC<SortingDropdownProps> = React.memo(
 
         const [isOpen, setIsOpen] = useState(false);
 
-        const handleSortChange = (option: SortOption) => {
-            setIsOpen(false);
-            if (option === sortOption && option !== 'custom') {
-                dispatch(setIsReversed(!isReversed));
-            } else {
-                dispatch(setIsReversed(false));
-            }
-            dispatch(setSortOption(option));
-        };
+        const handleSortChange = useCallback(
+            (option: SortOption) => {
+                setIsOpen(false);
+                if (option === sortOption && option !== 'custom') {
+                    dispatch(setIsReversed(!isReversed));
+                } else {
+                    dispatch(setIsReversed(false));
+                }
+                dispatch(setSortOption(option));
+            },
+            [dispatch, isReversed, sortOption]
+        );
 
-        const sortOptionString = {
+        const sortOptionString: Record<SortOption, string> = {
             name: isReversed ? 'Name (Z-a)' : 'Name (a-Z)',
             dueDate: 'Due Date ' + (isReversed ? '(Reverse)' : ''),
             progress: 'Progress',
@@ -53,7 +58,7 @@ const SortingDropdown: React.FC<SortingDropdownProps> = React.memo(
         };
 
         return (
-            <div className="">
+            <div>
                 <button
                     onClick={() => setIsOpen(!isOpen)}
                     className="btn btn-sm md:btn-md btn-outline"
@@ -70,135 +75,49 @@ const SortingDropdown: React.FC<SortingDropdownProps> = React.memo(
                     <div
                         className="absolute right-0 mt-2 w-48 rounded-md shadow-lg z-10"
                         style={{
-                            backgroundColor: `var(--${currentTheme}-background-200)`, // Use theme color
-                            border: `1px solid var(--${currentTheme}-text-default)`, // Use theme color
+                            backgroundColor: `var(--${currentTheme}-background-200)`,
+                            border: `1px solid var(--${currentTheme}-text-default)`,
                         }}
                     >
                         <ul>
-                            <li
-                                className="px-4 py-2 hover:bg-black/20 cursor-pointer flex items-center space-x-2"
-                                onClick={() => handleSortChange('custom')}
-                                style={{
-                                    color: `var(--${currentTheme}-text-default)`, // Use theme color
-                                }}
-                            >
-                                <FaPizzaSlice
-                                    className="text-primary"
+                            {[
+                                'custom',
+                                'dueDate',
+                                'name',
+                                'progress',
+                                'created',
+                                'lastEdited',
+                            ].map((option) => (
+                                <li
+                                    key={option}
+                                    className="px-4 py-2 hover:bg-black/20 cursor-pointer flex items-center space-x-2"
+                                    onClick={() =>
+                                        handleSortChange(option as SortOption)
+                                    }
                                     style={{
                                         color: `var(--${currentTheme}-text-default)`,
                                     }}
-                                />
-                                <span>Custom</span>
-                            </li>
-                            <li
-                                className="px-4 py-2 hover:bg-black/20 cursor-pointer flex items-center space-x-2"
-                                onClick={() => handleSortChange('dueDate')}
-                                style={{
-                                    color: `var(--${currentTheme}-text-default)`, // Use theme color
-                                }}
-                            >
-                                <FaHourglassHalf
-                                    className="text-primary"
-                                    style={{
-                                        color: `var(--${currentTheme}-text-default)`,
-                                    }}
-                                />
-                                <span>Due Date</span>
-                            </li>
-                            <li
-                                className="px-4 py-2 hover:bg-black/20 cursor-pointer flex items-center space-x-2"
-                                onClick={() => handleSortChange('name')}
-                                style={{
-                                    color: `var(--${currentTheme}-text-default)`, // Use theme color
-                                }}
-                            >
-                                {sortOption === 'name' ? (
-                                    isReversed ? (
-                                        <>
-                                            <FaSortAlphaUp
-                                                className="text-primary"
-                                                style={{
-                                                    color: `var(--${currentTheme}-text-default)`,
-                                                }}
-                                            />
-                                            <span>Name (a-Z)</span>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <FaSortAlphaDown
-                                                className="text-primary"
-                                                style={{
-                                                    color: `var(--${currentTheme}-text-default)`,
-                                                }}
-                                            />
-                                            <span>Name (Z-a)</span>
-                                        </>
-                                    )
-                                ) : (
-                                    <>
-                                        <FaSortAlphaDown
-                                            className="text-primary"
-                                            style={{
-                                                color: `var(--${currentTheme}-text-default)`,
-                                            }}
-                                        />
-                                        <span>Name (Z-a)</span>
-                                    </>
-                                )}
-                            </li>
-                            <li
-                                className="px-4 py-2 hover:bg-black/20 cursor-pointer flex items-center space-x-2"
-                                onClick={() => handleSortChange('progress')}
-                                style={{
-                                    color: `var(--${currentTheme}-text-default)`, // Use theme color
-                                }}
-                            >
-                                <FaSignal
-                                    className="text-primary"
-                                    style={{
-                                        color: `var(--${currentTheme}-text-default)`,
-                                    }}
-                                />
-                                <span>Progress</span>
-                            </li>
-                            <li
-                                className="px-4 py-2 hover:bg-black/20 cursor-pointer flex items-center space-x-2"
-                                onClick={() => handleSortChange('created')}
-                                style={{
-                                    color: `var(--${currentTheme}-text-default)`, // Use theme color
-                                }}
-                            >
-                                <FaCalendarAlt
-                                    className="text-primary"
-                                    style={{
-                                        color: `var(--${currentTheme}-text-default)`,
-                                    }}
-                                />
-                                <span>
-                                    Created{' '}
-                                    {sortOption === 'created' &&
-                                        (isReversed ? '(Newest)' : '(Oldest)')}
-                                </span>
-                            </li>
-                            <li
-                                className="px-4 py-2 hover:bg-black/20 cursor-pointer flex items-center space-x-2"
-                                onClick={() => handleSortChange('lastEdited')}
-                                style={{
-                                    color: `var(--${currentTheme}-text-default)`, // Use theme color
-                                }}
-                            >
-                                <FaEdit
-                                    className="text-primary"
-                                    style={{
-                                        color: `var(--${currentTheme}-text-default)`,
-                                    }}
-                                />
-                                <span>
-                                    Last Edited{' '}
-                                    {sortOption === 'lastEdited' &&
-                                        (isReversed ? '(Newest)' : '(Oldest)')}
-                                </span>
-                            </li>
+                                >
+                                    {option === 'custom' && <FaPizzaSlice />}
+                                    {option === 'dueDate' && (
+                                        <FaHourglassHalf />
+                                    )}
+                                    {option === 'name' &&
+                                        (isReversed ? (
+                                            <FaSortAlphaUp />
+                                        ) : (
+                                            <FaSortAlphaDown />
+                                        ))}
+                                    {option === 'progress' && <FaSignal />}
+                                    {option === 'created' && <FaCalendarAlt />}
+                                    {option === 'lastEdited' && <FaEdit />}
+                                    <span>
+                                        {sortOption === option &&
+                                            (isReversed ? '(Reverse)' : '')}
+                                        {sortOptionString[option as SortOption]}
+                                    </span>
+                                </li>
+                            ))}
                         </ul>
                     </div>
                 )}

@@ -2,14 +2,18 @@ import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from './store';
 import { Task } from '@/types';
 
+export const selectAllTasks = createSelector(
+    [(state: RootState) => state.tasks.tasks, (tasks: Task[]) => tasks],
+    (tasks) => tasks
+);
+
 // Memoized selector for spaces
 export const selectTasksForSpace = createSelector(
     [
         (state: RootState) => state.tasks.tasks,
         (state: RootState) => state.spaces.currentSpace,
-        (state: RootState, spaceId: string) => spaceId,
     ],
-    (tasks, currentSpace, spaceId) => {
+    (tasks, currentSpace) => {
         const selectedEmojis = currentSpace?.selectedEmojis || [];
         const selectedProgresses = currentSpace?.selectedProgresses || [];
         const selectedDueDateRange = currentSpace?.selectedDueDateRange || null;
@@ -22,7 +26,7 @@ export const selectTasksForSpace = createSelector(
 
         const tasksInSpace = tasks.filter(
             (task) =>
-                task.space === spaceId &&
+                task.space === currentSpace?._id &&
                 !task.parentTask &&
                 !task.isArchived &&
                 (selectedEmojis.length === 0 ||

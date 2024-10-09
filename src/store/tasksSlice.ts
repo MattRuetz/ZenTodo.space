@@ -570,19 +570,18 @@ export const tasksSlice = createSlice({
                 };
             }
         },
-        updateTaskPositionOptimistic: (
+        updateTaskOptimistic: (
             state,
             action: PayloadAction<{
-                taskId: string;
-                newPosition: { x: number; y: number; zIndex: number };
+                updatedTask: Task;
             }>
         ) => {
-            const { taskId, newPosition } = action.payload;
-            const index = state.tasks.findIndex((task) => task._id === taskId);
+            const { updatedTask } = action.payload;
+            const index = state.tasks.findIndex(
+                (task) => task._id === updatedTask._id
+            );
             if (index !== -1) {
-                state.tasks[index].x = newPosition.x;
-                state.tasks[index].y = newPosition.y;
-                state.tasks[index].zIndex = newPosition.zIndex;
+                state.tasks[index] = updatedTask;
             }
         },
         addNewSubtaskOptimistic: (
@@ -847,16 +846,36 @@ export const tasksSlice = createSlice({
                 state.tasks = state.tasks.filter((task) => !task.isTemp);
                 state.error = action.payload as string;
             })
+            // After
             .addCase(updateTask.fulfilled, (state, action) => {
                 const index = state.tasks.findIndex(
                     (task) => task._id === action.payload._id
                 );
                 if (index !== -1) {
-                    // Merge the updated fields into the existing task object
-                    state.tasks[index] = {
-                        ...state.tasks[index],
-                        ...action.payload,
+                    const localTask = state.tasks[index];
+                    const serverTask = action.payload;
+
+                    // Determine which fields to update
+                    const mergedTask = {
+                        ...localTask,
+                        // Overwrite specific fields from server response
+                        ...serverTask,
+                        // Preserve local x and y ans zIndex if they differ from server values
+                        x:
+                            localTask.x !== serverTask.x
+                                ? localTask.x
+                                : serverTask.x,
+                        y:
+                            localTask.y !== serverTask.y
+                                ? localTask.y
+                                : serverTask.y,
+                        zIndex:
+                            localTask.zIndex !== serverTask.zIndex
+                                ? localTask.zIndex
+                                : serverTask.zIndex,
                     };
+
+                    state.tasks[index] = mergedTask;
                 }
             })
             .addCase(deleteTaskAsync.fulfilled, (state, action) => {
@@ -1158,7 +1177,7 @@ export const selectSubtasksByParentId = (state: RootState, parentId: string) =>
 export const {
     // hideNewChildTask,
     duplicateTasksOptimistic,
-    updateTaskPositionOptimistic,
+    updateTaskOptimistic,
     updateTaskInPlace,
     convertTaskToSubtaskOptimistic,
     convertSubtaskToTaskOptimistic,

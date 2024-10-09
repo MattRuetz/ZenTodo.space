@@ -1,42 +1,42 @@
+// src/components/Mobile/TaskListItem.tsx
 import React, { useCallback, useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useDrag, useDrop } from 'react-dnd';
 import { AppDispatch, RootState, store } from '../../store/store';
-import { updateTask } from '@/store/tasksSlice';
-import { Task, TaskProgress } from '@/types';
-import { setSimplicityModalOpen, setSubtaskDrawerOpen } from '@/store/uiSlice';
+
+import { TaskListItemTopBar } from './TaskListItemTopBar';
+import SubtaskBottomBar from '../Subtask/SubtaskBottomBar';
+
 import { useChangeHierarchy } from '@/hooks/useChangeHierarchy';
-import { useMoveSubtask } from '@/hooks/useMoveSubtask';
 import { useAlert } from '@/hooks/useAlert';
 import useClickOutside from '@/hooks/useClickOutside';
 import { useTheme } from '@/hooks/useTheme';
 import { useArchiveTask } from '@/hooks/useArchiveTask';
-import { SubtaskBottomBar } from '../Subtask/SubtaskBottomBar';
+
+import { selectAllTasks } from '@/store/selectors';
+
+import { updateTask } from '@/store/tasksSlice';
+import { setSubtaskDrawerOpen } from '@/store/uiSlice';
+import { Task, TaskProgress } from '@/types';
+
 import { getGrandparentTask, isGrandparent } from '@/app/utils/hierarchyUtils';
-import { TaskListItemTopBar } from './TaskListItemTopBar';
 
 const LONG_PRESS_DELAY = 300; // 1 second delay
 
 interface TaskListItemProps {
     task: Task;
-    onClick: () => void;
-    index: number;
-    parentId: string | null;
     setIsEmojiPickerOpen: (isOpen: boolean) => void;
     setCurrentEmojiTask: (currentEmojiTask: string | null) => void;
 }
 
 const TaskListItem: React.FC<TaskListItemProps> = ({
     task,
-    onClick,
-    index,
     setIsEmojiPickerOpen,
     setCurrentEmojiTask,
 }) => {
     const dispatch = useDispatch<AppDispatch>();
     const currentTheme = useTheme();
     const { showAlert } = useAlert();
-    const archiveTask = useArchiveTask();
     const [localTask, setLocalTask] = useState(task || {});
     const [isEditing, setIsEditing] = useState<string | null>(null);
     const [isTaskMenuOpen, setIsTaskMenuOpen] = useState(false);
@@ -49,6 +49,11 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
     const currentTaskNameRef = useRef(task?.taskName || '');
     const ref = useRef<HTMLLIElement>(null);
 
+    const tasksState = useSelector(selectAllTasks);
+    const spacesState = useSelector((state: RootState) => state.spaces.spaces);
+
+    const archiveTask = useArchiveTask({ tasksState, spacesState });
+
     const { convertTaskToSubtask } = useChangeHierarchy();
 
     const handleArchive = useCallback(() => {
@@ -56,6 +61,7 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
         dispatch(setSubtaskDrawerOpen(false));
     }, [archiveTask, task, dispatch]);
 
+    // Long press handling
     const handleTouchStart = useCallback((e: React.TouchEvent) => {
         const touch = e.touches[0];
         touchStartPos.current = { x: touch.clientX, y: touch.clientY };
@@ -219,7 +225,6 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
             );
 
             if (draggedSubtask._id === targetSubtask._id) {
-                // handleDropOnSelf();
                 return;
             } else if (
                 !isGrandparentCheck &&
@@ -231,7 +236,6 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
                     targetSubtask._id as string
                 );
             } else {
-                // dispatch(setSimplicityModalOpen(true));
                 showAlert(
                     'Too many levels of subtasks. Keep it simple!',
                     'error'
@@ -263,7 +267,7 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
             className={`relative task-list-item p-2 ${
-                (isDragging || isShaking) && 'shake'
+                isDragging || isShaking ? 'shake' : ''
             } rounded-lg transition-all duration-200 border-2 px-2 mx-auto max-w-[350px] shadow-md shadow-black/20`}
             style={{
                 cursor: 'move',
@@ -286,15 +290,12 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
             <div className="w-10/12 max-w-[300px] mx-auto">
                 <TaskListItemTopBar
                     task={task}
-                    handleProgressChange={handleProgressChange}
                     handleSetDueDate={handleSetDueDate}
                     isMenuOpen={isTaskMenuOpen}
                     setIsMenuOpen={setIsTaskMenuOpen}
                     setIsEmojiPickerOpen={setIsEmojiPickerOpen}
                     setCurrentEmojiTask={setCurrentEmojiTask}
                 />
-                {/* <p>{task._id}</p> */}
-
                 <div
                     className={`${
                         isEditing === 'taskName'

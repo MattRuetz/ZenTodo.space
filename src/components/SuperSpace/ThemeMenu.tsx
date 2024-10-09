@@ -1,22 +1,32 @@
-import React from 'react';
-import { useTheme } from '@/hooks/useTheme';
-import { setTheme } from '@/store/themeSlice';
+// src/components/SuperSpace/ThemeMenu.tsx
+import React, { useCallback } from 'react';
 import { useDispatch } from 'react-redux';
-import { ThemeName } from '@/types';
 import { AppDispatch } from '@/store/store';
-import { FaAngleDown, FaX } from 'react-icons/fa6';
+import { setTheme } from '@/store/themeSlice';
+import { FaAngleDown } from 'react-icons/fa6';
 
-const ThemeMenu: React.FC<{ isOpen: boolean; onClose: () => void }> = ({
-    isOpen,
-    onClose,
-}) => {
+import { useTheme } from '@/hooks/useTheme';
+
+import { ThemeName } from '@/types';
+
+const availableThemes: ThemeName[] = ['buji', 'daigo', 'enzu'];
+
+interface ThemeMenuProps {
+    isOpen: boolean;
+    onClose: () => void;
+}
+
+const ThemeMenu: React.FC<ThemeMenuProps> = ({ isOpen, onClose }) => {
     const currentTheme = useTheme();
     const dispatch = useDispatch<AppDispatch>();
 
-    const handleThemeChange = (theme: ThemeName) => {
-        dispatch(setTheme(theme));
-        onClose();
-    };
+    const handleThemeChange = useCallback(
+        (theme: ThemeName) => {
+            dispatch(setTheme(theme));
+            onClose();
+        },
+        [dispatch, onClose]
+    );
 
     if (!isOpen) return null;
 
@@ -24,10 +34,10 @@ const ThemeMenu: React.FC<{ isOpen: boolean; onClose: () => void }> = ({
         <div className="absolute bottom-full right-20 bg-gray-800/50 backdrop-blur text-white p-4 rounded-t-lg border-b border-gray-900">
             <h2 className="text-sm font-bold mb-4">Select Theme</h2>
             <div className="flex flex-col">
-                {['buji', 'daigo', 'enzu'].map((theme) => (
+                {availableThemes.map((theme) => (
                     <button
                         key={theme}
-                        onClick={() => handleThemeChange(theme as ThemeName)}
+                        onClick={() => handleThemeChange(theme)}
                         className={`p-2 rounded-lg mb-2 transition-colors ${
                             currentTheme === theme
                                 ? 'bg-blue-500 text-white'
@@ -52,4 +62,4 @@ const ThemeMenu: React.FC<{ isOpen: boolean; onClose: () => void }> = ({
     );
 };
 
-export default ThemeMenu;
+export default React.memo(ThemeMenu);

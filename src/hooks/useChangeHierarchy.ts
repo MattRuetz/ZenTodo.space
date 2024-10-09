@@ -17,7 +17,6 @@ export const useChangeHierarchy = () => {
     const dispatch = useDispatch<AppDispatch>();
     const { showAlert } = useAlert();
     const tasksState = useSelector((state: RootState) => state.tasks.tasks);
-    const spaces = useSelector((state: RootState) => state.spaces.spaces);
     const { getState } = store;
 
     const convertTaskToSubtask = async (task: Task, parentTaskId: string) => {
@@ -96,13 +95,6 @@ export const useChangeHierarchy = () => {
         }
 
         const hasGrandchildren = isGrandparent(task, tasksState);
-        // const childTaskIds = taskMap.get(task._id)?.subtasks || [];
-        // const hasGrandchildren = childTaskIds.some((childId) => {
-        //     const childTask = taskMap.get(childId);
-        //     return (
-        //         childTask && childTask.subtasks && childTask.subtasks.length > 0
-        //     );
-        // });
 
         if (hasGrandchildren) {
             showAlert(

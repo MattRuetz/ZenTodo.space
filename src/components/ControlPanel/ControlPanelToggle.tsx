@@ -1,11 +1,9 @@
 // src/app/components/ControlPanelToggle.tsx
 'use client';
-import React from 'react';
-// import { EmojiFilter } from '../Space/EmojiFilter';
-import { SpaceFilters } from '../Space/SpaceFilters';
+import React, { useMemo, useCallback } from 'react';
+import SpaceFilters from '../Space/SpaceFilters';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
-import { useClearEmojis } from '@/hooks/useClearEmojis';
 import { useTheme } from '@/hooks/useTheme';
 import { useUser } from '@clerk/nextjs';
 interface ControlPanelToggleProps {
@@ -25,7 +23,29 @@ const ControlPanelToggle: React.FC<ControlPanelToggleProps> = React.memo(
             (state: RootState) => state.spaces.currentSpace?._id
         );
 
-        const { clearEmojis } = useClearEmojis(spaceId ?? '');
+        // Memoize button text based on isOpen and isMobile
+        const buttonText = useMemo(
+            () => (isOpen && !isMobile ? '×' : '☰'),
+            [isOpen, isMobile]
+        );
+
+        // Memoize button styles
+        const buttonStyles = useMemo(
+            () => ({
+                boxShadow: 'none',
+                backgroundColor: isMobile
+                    ? 'transparent'
+                    : `var(--${currentTheme}-background-200)`,
+                borderColor: isMobile ? 'transparent' : 'black',
+                color: color,
+            }),
+            [isMobile, currentTheme, color]
+        );
+
+        // Callback to toggle the panel
+        const handleToggle = useCallback(() => {
+            setIsOpen(!isOpen);
+        }, [setIsOpen, isOpen]);
 
         return (
             <div
@@ -39,17 +59,10 @@ const ControlPanelToggle: React.FC<ControlPanelToggleProps> = React.memo(
             >
                 <button
                     className={`z-20 btn btn-circle border text-lg`}
-                    style={{
-                        boxShadow: 'none',
-                        backgroundColor: isMobile
-                            ? 'transparent'
-                            : `var(--${currentTheme}-background-200)`, // Use theme color
-                        borderColor: isMobile ? 'transparent' : 'black',
-                        color: color,
-                    }}
-                    onClick={() => setIsOpen(!isOpen)}
+                    style={buttonStyles}
+                    onClick={handleToggle}
                 >
-                    {isOpen && !isMobile ? '×' : '☰'}
+                    {buttonText}
                 </button>
                 <div
                     className="text-lg flex items-center justify-center"
@@ -57,10 +70,6 @@ const ControlPanelToggle: React.FC<ControlPanelToggleProps> = React.memo(
                         display: isMobile ? 'none' : 'block',
                     }}
                 >
-                    {/* <EmojiFilter
-                        clearSelectedEmojis={clearEmojis}
-                        spaceId={spaceId ?? ''}
-                    /> */}
                     <SpaceFilters spaceId={spaceId ?? ''} />
                 </div>
             </div>
