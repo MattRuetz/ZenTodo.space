@@ -179,29 +179,43 @@ const TaskCard = React.memo(
             [debouncedUpdate, setLocalTask]
         );
 
-        const {
-            handleDragStart,
-            handleDragStop,
-            handleInputChange,
-            handleInputBlur,
-        } = useDragHandlers({
-            isDragging,
-            setIsDragging,
-            task,
-            localTask,
-            setLocalTask,
-            onDragStart,
-            onDragStop,
-            getNewZIndex,
-            pushChildTask,
-            debouncedUpdate,
-            updateCardSize,
-            updateTaskInStore,
-            setIsFocused,
-            allowDropRef,
-            setAllowDrop,
-            allowDrop,
-        });
+        const { handleDragStart, handleDragStop, handleInputChange } =
+            useDragHandlers({
+                isDragging,
+                setIsDragging,
+                task,
+                localTask,
+                setLocalTask,
+                onDragStart,
+                onDragStop,
+                getNewZIndex,
+                pushChildTask,
+                debouncedUpdate,
+                updateCardSize,
+                updateTaskInStore,
+                setIsFocused,
+                allowDropRef,
+                setAllowDrop,
+                allowDrop,
+            });
+
+        const handleInputBlur = useCallback(
+            (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+                setIsFocused(false);
+                const fieldName = e.target.name;
+                const fieldValue = e.target.value;
+
+                setLocalTask((prevTask) => {
+                    const newTaskData = { [fieldName]: fieldValue };
+                    // Do not use debouncedUpdate here.
+                    // This is because we do not want the update to be inter
+                    updateTaskInStore(newTaskData);
+                    return { ...prevTask, ...newTaskData };
+                });
+                updateCardSize();
+            },
+            [setLocalTask, updateTaskInStore, updateCardSize]
+        );
 
         const handleGlobalMouseMove = useCallback(
             (e: MouseEvent) => {

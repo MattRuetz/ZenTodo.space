@@ -28,7 +28,6 @@ const SpaceBackgroundColorPicker: React.FC<SpaceBackgroundColorPickerProps> =
         const handleColorChange = useCallback(
             debounce((color: string) => {
                 setSelectedColor(color);
-                console.log('color', color);
                 dispatch(updateSpace({ ...space, backgroundColor: color }))
                     .unwrap()
                     .catch((error) => {

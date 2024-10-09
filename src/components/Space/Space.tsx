@@ -180,6 +180,7 @@ const Space: React.FC<{ spaceId: string }> = React.memo(({ spaceId }) => {
     };
 
     useEffect(() => {
+        if (isMobileSize) return;
         const handleResize = debounce(() => {
             const spaceRect = spaceRef.current?.getBoundingClientRect();
             if (!spaceRect) return;

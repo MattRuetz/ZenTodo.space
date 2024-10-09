@@ -55,7 +55,7 @@ const FixedTopBar: React.FC<FixedTopBarProps> = React.memo(
 
         const topBarBackgroundColor = useMemo(() => {
             return currentSpace?.backgroundColor
-                ? darkenColor(currentSpace.backgroundColor, 50)
+                ? darkenColor(currentSpace.backgroundColor, 30)
                 : `var(--${currentTheme}-space-background)`;
         }, [currentSpace?.backgroundColor, currentTheme]);
 

@@ -72,7 +72,7 @@ const ArchivedTasks: React.FC = () => {
 
     return (
         <div
-            className="p-4 sm:p-6 w-full rounded-lg py-8 sm:py-12 max-w-screen-md mx-auto"
+            className="p-8 w-full rounded-lg py-8 sm:py-12 max-w-screen-md mx-auto"
             style={{ color: `var(--${currentTheme}-text-default)` }}
         >
             <div className="flex items-center justify-between">
@@ -84,9 +84,12 @@ const ArchivedTasks: React.FC = () => {
                     <button
                         className="btn btn-sm btn-outline"
                         onClick={handleClearArchiveClick}
+                        style={{
+                            color: `var(--${currentTheme}-text-default)`,
+                        }}
                     >
                         <FaTrash className="mr-2" />
-                        Clear Archive
+                        Delete All
                     </button>
                 )}
                 {showConfirmClear && (

@@ -67,7 +67,7 @@ const ConfirmClearArchive: React.FC<ConfirmClearArchiveProps> = ({
                 onClick={(e) => e.stopPropagation()}
             >
                 <motion.div
-                    className="p-6 rounded-lg shadow-lg max-w-sm"
+                    className="p-6 rounded-lg shadow-lg max-w-sm mx-4"
                     style={{
                         backgroundColor: `var(--${currentTheme}-background-200)`,
                     }}

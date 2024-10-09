@@ -211,28 +211,9 @@ export const useDragHandlers = ({
         [updateCardSize, setLocalTask]
     );
 
-    const handleInputBlur = useCallback(
-        (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-            setIsFocused(false);
-            const fieldName = e.target.name;
-            const fieldValue = e.target.value;
-
-            setLocalTask((prevTask) => {
-                const newTaskData = { [fieldName]: fieldValue };
-                // Do not use debouncedUpdate here.
-                // This is because we do not want the update to be inter
-                updateTaskInStore(newTaskData);
-                return { ...prevTask, ...newTaskData };
-            });
-            updateCardSize();
-        },
-        [setLocalTask, updateTaskInStore, updateCardSize]
-    );
-
     return {
         handleDragStart,
         handleDragStop,
         handleInputChange,
-        handleInputBlur,
     };
 };

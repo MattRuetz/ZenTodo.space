@@ -19,6 +19,7 @@ import TaskListDropZone from './TaskListDropZone';
 import TaskListItem from './TaskListItem';
 
 import { Task } from '@/types';
+import { getContrastingColor } from '@/app/utils/utils';
 
 interface TaskListViewProps {
     spaceId: string;
@@ -191,6 +192,13 @@ export const TaskListView: React.FC<TaskListViewProps> = React.memo(
             exit: { opacity: 0, y: -50, transition: { duration: 0.2 } },
         };
 
+        const contrastColor = useMemo(() => {
+            if (space?.backgroundColor) {
+                return getContrastingColor(space.backgroundColor);
+            }
+            return `var(--${currentTheme}-text-default)`;
+        }, [space?.backgroundColor]);
+
         return (
             <>
                 <div
@@ -221,7 +229,12 @@ export const TaskListView: React.FC<TaskListViewProps> = React.memo(
                                             ease: 'easeInOut',
                                         }}
                                     >
-                                        <h1 className="text-center text-gray-500 text-5xl font-thin">
+                                        <h1
+                                            className="text-center text-gray-500 text-5xl font-thin"
+                                            style={{
+                                                color: contrastColor,
+                                            }}
+                                        >
                                             emptiness is bliss
                                         </h1>
                                     </motion.div>
