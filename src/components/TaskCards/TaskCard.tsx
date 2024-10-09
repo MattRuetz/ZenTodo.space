@@ -128,7 +128,7 @@ const TaskCard = React.memo(
         );
 
         const debouncedUpdate = useMemo(
-            () => debounce(updateTaskInStore, 500),
+            () => debounce(updateTaskInStore, 1000),
             [updateTaskInStore]
         );
 
@@ -190,7 +190,6 @@ const TaskCard = React.memo(
             task,
             localTask,
             setLocalTask,
-            setCardSize,
             onDragStart,
             onDragStop,
             getNewZIndex,
@@ -199,10 +198,6 @@ const TaskCard = React.memo(
             updateCardSize,
             updateTaskInStore,
             setIsFocused,
-            cardRef,
-            resizingRef,
-            startPosRef,
-            startSizeRef,
             allowDropRef,
             setAllowDrop,
             allowDrop,

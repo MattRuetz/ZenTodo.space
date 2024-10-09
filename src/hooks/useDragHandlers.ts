@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '../store/store';
 import { setGlobalDragging, setDraggingCardId } from '../store/uiSlice';
@@ -12,7 +12,6 @@ interface UseDragHandlersProps {
     task: Task;
     localTask: Task;
     setLocalTask: (task: (prev: Task) => Task) => void;
-    setCardSize: (size: { width: number; height: number }) => void;
     onDragStart: () => void;
     onDragStop: () => void;
     getNewZIndex: () => number;
@@ -21,10 +20,6 @@ interface UseDragHandlersProps {
     updateCardSize: () => void;
     updateTaskInStore: (task: Partial<Task>) => void;
     setIsFocused: (isFocused: boolean) => void;
-    cardRef: React.RefObject<HTMLDivElement>;
-    resizingRef: React.MutableRefObject<boolean>;
-    startPosRef: React.MutableRefObject<{ x: number; y: number }>;
-    startSizeRef: React.MutableRefObject<{ width: number; height: number }>;
     isDragging: boolean;
     setIsDragging: (isDragging: boolean) => void;
     allowDropRef: React.MutableRefObject<boolean>;
@@ -43,14 +38,9 @@ export const useDragHandlers = ({
     updateCardSize,
     updateTaskInStore,
     setIsFocused,
-    cardRef,
-    resizingRef,
-    startPosRef,
-    startSizeRef,
     isDragging,
     setIsDragging,
     allowDropRef,
-    allowDrop,
     setAllowDrop,
 }: UseDragHandlersProps) => {
     const dispatch = useDispatch<AppDispatch>();
@@ -98,20 +88,27 @@ export const useDragHandlers = ({
 
     const handleDragStop = useCallback(
         (e: DraggableEvent, data: DraggableData) => {
+            const newZIndex = getNewZIndex();
+
+            const result = dispatch(
+                updateTaskPositionOptimistic({
+                    taskId: task._id as string,
+                    newPosition: {
+                        x: data.x,
+                        y: data.y,
+                        zIndex: newZIndex,
+                    },
+                })
+            );
+
             if (!isDragging) return;
 
-            setLocalTask((prevTask) => {
+            setLocalTask((prevTask: Task) => {
                 const newTaskData = {
-                    x: data.x,
-                    y: data.y,
-                    zIndex: prevTask.zIndex,
+                    x: result.payload.newPosition.x,
+                    y: result.payload.newPosition.y,
+                    zIndex: newZIndex,
                 };
-                dispatch(
-                    updateTaskPositionOptimistic({
-                        taskId: prevTask._id as string,
-                        newPosition: newTaskData,
-                    })
-                );
 
                 debouncedUpdate(newTaskData);
                 return { ...prevTask, ...newTaskData };
@@ -129,7 +126,6 @@ export const useDragHandlers = ({
             setIsDragging(false);
 
             const spaceId = task.space;
-            const newZIndex = getNewZIndex();
             dispatch(
                 updateSpaceMaxZIndex({
                     spaceId: spaceId as string,

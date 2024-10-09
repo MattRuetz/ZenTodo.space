@@ -847,16 +847,36 @@ export const tasksSlice = createSlice({
                 state.tasks = state.tasks.filter((task) => !task.isTemp);
                 state.error = action.payload as string;
             })
+            // After
             .addCase(updateTask.fulfilled, (state, action) => {
                 const index = state.tasks.findIndex(
                     (task) => task._id === action.payload._id
                 );
                 if (index !== -1) {
-                    // Merge the updated fields into the existing task object
-                    state.tasks[index] = {
-                        ...state.tasks[index],
-                        ...action.payload,
+                    const localTask = state.tasks[index];
+                    const serverTask = action.payload;
+
+                    // Determine which fields to update
+                    const mergedTask = {
+                        ...localTask,
+                        // Overwrite specific fields from server response
+                        ...serverTask,
+                        // Preserve local x and y ans zIndex if they differ from server values
+                        x:
+                            localTask.x !== serverTask.x
+                                ? localTask.x
+                                : serverTask.x,
+                        y:
+                            localTask.y !== serverTask.y
+                                ? localTask.y
+                                : serverTask.y,
+                        zIndex:
+                            localTask.zIndex !== serverTask.zIndex
+                                ? localTask.zIndex
+                                : serverTask.zIndex,
                     };
+
+                    state.tasks[index] = mergedTask;
                 }
             })
             .addCase(deleteTaskAsync.fulfilled, (state, action) => {
