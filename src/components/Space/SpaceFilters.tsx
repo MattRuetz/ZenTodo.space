@@ -1,44 +1,46 @@
-import React, { useState, useRef, useEffect } from 'react';
+// src/components/Space/SpaceFilters.tsx
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { FaFilter } from 'react-icons/fa6';
 import { AppDispatch, RootState } from '@/store/store';
 import {
     updateSpaceSelectedProgresses,
     updateSpaceSelectedDueDateRange,
     updateSpaceSelectedEmojis,
 } from '@/store/spaceSlice';
+import { FaFilter } from 'react-icons/fa6';
 import { Tooltip } from 'react-tooltip';
-import { useTheme } from '@/hooks/useTheme';
 import { useIsMobileSize } from '@/hooks/useIsMobileSize';
-import { useAlert } from '@/hooks/useAlert';
-import { TaskProgress } from '@/types';
-import useClickOutside from '@/hooks/useClickOutside';
+import { useTheme } from '@/hooks/useTheme';
+import { SpaceData, TaskProgress } from '@/types';
+import { createSelector } from '@reduxjs/toolkit';
 
-interface SpaceFiltersProps {
-    spaceId: string;
-}
+// Memoized selectors
+const selectTasks = createSelector(
+    (state: RootState) => state.tasks.tasks,
+    (tasks) => tasks.filter((task) => !task.parentTask)
+);
+const selectCurrentSpace = createSelector(
+    (state: RootState) => state.spaces.currentSpace,
+    (currentSpace) => currentSpace as SpaceData
+);
 
-export const SpaceFilters: React.FC<SpaceFiltersProps> = React.memo(
+const SpaceFilters: React.FC<{ spaceId: string }> = React.memo(
     ({ spaceId }) => {
         const dispatch = useDispatch<AppDispatch>();
         const currentTheme = useTheme();
         const isMobileSize = useIsMobileSize();
-        const tasks = useSelector((state: RootState) => state.tasks.tasks);
-        const selectedProgresses = useSelector(
-            (state: RootState) =>
-                state.spaces.currentSpace?.selectedProgresses || []
-        );
-        const selectedDueDateRange = useSelector(
-            (state: RootState) =>
-                state.spaces.currentSpace?.selectedDueDateRange || null
-        );
-        const selectedEmojis = useSelector(
-            (state: RootState) =>
-                state.spaces.currentSpace?.selectedEmojis || []
-        );
+
+        const tasks = useSelector(selectTasks);
+        const currentSpace = useSelector(selectCurrentSpace);
+
+        const selectedProgresses = currentSpace?.selectedProgresses || [];
+        const selectedDueDateRange = currentSpace?.selectedDueDateRange || null;
+        const selectedEmojis = currentSpace?.selectedEmojis || [];
+
         const [isOpen, setIsOpen] = useState(false);
         const buttonRef = useRef<HTMLButtonElement>(null);
         const filterRef = useRef<HTMLDivElement>(null);
+
         const progressOptions: TaskProgress[] = [
             'Not Started',
             'In Progress',
@@ -59,46 +61,57 @@ export const SpaceFilters: React.FC<SpaceFiltersProps> = React.memo(
                         nonChildCards.map((task) => task.emoji).filter(Boolean)
                     )
                 );
-                setAvailableEmojis(uniqueEmojis.filter(Boolean) as string[]);
+                setAvailableEmojis(uniqueEmojis as string[]);
             }
-        }, [tasks]);
+        }, [tasks, spaceId]);
 
-        const toggleProgress = (progress: TaskProgress) => {
-            const newSelectedProgresses = selectedProgresses.includes(progress)
-                ? selectedProgresses.filter((p) => p !== progress)
-                : [...selectedProgresses, progress];
+        const toggleProgress = useCallback(
+            (progress: TaskProgress) => {
+                const newSelectedProgresses = selectedProgresses.includes(
+                    progress
+                )
+                    ? selectedProgresses.filter((p) => p !== progress)
+                    : [...selectedProgresses, progress];
 
-            dispatch(
-                updateSpaceSelectedProgresses({
-                    spaceId,
-                    selectedProgresses: newSelectedProgresses,
-                })
-            );
-        };
+                dispatch(
+                    updateSpaceSelectedProgresses({
+                        spaceId,
+                        selectedProgresses: newSelectedProgresses,
+                    })
+                );
+            },
+            [dispatch, selectedProgresses, spaceId]
+        );
 
-        const toggleEmoji = (emoji: string) => {
-            const newSelectedEmojis = selectedEmojis.includes(emoji)
-                ? selectedEmojis.filter((e) => e !== emoji)
-                : [...selectedEmojis, emoji];
+        const toggleEmoji = useCallback(
+            (emoji: string) => {
+                const newSelectedEmojis = selectedEmojis.includes(emoji)
+                    ? selectedEmojis.filter((e) => e !== emoji)
+                    : [...selectedEmojis, emoji];
 
-            dispatch(
-                updateSpaceSelectedEmojis({
-                    spaceId,
-                    selectedEmojis: newSelectedEmojis,
-                })
-            );
-        };
+                dispatch(
+                    updateSpaceSelectedEmojis({
+                        spaceId,
+                        selectedEmojis: newSelectedEmojis,
+                    })
+                );
+            },
+            [dispatch, selectedEmojis, spaceId]
+        );
 
-        const setDueDateRange = (range: string | null) => {
-            dispatch(
-                updateSpaceSelectedDueDateRange({
-                    spaceId,
-                    selectedDueDateRange: range,
-                })
-            );
-        };
+        const setDueDateRange = useCallback(
+            (range: string | null) => {
+                dispatch(
+                    updateSpaceSelectedDueDateRange({
+                        spaceId,
+                        selectedDueDateRange: range,
+                    })
+                );
+            },
+            [dispatch, spaceId]
+        );
 
-        const clearFilters = () => {
+        const clearFilters = useCallback(() => {
             dispatch(
                 updateSpaceSelectedProgresses({
                     spaceId,
@@ -112,12 +125,9 @@ export const SpaceFilters: React.FC<SpaceFiltersProps> = React.memo(
                 })
             );
             dispatch(
-                updateSpaceSelectedEmojis({
-                    spaceId,
-                    selectedEmojis: [],
-                })
+                updateSpaceSelectedEmojis({ spaceId, selectedEmojis: [] })
             );
-        };
+        }, [dispatch, spaceId]);
 
         // Close the filter when clicking outside of it
         useEffect(() => {
@@ -202,7 +212,6 @@ export const SpaceFilters: React.FC<SpaceFiltersProps> = React.memo(
                                                 )
                                                     ? `var(--${currentTheme}-accent-blue)`
                                                     : 'transparent',
-
                                             color: selectedProgresses.includes(
                                                 progress
                                             )
@@ -323,3 +332,5 @@ export const SpaceFilters: React.FC<SpaceFiltersProps> = React.memo(
         );
     }
 );
+
+export default SpaceFilters;

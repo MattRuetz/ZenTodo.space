@@ -1,7 +1,7 @@
 // src/app/components/ControlPanelToggle.tsx
 'use client';
 import React, { useMemo, useCallback } from 'react';
-import { SpaceFilters } from '../Space/SpaceFilters';
+import SpaceFilters from '../Space/SpaceFilters';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
 import { useTheme } from '@/hooks/useTheme';
