@@ -6,7 +6,7 @@ import { Task } from '@/types';
 import { DraggableData, DraggableEvent } from 'react-draggable';
 import { updateSpaceMaxZIndex } from '@/store/spaceSlice';
 import { useAlert } from '@/hooks/useAlert';
-import { updateTaskPositionOptimistic } from '@/store/tasksSlice';
+import { updateTaskOptimistic } from '@/store/tasksSlice';
 
 interface UseDragHandlersProps {
     task: Task;
@@ -27,6 +27,7 @@ interface UseDragHandlersProps {
 
 export const useDragHandlers = ({
     task,
+    localTask,
     setLocalTask,
     onDragStart,
     onDragStop,
@@ -84,25 +85,27 @@ export const useDragHandlers = ({
 
     const handleDragStop = useCallback(
         (e: DraggableEvent, data: DraggableData) => {
+            if (!isDragging) return;
+
             const newZIndex = getNewZIndex();
 
-            const result = dispatch(
-                updateTaskPositionOptimistic({
-                    taskId: task._id as string,
-                    newPosition: {
-                        x: data.x,
-                        y: data.y,
-                        zIndex: newZIndex,
-                    },
+            const updatedTask: Task = {
+                ...localTask,
+                x: data.x,
+                y: data.y,
+                zIndex: newZIndex,
+            };
+
+            dispatch(
+                updateTaskOptimistic({
+                    updatedTask,
                 })
             );
 
-            if (!isDragging) return;
-
             setLocalTask((prevTask: Task) => {
                 const newTaskData = {
-                    x: result.payload.newPosition.x,
-                    y: result.payload.newPosition.y,
+                    x: data.x,
+                    y: data.y,
                     zIndex: newZIndex,
                 };
 
