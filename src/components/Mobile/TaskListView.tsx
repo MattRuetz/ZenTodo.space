@@ -1,21 +1,24 @@
+// src/components/Mobile/TaskListView.tsx
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store/store';
-import { Task } from '@/types';
-import TaskListItem from './TaskListItem';
 import { fetchTasks, updateTask } from '@/store/tasksSlice';
-import { useTheme } from '@/hooks/useTheme';
 import { setSubtaskDrawerParentId } from '@/store/uiSlice';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useSwipeable } from 'react-swipeable';
-import TaskListDropZone from './TaskListDropZone';
 import { useDrop, useDragLayer } from 'react-dnd';
-import { useMoveTask } from '@/hooks/useMoveTask';
-import { MobileAddTaskButton } from './MobileAddTaskButton';
-import FixedTopBar from './FixedTopBar';
+import { useSwipeable } from 'react-swipeable';
+
 import { useAutoScroll } from '@/hooks/useAutoScroll';
-import { isTablet } from 'react-device-detect';
+import { useMoveTask } from '@/hooks/useMoveTask';
+import { useTheme } from '@/hooks/useTheme';
+
 import EmojiDropdown from '../EmojiDropdown';
+import FixedTopBar from './FixedTopBar';
+import { MobileAddTaskButton } from './MobileAddTaskButton';
+import TaskListDropZone from './TaskListDropZone';
+import TaskListItem from './TaskListItem';
+
+import { Task } from '@/types';
 
 interface TaskListViewProps {
     spaceId: string;
@@ -24,20 +27,22 @@ interface TaskListViewProps {
 const TaskListView: React.FC<TaskListViewProps> = ({ spaceId }) => {
     const dispatch = useDispatch<AppDispatch>();
     const currentTheme = useTheme();
+
+    // Memoized selectors
     const allTasks = useSelector((state: RootState) => state.tasks.tasks);
     const parentTaskId = useSelector(
         (state: RootState) => state.ui.subtaskDrawerParentId
     );
-    const [currentParent, setCurrentParent] = useState<Task | null>(null);
-    const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
-    const [currentEmojiTask, setCurrentEmojiTask] = useState<string | null>(
-        null
-    );
-
     const sortOption = useSelector((state: RootState) => state.ui.sortOption);
     const isReversed = useSelector((state: RootState) => state.ui.isReversed);
     const space = useSelector((state: RootState) =>
         state.spaces.spaces.find((space) => space._id === spaceId)
+    );
+
+    const [currentParent, setCurrentParent] = useState<Task | null>(null);
+    const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
+    const [currentEmojiTask, setCurrentEmojiTask] = useState<string | null>(
+        null
     );
 
     const { commitTaskOrder } = useMoveTask();
@@ -101,22 +106,18 @@ const TaskListView: React.FC<TaskListViewProps> = ({ spaceId }) => {
 
     const currentTasks = useMemo(() => {
         if (currentParent) {
-            // For subtasks, use the order from the parent's subtasks array
             return currentParent.subtasks
                 .map((subtaskId) =>
                     allTasks.find((task) => task._id === subtaskId)
                 )
                 .filter(Boolean) as Task[];
         } else {
-            // For root-level tasks, use the space's taskOrder
             const tasksAtLevel = allTasks.filter(
                 (task) => !task.parentTask && task.space === spaceId
             );
-
             const tasksMap = new Map(
                 tasksAtLevel.map((task) => [task._id, task])
             );
-
             return (space?.taskOrder || [])
                 .map((taskId) => tasksMap.get(taskId))
                 .filter(Boolean) as Task[];
@@ -126,14 +127,13 @@ const TaskListView: React.FC<TaskListViewProps> = ({ spaceId }) => {
     const sortedTasksAtLevel = useMemo(() => {
         let sorted = [...currentTasks];
 
-        if (space?.selectedEmojis.length && space.selectedEmojis.length > 0) {
+        if (space?.selectedEmojis.length) {
             sorted = sorted.filter((task) =>
                 space.selectedEmojis.includes(task.emoji || '')
             );
         }
 
         if (sortOption === 'custom' || !sortOption) {
-            // If sorting is set to custom or not set, use the current order
             return sorted;
         }
 
@@ -204,12 +204,7 @@ const TaskListView: React.FC<TaskListViewProps> = ({ spaceId }) => {
                     tasksAtLevel={sortedTasksAtLevel}
                 />
                 {sortedTasksAtLevel.length === 0 ? (
-                    <div
-                        className="flex flex-col items-center justify-center pointer-events-none w-8/12 mx-auto h-3/4"
-                        style={{
-                            scrollbarColor: '#0077ff #e7e5e4',
-                        }}
-                    >
+                    <div className="flex flex-col items-center justify-center pointer-events-none w-8/12 mx-auto h-3/4">
                         <AnimatePresence>
                             <motion.div>
                                 <motion.div
@@ -226,16 +221,6 @@ const TaskListView: React.FC<TaskListViewProps> = ({ spaceId }) => {
                                         emptiness is bliss
                                     </h1>
                                 </motion.div>
-                                <motion.div
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                    transition={{
-                                        duration: 3,
-                                        delay: 2,
-                                        ease: 'easeInOut',
-                                    }}
-                                ></motion.div>
                             </motion.div>
                         </AnimatePresence>
                     </div>
@@ -273,7 +258,6 @@ const TaskListView: React.FC<TaskListViewProps> = ({ spaceId }) => {
                                             mass: 1,
                                             layoutDuration: 0.3,
                                         }}
-                                        // Weird solution to cards overlapping menu.. but it works
                                         className={
                                             !isDragging ? `relative` : ''
                                         }
@@ -299,13 +283,6 @@ const TaskListView: React.FC<TaskListViewProps> = ({ spaceId }) => {
                                         />
                                         <TaskListItem
                                             task={task}
-                                            onClick={() =>
-                                                handleTaskClick(task)
-                                            }
-                                            index={index}
-                                            parentId={
-                                                currentParent?._id || null
-                                            }
                                             setIsEmojiPickerOpen={
                                                 setIsEmojiPickerOpen
                                             }

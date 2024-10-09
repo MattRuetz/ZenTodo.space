@@ -121,6 +121,16 @@ export const getComplementaryColor = (color: string) => {
     return '#FFFFFF';
 };
 
+// Move darkenColor function outside the component
+export const darkenColor = (color: string, amount: number) => {
+    const colorHex = color.startsWith('#') ? color.slice(1) : color;
+    const num = parseInt(colorHex, 16);
+    const r = Math.max((num >> 16) - amount, 0);
+    const g = Math.max(((num >> 8) & 0x00ff) - amount, 0);
+    const b = Math.max((num & 0x0000ff) - amount, 0);
+    return `#${(0x1000000 + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
+};
+
 // Keep the existing hexToRgb function
 const hexToRgb = (hex: string) => {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);

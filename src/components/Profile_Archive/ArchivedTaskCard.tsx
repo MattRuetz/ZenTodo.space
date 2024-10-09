@@ -1,19 +1,16 @@
-import { Task, SpaceData } from '@/types';
-import { useTheme } from '@/hooks/useTheme';
-import {
-    FaTag,
-    FaCalendarAlt,
-    FaUndo,
-    FaTrash,
-    FaExclamationTriangle,
-} from 'react-icons/fa';
-import { useEffect, useRef, useState } from 'react';
-import { moveTaskToSpace } from '@/store/tasksSlice';
+// src/components/Profile_Archive/ArchivedTaskCard.tsx
+import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { useDeleteTask } from '@/hooks/useDeleteTask';
-import { ComponentSpinner } from '../ComponentSpinner';
+import { moveTaskToSpace } from '@/store/tasksSlice';
+import { FaTag, FaCalendarAlt, FaUndo, FaTrash } from 'react-icons/fa';
+
 import { useAlert } from '@/hooks/useAlert';
-import { Tooltip } from 'react-tooltip';
+import { useDeleteTask } from '@/hooks/useDeleteTask';
+import { useTheme } from '@/hooks/useTheme';
+
+import { ComponentSpinner } from '../ComponentSpinner';
+
+import { Task, SpaceData } from '@/types';
 
 interface ArchivedTaskCardProps {
     task: Task;
