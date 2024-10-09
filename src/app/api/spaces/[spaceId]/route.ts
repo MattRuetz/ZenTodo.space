@@ -116,6 +116,7 @@ export async function PATCH(
         }
 
         const updateData = await req.json();
+        console.log('updateData', updateData);
         const allowedFields = [
             'maxZIndex',
             'selectedEmojis',

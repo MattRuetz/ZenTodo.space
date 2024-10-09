@@ -87,13 +87,10 @@ export const useDragHandlers = ({
         (e: DraggableEvent, data: DraggableData) => {
             if (!isDragging) return;
 
-            const newZIndex = getNewZIndex();
-
             const updatedTask: Task = {
                 ...localTask,
                 x: data.x,
                 y: data.y,
-                zIndex: newZIndex,
             };
 
             dispatch(
@@ -106,7 +103,6 @@ export const useDragHandlers = ({
                 const newTaskData = {
                     x: data.x,
                     y: data.y,
-                    zIndex: newZIndex,
                 };
 
                 debouncedUpdate(newTaskData);
@@ -124,13 +120,13 @@ export const useDragHandlers = ({
             setAllowDrop(false);
             setIsDragging(false);
 
-            const spaceId = task.space;
-            dispatch(
-                updateSpaceMaxZIndex({
-                    spaceId: spaceId as string,
-                    maxZIndex: newZIndex,
-                })
-            );
+            // const spaceId = task.space;
+            // dispatch(
+            //     updateSpaceMaxZIndex({
+            //         spaceId: spaceId as string,
+            //         maxZIndex: newZIndex,
+            //     })
+            // );
             dispatch(setGlobalDragging(false));
             dispatch(setDraggingCardId(null));
             onDragStop();

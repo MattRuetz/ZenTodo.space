@@ -12,6 +12,7 @@ import { useIsMobileSize } from '@/hooks/useIsMobileSize';
 import { useTheme } from '@/hooks/useTheme';
 
 import { TaskProgress } from '@/types';
+import { ArchiveTaskBtn } from './ArchiveTaskBtn';
 
 interface ProgressDropdownProps {
     progress: TaskProgress;
@@ -30,6 +31,8 @@ export const ProgressDropdown: React.FC<ProgressDropdownProps> = React.memo(
         const dropdownRef = useRef<HTMLDivElement>(null);
         const progressCardRef = useRef<HTMLDivElement>(null);
         const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+        const [isTaskUpdated, setIsTaskUpdated] = useState(false);
+
         const PROGRESS_OPTIONS: TaskProgress[] = [
             'Not Started',
             'In Progress',
@@ -71,6 +74,7 @@ export const ProgressDropdown: React.FC<ProgressDropdownProps> = React.memo(
 
         const handleArchiveClick = useCallback(() => {
             onArchive();
+            setIsTaskUpdated(true);
         }, [onArchive]);
 
         return (
@@ -116,40 +120,11 @@ export const ProgressDropdown: React.FC<ProgressDropdownProps> = React.memo(
                             />
                         </div>
                     </div>
-                    {progress === 'Complete' && (
-                        <div className="inline-block">
-                            <button
-                                data-tooltip-id={`${taskId}-archive-tooltip`}
-                                className="p-2 rounded-md text-sm flex items-center gap-2"
-                                style={{
-                                    backgroundColor: `var(--${currentTheme}-background-200)`, // Use theme color
-                                    color: `var(--${currentTheme}-text-default)`, // Use theme color
-                                }}
-                                onMouseEnter={(e) => {
-                                    e.stopPropagation();
-                                    e.currentTarget.style.backgroundColor = `var(--${currentTheme}-accent-green)`;
-                                    e.currentTarget.style.color = 'black';
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.stopPropagation();
-                                    e.currentTarget.style.backgroundColor = `var(--${currentTheme}-background-200)`;
-                                    e.currentTarget.style.color = `var(--${currentTheme}-text-default)`;
-                                }}
-                                onClick={handleArchiveClick}
-                            >
-                                <FaBoxArchive />
-                            </button>
-                            {!isMobileSize && (
-                                <Tooltip
-                                    id={`${taskId}-archive-tooltip`}
-                                    place="top"
-                                >
-                                    <div className="progressLabel">
-                                        <span>Send to Archive</span>
-                                    </div>
-                                </Tooltip>
-                            )}
-                        </div>
+                    {progress === 'Complete' && isTaskUpdated && (
+                        <ArchiveTaskBtn
+                            taskId={taskId}
+                            handleArchiveClick={handleArchiveClick}
+                        />
                     )}
                 </div>
                 <div
