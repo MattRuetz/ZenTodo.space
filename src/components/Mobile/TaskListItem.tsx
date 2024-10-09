@@ -1,6 +1,6 @@
 // src/components/Mobile/TaskListItem.tsx
 import React, { useCallback, useState, useEffect, useRef } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useDrag, useDrop } from 'react-dnd';
 import { AppDispatch, RootState, store } from '../../store/store';
 
@@ -12,6 +12,8 @@ import { useAlert } from '@/hooks/useAlert';
 import useClickOutside from '@/hooks/useClickOutside';
 import { useTheme } from '@/hooks/useTheme';
 import { useArchiveTask } from '@/hooks/useArchiveTask';
+
+import { selectAllTasks } from '@/store/selectors';
 
 import { updateTask } from '@/store/tasksSlice';
 import { setSubtaskDrawerOpen } from '@/store/uiSlice';
@@ -35,7 +37,6 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
     const dispatch = useDispatch<AppDispatch>();
     const currentTheme = useTheme();
     const { showAlert } = useAlert();
-    const archiveTask = useArchiveTask();
     const [localTask, setLocalTask] = useState(task || {});
     const [isEditing, setIsEditing] = useState<string | null>(null);
     const [isTaskMenuOpen, setIsTaskMenuOpen] = useState(false);
@@ -47,6 +48,11 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
     const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
     const currentTaskNameRef = useRef(task?.taskName || '');
     const ref = useRef<HTMLLIElement>(null);
+
+    const tasksState = useSelector(selectAllTasks);
+    const spacesState = useSelector((state: RootState) => state.spaces.spaces);
+
+    const archiveTask = useArchiveTask({ tasksState, spacesState });
 
     const { convertTaskToSubtask } = useChangeHierarchy();
 

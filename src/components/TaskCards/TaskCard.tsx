@@ -29,6 +29,7 @@ import TaskCardTopBar from './TaskCardTopBar';
 import { TaskDetails } from '../TaskDetails';
 
 import { Task, TaskProgress } from '@/types';
+import ConfirmDelete from './ConfirmDelete';
 
 interface TaskCardProps {
     task: Task;
@@ -82,10 +83,15 @@ const TaskCard = React.memo(
 
         const { duplicateTask } = useDuplicateTask();
         const { convertTaskToSubtask } = useChangeHierarchy();
-        const { initiateDeleteTask } = useDeleteTask();
+        const {
+            initiateDeleteTask,
+            showDeleteConfirm,
+            taskToDelete,
+            cancelDelete,
+        } = useDeleteTask();
         const { addNewSubtask } = useAddNewSubtask();
         const { showAlert } = useAlert();
-        const archiveTask = useArchiveTask();
+        const archiveTask = useArchiveTask({ tasksState, spacesState });
 
         const {
             localTask,
@@ -521,6 +527,13 @@ const TaskCard = React.memo(
                             />
                         </DraggableArea>
                     </div>
+                    {showDeleteConfirm && taskToDelete && (
+                        <ConfirmDelete
+                            objectToDelete={taskToDelete}
+                            cancelDelete={cancelDelete}
+                            spaceOrTask={'task'}
+                        />
+                    )}
                 </motion.div>
             </Draggable>
         );

@@ -16,6 +16,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useArchiveTask } from '@/hooks/useArchiveTask';
 import { useClearFilters } from '@/hooks/useClearFilters';
 import { createSelector } from '@reduxjs/toolkit';
+import { selectAllTasks } from '@/store/selectors';
 
 interface SubtaskDrawerCardProps {
     subtask: Task;
@@ -26,11 +27,6 @@ interface SubtaskDrawerCardProps {
 }
 
 // Memoized selectors
-const tasksStateSelector = createSelector(
-    (state: RootState) => state.tasks.tasks,
-    (tasks) => tasks
-);
-
 const parentTaskSelector = createSelector(
     (state: RootState, parentTaskId: string) =>
         state.tasks.tasks.find((task) => task._id === parentTaskId),
@@ -46,14 +42,19 @@ const SubtaskDrawerCard: React.FC<SubtaskDrawerCardProps> = React.memo(
         setCurrentEmojiTask,
     }) => {
         const dispatch = useDispatch<AppDispatch>();
-        const tasksState = useSelector(tasksStateSelector);
+        const tasksState = useSelector(selectAllTasks);
+        const spacesState = useSelector(
+            (state: RootState) => state.spaces.spaces
+        );
+
         const parentTask = useSelector((state: RootState) =>
             parentTaskSelector(state, subtask.parentTask as string)
         );
 
         const currentTheme = useTheme();
         const { showAlert } = useAlert();
-        const archiveTask = useArchiveTask();
+
+        const archiveTask = useArchiveTask({ tasksState, spacesState });
         const { clearFilters } = useClearFilters(subtask.space as string);
 
         const [localSubtask, setLocalSubtask] = useState(subtask);

@@ -11,6 +11,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { ComponentSpinner } from '../ComponentSpinner';
 
 import { Task, SpaceData } from '@/types';
+import { updateSpaceTaskOrderAsync } from '@/store/spaceSlice';
 
 interface ArchivedTaskCardProps {
     task: Task;
@@ -40,13 +41,25 @@ const ArchivedTaskCard: React.FC<ArchivedTaskCardProps> = React.memo(
         const [showRecoverOptions, setShowRecoverOptions] = useState(false);
         const [isLoading, setIsLoading] = useState(false);
         const recoverOptionsRef = useRef<HTMLDivElement>(null);
-
         const handleRecoverTask = async (taskId: string, spaceId: string) => {
             setIsLoading(true);
             try {
                 await dispatch(
                     moveTaskToSpace({ taskId, spaceId }) as unknown as any
                 );
+                const currentTaskOrder = spaces.find(
+                    (s: SpaceData) => s._id === spaceId
+                )?.taskOrder;
+                const newTaskOrder = [taskId, ...(currentTaskOrder || [])];
+
+                await dispatch(
+                    updateSpaceTaskOrderAsync({
+                        spaceId,
+                        taskOrder: newTaskOrder as string[],
+                    }) as unknown as any
+                );
+                console.log('newTaskOrder', newTaskOrder);
+
                 setShowRecoverOptions(false);
                 showAlert('Task recovered successfully', 'success');
             } catch (error) {

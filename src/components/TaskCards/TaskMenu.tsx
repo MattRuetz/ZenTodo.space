@@ -12,6 +12,7 @@ import {
 import { TaskDueDatePicker } from './TaskDueDatePicker';
 
 import { SpaceData, Task } from '@/types';
+import { useAlert } from '@/hooks/useAlert';
 
 interface TaskMenuProps {
     isMenuOpen: boolean;
@@ -54,6 +55,7 @@ const TaskMenu: React.FC<TaskMenuProps> = ({
     datePickerRef,
     moveOptionsRef,
 }) => {
+    const { showAlert } = useAlert();
     const handleMenuClick = useCallback(
         (callback: () => void) => {
             return (e: React.MouseEvent) => {
@@ -118,7 +120,14 @@ const TaskMenu: React.FC<TaskMenuProps> = ({
                                 color: `var(--${currentTheme}-text-default)`,
                             }}
                             onClick={handleMenuClick(() => {
-                                setShowMoveOptions(true);
+                                if (spaces.length === 1) {
+                                    showAlert(
+                                        'You need to have more than one space to move tasks between them.',
+                                        'notice'
+                                    );
+                                } else {
+                                    setShowMoveOptions(true);
+                                }
                             })}
                         >
                             <FaArrowsAlt className="mr-2" /> Move Task
