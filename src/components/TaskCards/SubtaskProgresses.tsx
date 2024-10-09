@@ -1,15 +1,18 @@
+// src/components/TaskCards/SubtaskProgresses.tsx
 import React, { useCallback, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '@/store/store';
 import {
     setSubtaskDrawerOpen,
     setSubtaskDrawerParentId,
 } from '../../store/uiSlice';
-import { Task } from '@/types';
 import { Tooltip } from 'react-tooltip';
-import { AppDispatch, RootState } from '@/store/store';
-import { selectTasksByIds } from '@/store/selectors';
 import { motion } from 'framer-motion';
+
 import { useTheme } from '@/hooks/useTheme';
+
+import { Task } from '@/types';
+import { selectTasksByIds } from '@/store/selectors';
 
 export interface SubtaskProgressesProps {
     task: Task;
@@ -18,20 +21,20 @@ export interface SubtaskProgressesProps {
 const SubtaskProgresses: React.FC<SubtaskProgressesProps> = React.memo(
     ({ task }) => {
         const dispatch = useDispatch<AppDispatch>();
-
         const currentTheme = useTheme();
+
         const subtasks = useSelector((state: RootState) =>
             selectTasksByIds(state, task.subtasks)
         );
-
         const isSubtaskDrawerOpen = useSelector(
             (state: RootState) => state.ui.isSubtaskDrawerOpen
         );
 
         const handleOpenDrawer = useCallback(() => {
             dispatch(setSubtaskDrawerParentId(task._id ?? ''));
-            !isSubtaskDrawerOpen && dispatch(setSubtaskDrawerOpen(true));
-            // : dispatch(setSubtaskDrawerOpen(false));
+            if (!isSubtaskDrawerOpen) {
+                dispatch(setSubtaskDrawerOpen(true));
+            }
         }, [dispatch, task._id, isSubtaskDrawerOpen]);
 
         const subtaskProgresses = useMemo(() => {
@@ -86,13 +89,9 @@ const SubtaskProgresses: React.FC<SubtaskProgressesProps> = React.memo(
                             scale: 0.8,
                             filter: 'brightness(8)',
                         }}
-                        transition={{
-                            duration: 0.2,
-                        }}
+                        transition={{ duration: 0.2 }}
                         data-tooltip-id={`${task._id}-subtask-progresses-tooltip`}
-                        style={{
-                            zIndex: 1,
-                        }}
+                        style={{ zIndex: 1 }}
                     >
                         <div
                             className={`flex gap-2 ${
@@ -100,15 +99,15 @@ const SubtaskProgresses: React.FC<SubtaskProgressesProps> = React.memo(
                             } hover:bg-slate-800 transition-colors duration-200 rounded-full cursor-pointer items-center justify-center text-xs h-8 px-2 max-w-5/12`}
                             onClick={handleOpenDrawer}
                             style={{
-                                backgroundColor: `var(--${currentTheme}-background-200)`, // Use theme color
+                                backgroundColor: `var(--${currentTheme}-background-200)`,
                             }}
                         >
                             {subtaskProgresses.notStarted > 0 && (
                                 <div
                                     className="subtask-count rounded-full flex items-center justify-center w-4 h-4 font-bold"
                                     style={{
-                                        color: `var(--${currentTheme}-not-started-text)`, // Use theme color
-                                        backgroundColor: `var(--${currentTheme}-not-started-background)`, // Use theme color
+                                        color: `var(--${currentTheme}-not-started-text)`,
+                                        backgroundColor: `var(--${currentTheme}-not-started-background)`,
                                     }}
                                 >
                                     {subtaskProgresses.notStarted}
@@ -118,8 +117,8 @@ const SubtaskProgresses: React.FC<SubtaskProgressesProps> = React.memo(
                                 <div
                                     className="subtask-count rounded-full flex items-center justify-center w-4 h-4 font-bold"
                                     style={{
-                                        color: `var(--${currentTheme}-in-progress-text)`, // Use theme color
-                                        backgroundColor: `var(--${currentTheme}-in-progress-background)`, // Use theme color
+                                        color: `var(--${currentTheme}-in-progress-text)`,
+                                        backgroundColor: `var(--${currentTheme}-in-progress-background)`,
                                     }}
                                 >
                                     {subtaskProgresses.inProgress}
@@ -129,8 +128,8 @@ const SubtaskProgresses: React.FC<SubtaskProgressesProps> = React.memo(
                                 <div
                                     className="subtask-count rounded-full flex items-center justify-center w-4 h-4 font-bold"
                                     style={{
-                                        color: `var(--${currentTheme}-blocked-text)`, // Use theme color
-                                        backgroundColor: `var(--${currentTheme}-blocked-background)`, // Use theme color
+                                        color: `var(--${currentTheme}-blocked-text)`,
+                                        backgroundColor: `var(--${currentTheme}-blocked-background)`,
                                     }}
                                 >
                                     {subtaskProgresses.blocked}
@@ -140,8 +139,8 @@ const SubtaskProgresses: React.FC<SubtaskProgressesProps> = React.memo(
                                 <div
                                     className="subtask-count rounded-full flex items-center justify-center w-4 h-4 font-bold"
                                     style={{
-                                        color: `var(--${currentTheme}-complete-text)`, // Use theme color
-                                        backgroundColor: `var(--${currentTheme}-complete-background)`, // Use theme color
+                                        color: `var(--${currentTheme}-complete-text)`,
+                                        backgroundColor: `var(--${currentTheme}-complete-background)`,
                                     }}
                                 >
                                     {subtaskProgresses.complete}
@@ -152,7 +151,6 @@ const SubtaskProgresses: React.FC<SubtaskProgressesProps> = React.memo(
                                 style={{ zIndex: 100000 }}
                                 place="top"
                             >
-                                {/* Due Date: {new Date(task.dueDate).toLocaleDateString()} */}
                                 Subtasks
                             </Tooltip>
                         </div>

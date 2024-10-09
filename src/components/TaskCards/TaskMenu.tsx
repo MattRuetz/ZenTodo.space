@@ -1,4 +1,5 @@
-import { SpaceData, Task } from '@/types';
+// src/components/TaskCards/TaskMenu.tsx
+import React, { useCallback } from 'react';
 import {
     FaInfoCircle,
     FaCalendar,
@@ -7,9 +8,10 @@ import {
     FaCopy,
     FaTrash,
 } from 'react-icons/fa';
+
 import { TaskDueDatePicker } from './TaskDueDatePicker';
-import { useRef } from 'react';
-import useClickOutside from '@/hooks/useClickOutside';
+
+import { SpaceData, Task } from '@/types';
 
 interface TaskMenuProps {
     isMenuOpen: boolean;
@@ -27,9 +29,12 @@ interface TaskMenuProps {
     task: Task;
     onSetDueDate: (dueDate: Date | undefined) => void;
     handleMoveTask: (spaceId: string) => void;
+    menuRef: React.RefObject<HTMLDivElement>;
+    datePickerRef: React.RefObject<HTMLDivElement>;
+    moveOptionsRef: React.RefObject<HTMLDivElement>;
 }
 
-export default function TaskMenu({
+const TaskMenu: React.FC<TaskMenuProps> = ({
     isMenuOpen,
     currentTheme,
     handleShowDetails,
@@ -45,16 +50,21 @@ export default function TaskMenu({
     task,
     onSetDueDate,
     handleMoveTask,
-}: TaskMenuProps) {
-    const menuRef = useRef<HTMLDivElement>(null);
-    const datePickerRef = useRef<HTMLDivElement>(null);
-    const moveOptionsRef = useRef<HTMLDivElement>(null);
-
-    useClickOutside([menuRef, datePickerRef, moveOptionsRef], () => {
-        setIsMenuOpen(false);
-        setShowDatePicker(false);
-        setShowMoveOptions(false);
-    });
+    menuRef,
+    datePickerRef,
+    moveOptionsRef,
+}) => {
+    const handleMenuClick = useCallback(
+        (callback: () => void) => {
+            return (e: React.MouseEvent) => {
+                e.stopPropagation();
+                e.preventDefault();
+                callback();
+                setIsMenuOpen(false);
+            };
+        },
+        [setIsMenuOpen]
+    );
 
     return (
         <>
@@ -78,11 +88,7 @@ export default function TaskMenu({
                             style={{
                                 color: `var(--${currentTheme}-text-default)`,
                             }}
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                e.preventDefault();
-                                handleShowDetails();
-                            }}
+                            onClick={handleMenuClick(handleShowDetails)}
                         >
                             <FaInfoCircle className="mr-2" /> Details
                         </button>
@@ -91,12 +97,9 @@ export default function TaskMenu({
                             style={{
                                 color: `var(--${currentTheme}-text-default)`,
                             }}
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                e.preventDefault();
+                            onClick={handleMenuClick(() => {
                                 setShowDatePicker(true);
-                                setIsMenuOpen(false);
-                            }}
+                            })}
                         >
                             <FaCalendar className="mr-2" /> Set Due Date
                         </button>
@@ -105,27 +108,18 @@ export default function TaskMenu({
                             style={{
                                 color: `var(--${currentTheme}-text-default)`,
                             }}
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                e.preventDefault();
-                                onAddSubtask();
-                                setIsMenuOpen(false);
-                            }}
+                            onClick={handleMenuClick(onAddSubtask)}
                         >
                             <FaPlus className="mr-2" /> Add Subtask
                         </button>
-
                         <button
                             className="flex items-center px-4 py-2 text-sm w-full hover:bg-black/20"
                             style={{
                                 color: `var(--${currentTheme}-text-default)`,
                             }}
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                e.preventDefault();
+                            onClick={handleMenuClick(() => {
                                 setShowMoveOptions(true);
-                                setIsMenuOpen(false);
-                            }}
+                            })}
                         >
                             <FaArrowsAlt className="mr-2" /> Move Task
                         </button>
@@ -134,27 +128,16 @@ export default function TaskMenu({
                             style={{
                                 color: `var(--${currentTheme}-text-default)`,
                             }}
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                e.preventDefault();
-                                onDuplicateTask();
-                                setIsMenuOpen(false);
-                            }}
+                            onClick={handleMenuClick(onDuplicateTask)}
                         >
                             <FaCopy className="mr-2" /> Duplicate Task
                         </button>
-
                         <button
                             className="flex items-center px-4 py-2 text-sm w-full hover:bg-black/20"
                             style={{
                                 color: `var(--${currentTheme}-accent-red)`,
                             }}
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                e.preventDefault();
-                                onDelete();
-                                setIsMenuOpen(false);
-                            }}
+                            onClick={handleMenuClick(onDelete)}
                         >
                             <FaTrash className="mr-2" /> Delete
                         </button>
@@ -209,4 +192,6 @@ export default function TaskMenu({
             )}
         </>
     );
-}
+};
+
+export default React.memo(TaskMenu);

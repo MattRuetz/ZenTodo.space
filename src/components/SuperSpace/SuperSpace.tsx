@@ -1,32 +1,33 @@
-'use client';
 // src/components/SuperSpace.tsx
+'use client';
 import React, { useState, useCallback, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '@/store/store';
 import {
     createSpace,
     setCurrentSpace,
     reorderSpacesOptimistic,
     reorderSpaces,
 } from '@/store/spaceSlice';
-import { AppDispatch, RootState } from '@/store/store';
-import { SpaceData } from '@/types';
-import { generateRandomColor } from '@/app/utils/utils';
-import SpaceCard from './SpaceCard';
-
 import { AnimatePresence, motion } from 'framer-motion';
-//---------------------------------------------------
-import { useAlert } from '@/hooks/useAlert';
 import { FaArrowLeft } from 'react-icons/fa6';
 import { FaPlusCircle } from 'react-icons/fa';
-import { useIsMobileSize } from '@/hooks/useIsMobileSize';
 import { useDragLayer } from 'react-dnd';
-import { useAutoScroll } from '@/hooks/useAutoScroll';
-import { ComponentSpinner } from '../ComponentSpinner';
 
-const SuperSpace = React.memo(() => {
+import { generateRandomColor } from '@/app/utils/utils';
+import { useAlert } from '@/hooks/useAlert';
+import { useAutoScroll } from '@/hooks/useAutoScroll';
+import { useIsMobileSize } from '@/hooks/useIsMobileSize';
+
+import { ComponentSpinner } from '../ComponentSpinner';
+import SpaceCard from './SpaceCard';
+
+import { SpaceData } from '@/types';
+
+const SuperSpace: React.FC = React.memo(() => {
     const dispatch = useDispatch<AppDispatch>();
     const isMobileSize = useIsMobileSize();
-    const { spaces } = useSelector((state: RootState) => state.spaces);
+    const spaces = useSelector((state: RootState) => state.spaces.spaces);
     const [isAdding, setIsAdding] = useState(false);
 
     const autoScrollRef = useRef<HTMLDivElement>(null);
@@ -48,13 +49,13 @@ const SuperSpace = React.memo(() => {
         dispatch(reorderSpaces(spaces));
     }, [spaces, dispatch]);
 
-    const addSpace = () => {
+    const addSpace = useCallback(() => {
         if (spaces.length >= 9) {
             showAlert('You can only have 9 spaces');
             return;
         }
         setIsAdding(true);
-        const newSpace = {
+        const newSpace: SpaceData = {
             name: `Space ${spaces.length + 1}`,
             color: generateRandomColor(),
             maxZIndex: 1,
@@ -70,9 +71,9 @@ const SuperSpace = React.memo(() => {
         dispatch(createSpace(newSpace)).then(() => {
             setIsAdding(false);
         });
-    };
+    }, [spaces.length, dispatch, showAlert]);
 
-    const container = {
+    const containerVariants = {
         hidden: { opacity: 1, scale: 0 },
         visible: {
             opacity: 1,
@@ -84,7 +85,7 @@ const SuperSpace = React.memo(() => {
         },
     };
 
-    const item = {
+    const itemVariants = {
         hidden: { y: 20, opacity: 0 },
         visible: {
             y: 0,
@@ -97,11 +98,7 @@ const SuperSpace = React.memo(() => {
         currentOffset: monitor.getSourceClientOffset(),
     }));
 
-    useAutoScroll(
-        autoScrollRef as React.RefObject<HTMLDivElement>,
-        isDragging,
-        currentOffset
-    );
+    useAutoScroll(autoScrollRef, isDragging, currentOffset);
 
     return (
         <div className="relative w-full h-full bg-gradient-to-b from-slate-900 to-slate-800 overflow-hidden">
@@ -116,14 +113,13 @@ const SuperSpace = React.memo(() => {
                 <AnimatePresence>
                     <motion.div
                         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 p-4 max-w-7xl mx-auto"
-                        variants={container}
+                        variants={containerVariants}
                         initial="hidden"
                         animate="visible"
                     >
                         {spaces.map((space: SpaceData, index: number) => (
-                            <motion.div variants={item}>
+                            <motion.div key={space._id} variants={itemVariants}>
                                 <SpaceCard
-                                    key={space._id}
                                     space={space}
                                     index={index}
                                     handleDragEnd={handleDragEnd}
@@ -135,18 +131,14 @@ const SuperSpace = React.memo(() => {
                             </motion.div>
                         ))}
                         {spaces.length < 9 && (
-                            <motion.div variants={item}>
+                            <motion.div variants={itemVariants}>
                                 <div
                                     className={`space relative transition-colors duration-300 border-4 border-sky-200 rounded-lg shadow-md p-4 cursor-pointer flex items-center justify-center min-h-[150px] max-h-[300px] ${
                                         spaces.length >= 9
                                             ? 'opacity-50 cursor-not-allowed'
                                             : ''
                                     }`}
-                                    onClick={() => {
-                                        if (spaces.length < 9) {
-                                            addSpace();
-                                        }
-                                    }}
+                                    onClick={addSpace}
                                 >
                                     {isAdding ? (
                                         <ComponentSpinner />

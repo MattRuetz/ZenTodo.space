@@ -1,62 +1,63 @@
-import { useTheme } from '@/hooks/useTheme';
-import { Task } from '@/types';
+//src/components/TaskCards/DueDateIndicator.tsx
+import React, { useMemo } from 'react';
 import { FaHourglassHalf } from 'react-icons/fa';
 import { FaHourglassEnd, FaHourglassStart } from 'react-icons/fa6';
 import { Tooltip } from 'react-tooltip';
-import { useIsMobileSize } from '@/hooks/useIsMobileSize';
 
-export const DueDateIndicator = ({
-    task,
-    handleDueDateClick,
-}: {
+import { useIsMobileSize } from '@/hooks/useIsMobileSize';
+import { useTheme } from '@/hooks/useTheme';
+
+import { Task } from '@/types';
+interface DueDateIndicatorProps {
     task: Task;
     handleDueDateClick: () => void;
-}) => {
-    const currentTheme = useTheme();
-    const isMobileSize = useIsMobileSize();
-    const dueDateIsPast =
-        new Date(task.dueDate as Date).getTime() < new Date().getTime() &&
-        new Date(task.dueDate as Date).toLocaleDateString() !==
-            new Date().toLocaleDateString();
+}
 
-    const dueDateIsToday =
-        new Date(task.dueDate as Date).toLocaleDateString() ===
-        new Date().toLocaleDateString();
+export const DueDateIndicator: React.FC<DueDateIndicatorProps> = React.memo(
+    ({ task, handleDueDateClick }) => {
+        const currentTheme = useTheme();
+        const isMobileSize = useIsMobileSize();
 
-    const dueDateIsTomorrow =
-        new Date(task.dueDate as Date).toLocaleDateString() ===
-        new Date(
-            new Date().setDate(new Date().getDate() + 1)
-        ).toLocaleDateString();
-
-    let dueDateIsWithin7Days = false;
-    if (!dueDateIsToday) {
         const dueDate = new Date(task.dueDate as Date);
-        const today = new Date();
-        const startOfWeek = new Date(today);
-        startOfWeek.setDate(today.getDate() - today.getDay());
-        const endOfWeek = new Date(startOfWeek);
-        endOfWeek.setDate(startOfWeek.getDate() + 6);
-        dueDateIsWithin7Days =
-            dueDate.getTime() - today.getTime() <= 6 * 24 * 60 * 60 * 1000;
-    }
+        const now = new Date();
+        const todayString = now.toLocaleDateString();
+        const dueDateString = dueDate.toLocaleDateString();
 
-    const dayOfWeek = (date: Date) => {
-        const daysOfWeek = [
-            'Sunday',
-            'Monday',
-            'Tuesday',
-            'Wednesday',
-            'Thursday',
-            'Friday',
-            'Saturday',
-        ];
-        return daysOfWeek[date.getDay()];
-    };
+        const dueDateIsPast =
+            dueDate.getTime() < now.getTime() && dueDateString !== todayString;
+        const dueDateIsToday = dueDateString === todayString;
+        const dueDateIsTomorrow =
+            dueDateString ===
+            new Date(now.setDate(now.getDate() + 1)).toLocaleDateString();
 
-    return (
-        <>
-            <div className={'text-lg'}>
+        const dueDateIsWithin7Days = useMemo(() => {
+            const daysUntilDue =
+                (dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+            return daysUntilDue > 0 && daysUntilDue <= 7;
+        }, [dueDate, now]);
+
+        const dayOfWeek = (date: Date) => {
+            const daysOfWeek = [
+                'Sunday',
+                'Monday',
+                'Tuesday',
+                'Wednesday',
+                'Thursday',
+                'Friday',
+                'Saturday',
+            ];
+            return daysOfWeek[date.getDay()];
+        };
+
+        const getDueDateColor = () => {
+            if (dueDateIsPast) return `var(--${currentTheme}-accent-red)`;
+            if (dueDateIsWithin7Days || dueDateIsToday)
+                return `var(--${currentTheme}-accent-yellow)`;
+            return `var(--${currentTheme}-text-subtle)`;
+        };
+
+        return (
+            <div className="text-lg">
                 <button
                     data-tooltip-id={`due-date-tooltip-${task._id}`}
                     className="btn btn-sm btn-ghost cursor-pointer flex items-center gap-2"
@@ -65,13 +66,7 @@ export const DueDateIndicator = ({
                     {isMobileSize && task.dueDate && (
                         <p
                             className="hover:saturate-150 transition-colors duration-200 text-sm"
-                            style={{
-                                color: dueDateIsPast
-                                    ? `var(--${currentTheme}-accent-red)`
-                                    : dueDateIsWithin7Days || dueDateIsToday
-                                    ? `var(--${currentTheme}-accent-yellow)`
-                                    : `var(--${currentTheme}-text-subtle)`,
-                            }}
+                            style={{ color: getDueDateColor() }}
                         >
                             {new Date(task.dueDate as Date).toLocaleDateString(
                                 'en-US',
@@ -100,7 +95,7 @@ export const DueDateIndicator = ({
                         <FaHourglassHalf
                             className="hover:saturate-150 transition-colors duration-200"
                             style={{
-                                color: `var(--${currentTheme}-accent-yellow)`, // Use theme color for due this week
+                                color: `var(--${currentTheme}-accent-yellow)`,
                             }}
                         />
                     ) : dueDateIsToday ? (
@@ -159,6 +154,8 @@ export const DueDateIndicator = ({
                     )}
                 </div>
             </div>
-        </>
-    );
-};
+        );
+    }
+);
+
+export default DueDateIndicator;

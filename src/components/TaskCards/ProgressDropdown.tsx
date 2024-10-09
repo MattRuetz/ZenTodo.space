@@ -1,19 +1,21 @@
-import useClickOutside from '@/hooks/useClickOutside';
-import { useTheme } from '@/hooks/useTheme';
-import { TaskProgress } from '@/types';
-import React, { useEffect, useRef, useState } from 'react';
+// src/components/TaskCards/ProgressDropdown.tsx
+import React, { useRef, useState, useCallback } from 'react';
+import { useDispatch } from 'react-redux';
+import { AppDispatch } from '@/store/store';
+import { adjustUserStats } from '@/store/userSlice';
 import { FaCheck, FaChevronDown } from 'react-icons/fa';
 import { FaBoxArchive } from 'react-icons/fa6';
 import { Tooltip } from 'react-tooltip';
-import { useDispatch } from 'react-redux';
-import { adjustUserStats } from '@/store/userSlice';
-import { AppDispatch } from '@/store/store';
+
+import useClickOutside from '@/hooks/useClickOutside';
 import { useIsMobileSize } from '@/hooks/useIsMobileSize';
+import { useTheme } from '@/hooks/useTheme';
+
+import { TaskProgress } from '@/types';
 
 interface ProgressDropdownProps {
     progress: TaskProgress;
     onProgressChange: (progress: TaskProgress) => void;
-    isSubtask?: boolean;
     taskId: string;
     onArchive: () => void;
     currentProgress: TaskProgress;
@@ -28,7 +30,6 @@ export const ProgressDropdown: React.FC<ProgressDropdownProps> = React.memo(
         const dropdownRef = useRef<HTMLDivElement>(null);
         const progressCardRef = useRef<HTMLDivElement>(null);
         const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-        const [shouldOpenDropdown, setShouldOpenDropdown] = useState(false);
         const PROGRESS_OPTIONS: TaskProgress[] = [
             'Not Started',
             'In Progress',
@@ -44,42 +45,38 @@ export const ProgressDropdown: React.FC<ProgressDropdownProps> = React.memo(
             Complete: 'bg-green-500',
         };
 
-        const handleProgressClick = () => {
-            setShouldOpenDropdown(!isDropdownOpen);
-        };
+        const handleProgressClick = useCallback(() => {
+            setIsDropdownOpen((prev) => !prev);
+        }, []);
 
-        const handleProgressSelect = (newProgress: TaskProgress) => {
-            if (newProgress === 'Complete') {
-                dispatch(adjustUserStats({ tasksCompleted: 1 }));
-            } else if (currentProgress === 'Complete') {
-                dispatch(adjustUserStats({ tasksCompleted: -1 }));
-            }
-            onProgressChange(newProgress);
-            setShouldOpenDropdown(false);
-        };
+        const handleProgressSelect = useCallback(
+            (newProgress: TaskProgress) => {
+                if (newProgress === 'Complete') {
+                    dispatch(adjustUserStats({ tasksCompleted: 1 }));
+                } else if (currentProgress === 'Complete') {
+                    dispatch(adjustUserStats({ tasksCompleted: -1 }));
+                }
+                onProgressChange(newProgress);
+                setIsDropdownOpen(false);
+            },
+            [dispatch, currentProgress, onProgressChange]
+        );
 
         const getProgressColor = () => PROGRESS_COLORS[progress];
 
         // Custom hook for click outside logic
         useClickOutside([dropdownRef, progressCardRef], () =>
-            setShouldOpenDropdown(false)
+            setIsDropdownOpen(false)
         );
 
-        const handleArchiveClick = () => {
+        const handleArchiveClick = useCallback(() => {
             onArchive();
-        };
-
-        useEffect(() => {
-            setIsDropdownOpen(shouldOpenDropdown);
-        }, [shouldOpenDropdown]);
+        }, [onArchive]);
 
         return (
             <div>
                 <div className="flex flex-row w-full justify-start gap-2 items-center">
-                    <div
-                        data-tooltip-id={`${taskId}-progress-tooltip`}
-                        className="flex justify-between gap-2 items-center w-full"
-                    >
+                    <div className="flex justify-between gap-2 items-center w-full">
                         <div
                             ref={progressCardRef}
                             className="progress-card no-drag cursor-pointer p-2 flex items-center justify-center gap-2 rounded-md"
@@ -190,3 +187,5 @@ export const ProgressDropdown: React.FC<ProgressDropdownProps> = React.memo(
         );
     }
 );
+
+export default ProgressDropdown;

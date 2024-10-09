@@ -1,34 +1,34 @@
 // src/components/TaskCard.tsx
 'use client';
-
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import Draggable from 'react-draggable';
-import debounce from 'lodash.debounce';
-import { updateTask, moveTaskToSpace } from '../../store/tasksSlice';
 import { AppDispatch, RootState } from '../../store/store';
-import { Task, TaskProgress } from '@/types';
-import DraggableArea from './DraggableArea';
-import { useThrottle } from '@/hooks/useThrottle';
-import { useDragHandlers } from '@/hooks/useDragHandlers';
-import { useTaskState } from '@/hooks/useTaskState';
-import { useDeleteTask } from '@/hooks/useDeleteTask';
-import { useResizeHandle } from '@/hooks/useResizeHandle';
-import TaskCardTopBar from './TaskCardTopBar';
-import { TaskDetails } from '../TaskDetails';
-import { useAddNewSubtask } from '@/hooks/useAddNewSubtask';
-import TaskCardBottomBar from './TaskCardBottomBar';
-import { useDuplicateTask } from '@/hooks/useDuplicateTask';
-import { useChangeHierarchy } from '@/hooks/useChangeHierarchy';
-import ConfirmDelete from './ConfirmDelete';
-import { useAlert } from '@/hooks/useAlert';
-import { useTheme } from '@/hooks/useTheme';
-import { useFadeOutEffect } from '@/hooks/useFadeOutEffect';
-import { useArchiveTask } from '@/hooks/useArchiveTask';
-import { motion } from 'framer-motion';
-import { ComponentSpinner } from '../ComponentSpinner';
+import { updateTask, moveTaskToSpace } from '../../store/tasksSlice';
 import { setSubtaskDrawerOpen } from '@/store/uiSlice';
 import { updateSpaceTaskOrderAsync } from '@/store/spaceSlice';
+import Draggable from 'react-draggable';
+import debounce from 'lodash.debounce';
+import { motion } from 'framer-motion';
+
+import { useAddNewSubtask } from '@/hooks/useAddNewSubtask';
+import { useAlert } from '@/hooks/useAlert';
+import { useArchiveTask } from '@/hooks/useArchiveTask';
+import { useChangeHierarchy } from '@/hooks/useChangeHierarchy';
+import { useDeleteTask } from '@/hooks/useDeleteTask';
+import { useDragHandlers } from '@/hooks/useDragHandlers';
+import { useDuplicateTask } from '@/hooks/useDuplicateTask';
+import { useFadeOutEffect } from '@/hooks/useFadeOutEffect';
+import { useResizeHandle } from '@/hooks/useResizeHandle';
+import { useTaskState } from '@/hooks/useTaskState';
+import { useTheme } from '@/hooks/useTheme';
+import { useThrottle } from '@/hooks/useThrottle';
+
+import DraggableArea from './DraggableArea';
+import TaskCardBottomBar from './TaskCardBottomBar';
+import TaskCardTopBar from './TaskCardTopBar';
+import { TaskDetails } from '../TaskDetails';
+
+import { Task, TaskProgress } from '@/types';
 
 interface TaskCardProps {
     task: Task;
@@ -55,8 +55,11 @@ const TaskCard = React.memo(
         const draggingCardId = useSelector(
             (state: RootState) => state.ui.draggingCardId
         );
-
         const tasksState = useSelector((state: RootState) => state.tasks.tasks);
+        const spacesState = useSelector(
+            (state: RootState) => state.spaces.spaces
+        );
+
         // Use a selector to get the latest task data from the Redux store
         const task = useSelector((state: RootState) => {
             const foundTask = state.tasks.tasks.find(
@@ -77,19 +80,9 @@ const TaskCard = React.memo(
             return null; // or some fallback UI
         }
 
-        const spacesState = useSelector(
-            (state: RootState) => state.spaces.spaces
-        );
-
         const { duplicateTask } = useDuplicateTask();
         const { convertTaskToSubtask } = useChangeHierarchy();
-
-        const {
-            initiateDeleteTask,
-            cancelDelete,
-            showDeleteConfirm,
-            taskToDelete,
-        } = useDeleteTask();
+        const { initiateDeleteTask } = useDeleteTask();
         const { addNewSubtask } = useAddNewSubtask();
         const { showAlert } = useAlert();
         const archiveTask = useArchiveTask();
@@ -103,7 +96,6 @@ const TaskCard = React.memo(
             isHoveringRef,
             isDraggingOver,
             setIsDraggingOver,
-            isDropped,
             setLocalTask,
             setIsHovering,
             setIsFocused,
@@ -111,8 +103,6 @@ const TaskCard = React.memo(
             setIsDropped,
             showDetails,
             setShowDetails,
-            deletingTasks,
-            setDeletingTasks,
             cardRef,
             taskNameRef,
             taskDescriptionRef,
@@ -124,28 +114,23 @@ const TaskCard = React.memo(
             allowDropRef,
             setAllowDrop,
             allowDrop,
-            isLoading,
-            setIsLoading,
         } = useTaskState(task);
 
         const updateTaskInStore = useCallback(
             async (updatedFields: Partial<Task>) => {
                 if (task._id) {
-                    // setTimeout(() => {
-                    //     setIsLoading(true);
-                    // }, 1000);
                     await dispatch(
                         updateTask({ _id: task._id, ...updatedFields })
                     );
-                    // setIsLoading(false);
                 }
             },
             [dispatch, task._id]
         );
 
-        const debouncedUpdate = useCallback(debounce(updateTaskInStore, 500), [
-            updateTaskInStore,
-        ]);
+        const debouncedUpdate = useMemo(
+            () => debounce(updateTaskInStore, 500),
+            [updateTaskInStore]
+        );
 
         const pushChildTask = useCallback(
             async (childTask: Task, parentTaskId: string) => {
@@ -181,7 +166,7 @@ const TaskCard = React.memo(
                     newHeight - 120
                 )}px`;
             }
-        }, []);
+        }, [setCardSize]);
 
         const handleProgressChange = useCallback(
             (newProgress: TaskProgress) => {
@@ -258,35 +243,18 @@ const TaskCard = React.memo(
             setIsDraggingOver(false);
         }, []);
 
-        const eventListeners = useMemo(
-            () => ({
-                handleGlobalMouseMove,
-                handleGlobalMouseUp,
-            }),
-            [handleGlobalMouseMove, handleGlobalMouseUp]
-        );
-
         useEffect(() => {
-            document.addEventListener(
-                'mousemove',
-                eventListeners.handleGlobalMouseMove
-            );
-            document.addEventListener(
-                'mouseup',
-                eventListeners.handleGlobalMouseUp
-            );
+            document.addEventListener('mousemove', handleGlobalMouseMove);
+            document.addEventListener('mouseup', handleGlobalMouseUp);
 
             return () => {
                 document.removeEventListener(
                     'mousemove',
-                    eventListeners.handleGlobalMouseMove
+                    handleGlobalMouseMove
                 );
-                document.removeEventListener(
-                    'mouseup',
-                    eventListeners.handleGlobalMouseUp
-                );
+                document.removeEventListener('mouseup', handleGlobalMouseUp);
             };
-        }, [eventListeners]);
+        }, [handleGlobalMouseMove, handleGlobalMouseUp]);
 
         const throttledSetCardSize = useThrottle(setCardSize, 50);
 
@@ -357,8 +325,8 @@ const TaskCard = React.memo(
 
         const handleDuplicateTask = async () => {
             const space = spacesState.find((space) => space._id === task.space);
-            const duplicateResult = await duplicateTask(task, tasksState); // Ensure duplicateTask returns a resolved value
-            const newTask = duplicateResult[0]; // Directly assign since duplicateResult is no longer an array
+            const duplicateResult = await duplicateTask(task, tasksState);
+            const newTask = duplicateResult[0];
             if (space) {
                 dispatch(
                     updateSpaceTaskOrderAsync({
@@ -401,7 +369,6 @@ const TaskCard = React.memo(
             dispatch(setSubtaskDrawerOpen(false));
         }, [archiveTask, task, dispatch]);
 
-        // Right click card opens the menu
         const handleContextMenu = useCallback((e: React.MouseEvent) => {
             e.preventDefault();
             setIsMenuOpen(true);
@@ -496,85 +463,75 @@ const TaskCard = React.memo(
                     onContextMenu={handleContextMenu}
                     data-task-id={task._id}
                 >
-                    <>
-                        <div className="flex flex-col h-full">
-                            <DraggableArea className="flex flex-col h-full p-4 pt-2 pb-0">
-                                {showDetails && (
-                                    <TaskDetails
-                                        task={task}
-                                        setShowDetails={setShowDetails}
-                                    />
-                                )}
-                                <TaskCardTopBar
-                                    className="pb-2"
+                    <div className="flex flex-col h-full">
+                        <DraggableArea className="flex flex-col h-full p-4 pt-2 pb-0">
+                            {showDetails && (
+                                <TaskDetails
                                     task={task}
-                                    onDelete={() =>
-                                        initiateDeleteTask(task._id ?? '')
-                                    }
-                                    onDetails={handleShowDetails}
-                                    onSetDueDate={handleSetDueDate}
-                                    onSetEmoji={handleSetEmoji}
-                                    onAddSubtask={handleAddSubtask}
-                                    onMoveTask={handleMoveTask}
-                                    onDuplicateTask={handleDuplicateTask}
-                                    setIsMenuOpen={setIsMenuOpen}
-                                    isMenuOpen={isMenuOpen}
+                                    setShowDetails={setShowDetails}
                                 />
-                                <input
-                                    ref={taskNameRef}
-                                    type="text"
-                                    name="taskName"
-                                    placeholder="Task Name"
-                                    value={localTask.taskName}
-                                    onChange={handleInputChange}
-                                    onFocus={() => setIsFocused(true)}
-                                    onBlur={handleInputBlur}
-                                    className="input input-bordered w-full p-4 pt-2 pb-2 h-8 mb-2 resize-none"
-                                    maxLength={30}
-                                    style={{
-                                        backgroundColor: `var(--${currentTheme}-background-200)`, // Use theme color
-                                        color: `var(--${currentTheme}-text-default)`, // Use theme color
-                                    }}
-                                />
-                                <textarea
-                                    ref={taskDescriptionRef}
-                                    name="taskDescription"
-                                    placeholder="Task Description"
-                                    value={localTask.taskDescription}
-                                    onChange={handleInputChange}
-                                    onFocus={() => setIsFocused(true)}
-                                    onBlur={handleInputBlur}
-                                    className="textarea textarea-bordered w-full p-4 pt-2 pb-2 resize-none flex-grow"
-                                    style={{
-                                        width: '100%',
-                                        boxSizing: 'border-box',
-                                        minHeight: '100px',
-                                        maxHeight: '500px',
-                                        overflowY: 'auto',
-                                        backgroundColor: `var(--${currentTheme}-background-200)`, // Use theme color
-                                        color: `var(--${currentTheme}-text-default)`, // Use theme color
-                                    }}
-                                    maxLength={500}
-                                />
-                                <TaskCardBottomBar
-                                    task={task}
-                                    progress={localTask.progress}
-                                    onProgressChange={handleProgressChange}
-                                    handleResizeStart={handleResizeStart}
-                                    currentTheme={currentTheme}
-                                    onArchive={handleArchiveTask}
-                                />
-                            </DraggableArea>
-                        </div>
-                    </>
-                    {showDeleteConfirm && taskToDelete && (
-                        <ConfirmDelete
-                            objectToDelete={taskToDelete}
-                            cancelDelete={cancelDelete}
-                            spaceOrTask={'task'}
-                        />
-                    )}
-                    {isLoading && <ComponentSpinner />}
+                            )}
+                            <TaskCardTopBar
+                                className="pb-2"
+                                task={task}
+                                onDelete={() =>
+                                    initiateDeleteTask(task._id ?? '')
+                                }
+                                onDetails={handleShowDetails}
+                                onSetDueDate={handleSetDueDate}
+                                onSetEmoji={handleSetEmoji}
+                                onAddSubtask={handleAddSubtask}
+                                onMoveTask={handleMoveTask}
+                                onDuplicateTask={handleDuplicateTask}
+                                setIsMenuOpen={setIsMenuOpen}
+                                isMenuOpen={isMenuOpen}
+                            />
+                            <input
+                                ref={taskNameRef}
+                                type="text"
+                                name="taskName"
+                                placeholder="Task Name"
+                                value={localTask.taskName}
+                                onChange={handleInputChange}
+                                onFocus={() => setIsFocused(true)}
+                                onBlur={handleInputBlur}
+                                className="input input-bordered w-full p-4 pt-2 pb-2 h-8 mb-2 resize-none"
+                                maxLength={30}
+                                style={{
+                                    backgroundColor: `var(--${currentTheme}-background-200)`, // Use theme color
+                                    color: `var(--${currentTheme}-text-default)`, // Use theme color
+                                }}
+                            />
+                            <textarea
+                                ref={taskDescriptionRef}
+                                name="taskDescription"
+                                placeholder="Task Description"
+                                value={localTask.taskDescription}
+                                onChange={handleInputChange}
+                                onFocus={() => setIsFocused(true)}
+                                onBlur={handleInputBlur}
+                                className="textarea textarea-bordered w-full p-4 pt-2 pb-2 resize-none flex-grow"
+                                style={{
+                                    width: '100%',
+                                    boxSizing: 'border-box',
+                                    minHeight: '100px',
+                                    maxHeight: '500px',
+                                    overflowY: 'auto',
+                                    backgroundColor: `var(--${currentTheme}-background-200)`, // Use theme color
+                                    color: `var(--${currentTheme}-text-default)`, // Use theme color
+                                }}
+                                maxLength={500}
+                            />
+                            <TaskCardBottomBar
+                                task={task}
+                                progress={localTask.progress}
+                                onProgressChange={handleProgressChange}
+                                handleResizeStart={handleResizeStart}
+                                currentTheme={currentTheme}
+                                onArchive={handleArchiveTask}
+                            />
+                        </DraggableArea>
+                    </div>
                 </motion.div>
             </Draggable>
         );

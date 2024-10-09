@@ -1,16 +1,20 @@
+// src/components/SuperSpace/SpaceCard.tsx
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { SpaceData, Task } from '@/types';
-import { deleteSpace, reorderSpaces, updateSpace } from '@/store/spaceSlice';
 import { AppDispatch, RootState } from '@/store/store';
-import EmojiDropdown from '../EmojiDropdown';
+import { updateSpace } from '@/store/spaceSlice';
 import { FaClock, FaTag } from 'react-icons/fa';
-import { getComplementaryColor, getContrastingColor } from '@/app/utils/utils';
-import { FaClockRotateLeft, FaPalette, FaTrash } from 'react-icons/fa6';
+import { FaPalette, FaTrash } from 'react-icons/fa6';
 import { useDrag, useDrop } from 'react-dnd';
-import ConfirmDelete from '../TaskCards/ConfirmDelete';
 import { isMobile } from 'react-device-detect';
 import { useRouter } from 'next/navigation';
+
+import { getComplementaryColor, getContrastingColor } from '@/app/utils/utils';
+
+import ConfirmDelete from '../TaskCards/ConfirmDelete';
+import EmojiDropdown from '../EmojiDropdown';
+
+import { SpaceData, Task } from '@/types';
 
 interface SpaceCardProps {
     space: SpaceData;
@@ -65,20 +69,14 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
         const deltaY = Math.abs(touch.clientY - touchStartPos.current.y);
 
         if (deltaX > 10 || deltaY > 10) {
-            if (longPressTimer.current) {
-                clearTimeout(longPressTimer.current);
-                longPressTimer.current = null;
-            }
+            clearTimeout(longPressTimer.current!);
             setIsDragEnabled(false);
             setIsShaking(false);
         }
     }, []);
 
     const handleTouchEnd = useCallback(() => {
-        if (longPressTimer.current) {
-            clearTimeout(longPressTimer.current);
-            longPressTimer.current = null;
-        }
+        clearTimeout(longPressTimer.current!);
         setIsDragEnabled(false);
         setIsShaking(false);
         touchStartPos.current = null;

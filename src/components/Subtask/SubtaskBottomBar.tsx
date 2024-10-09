@@ -1,6 +1,6 @@
 // src/components/Subtask/SubtaskBottomBar.tsx
 import React from 'react';
-import { ProgressDropdown } from '../TaskCards/ProgressDropdown';
+import ProgressDropdown from '../TaskCards/ProgressDropdown';
 import SubtaskProgresses from '../TaskCards/SubtaskProgresses';
 import { Task, TaskProgress } from '@/types';
 
@@ -18,7 +18,6 @@ const SubtaskBottomBar: React.FC<SubtaskBottomBarProps> = React.memo(
                 <ProgressDropdown
                     progress={subtask.progress}
                     onProgressChange={handleProgressChange}
-                    isSubtask={true}
                     taskId={subtask._id ?? ''}
                     onArchive={handleArchive}
                     currentProgress={subtask.progress}

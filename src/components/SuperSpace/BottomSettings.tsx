@@ -1,15 +1,17 @@
-import React, { useState } from 'react';
+// src/components/SuperSpace/BottomSettings.tsx
+import React, { useState, useCallback } from 'react';
+import { FaPaintbrush } from 'react-icons/fa6';
 import { useTheme } from '@/hooks/useTheme';
 import ThemeMenu from './ThemeMenu';
-import { FaPaintbrush } from 'react-icons/fa6';
 
-const BottomSettings: React.FC = () => {
+const BottomSettings: React.FC = React.memo(() => {
     const currentTheme = useTheme();
     const [themeMenuOpen, setThemeMenuOpen] = useState(false);
 
-    const toggleThemeMenu = () => {
-        setThemeMenuOpen(!themeMenuOpen);
-    };
+    // Use useCallback to memoize the toggle function
+    const toggleThemeMenu = useCallback(() => {
+        setThemeMenuOpen((prev) => !prev);
+    }, []);
 
     return (
         <div className="fixed bg-gray-800 bottom-0 left-0 w-full py-1 text-center flex items-center justify-end pr-20">
@@ -27,6 +29,6 @@ const BottomSettings: React.FC = () => {
             />
         </div>
     );
-};
+});
 
 export default BottomSettings;

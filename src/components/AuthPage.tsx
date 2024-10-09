@@ -1,15 +1,30 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useMemo } from 'react';
 import { getQuoteForDay } from '@/hooks/useQuoteForDay';
 import Image from 'next/image';
 import { useIsMobileSize } from '@/hooks/useIsMobileSize';
 import { SignIn, SignUp } from '@clerk/nextjs';
 
-const AuthPage = ({ action }: { action: 'sign-up' | 'sign-in' }) => {
-    const isMobileSize = useIsMobileSize();
+interface AuthPageProps {
+    action: 'sign-up' | 'sign-in';
+}
 
-    const quote = getQuoteForDay();
+const AuthPage: React.FC<AuthPageProps> = ({ action }) => {
+    const isMobileSize = useIsMobileSize();
+    const quote = useMemo(() => getQuoteForDay(), []);
+
+    const renderAuthComponent = () => {
+        if (action === 'sign-up') {
+            return (
+                <SignUp path="/sign-up" routing="path" signInUrl="/sign-in" />
+            );
+        } else {
+            return (
+                <SignIn path="/sign-in" routing="path" signUpUrl="/sign-up" />
+            );
+        }
+    };
 
     return (
         <>
@@ -29,38 +44,14 @@ const AuthPage = ({ action }: { action: 'sign-up' | 'sign-in' }) => {
                         </p>
                     </div>
                     <div className="flex-grow bg-gradient-to-b from-slate-900 to-slate-700 p-6 rounded-t-3xl shadow-md">
-                        {action === 'sign-up' ? (
-                            <SignUp
-                                path="/sign-up"
-                                routing="path"
-                                signInUrl="/sign-in"
-                            />
-                        ) : (
-                            <SignIn
-                                path="/sign-in"
-                                routing="path"
-                                signUpUrl="/sign-up"
-                            />
-                        )}
+                        {renderAuthComponent()}
                     </div>
                 </div>
             ) : (
                 <div className="h-screen flex items-center justify-start bg-gradient-to-br from-slate-100 to-slate-200">
                     <div className="bg-gradient-to-b from-slate-900 to-slate-700 p-3 shadow-md w-4/12 h-full">
                         <div className="flex flex-col items-center justify-center h-full">
-                            {action === 'sign-up' ? (
-                                <SignUp
-                                    path="/sign-up"
-                                    routing="path"
-                                    signInUrl="/sign-in"
-                                />
-                            ) : (
-                                <SignIn
-                                    path="/sign-in"
-                                    routing="path"
-                                    signUpUrl="/sign-up"
-                                />
-                            )}
+                            {renderAuthComponent()}
                         </div>
                     </div>
                     <div className="p-3 w-8/12 h-full flex flex-col items-center justify-center">

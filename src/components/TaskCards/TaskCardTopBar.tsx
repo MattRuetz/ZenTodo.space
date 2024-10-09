@@ -1,28 +1,13 @@
 // src/components/icons/TaskCardTopBar.tsx
-import React, { useEffect, useRef, useState } from 'react';
-import {
-    FaArrowsAlt,
-    FaEllipsisV,
-    FaInfoCircle,
-    FaQuestionCircle,
-} from 'react-icons/fa';
-import {
-    FaCalendar,
-    FaClock,
-    FaCopy,
-    FaPlus,
-    FaTag,
-    FaTrash,
-} from 'react-icons/fa6';
-import ReactDatePicker from 'react-datepicker';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { FaEllipsisV } from 'react-icons/fa';
+import { FaTag } from 'react-icons/fa6';
 import 'react-datepicker/dist/react-datepicker.css';
-import { SpaceData, Task } from '@/types';
+import { Task } from '@/types';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store/store';
 import EmojiDropdown from '../EmojiDropdown';
 import { updateTask } from '@/store/tasksSlice';
-import { Tooltip } from 'react-tooltip';
-import { TaskDueDatePicker } from './TaskDueDatePicker';
 import { DueDateIndicator } from './DueDateIndicator';
 import { useTheme } from '@/hooks/useTheme';
 import TaskMenu from './TaskMenu';
@@ -94,23 +79,29 @@ const TaskCardTopBar: React.FC<TaskCardTopBarProps> = React.memo(
             };
         }, []);
 
-        const handleMoveTask = (spaceId: string) => {
-            onMoveTask(spaceId);
-            setShowMoveOptions(false);
-            setIsMenuOpen(false);
-        };
+        const handleMoveTask = useCallback(
+            (spaceId: string) => {
+                onMoveTask(spaceId);
+                setShowMoveOptions(false);
+                setIsMenuOpen(false);
+            },
+            [onMoveTask, setShowMoveOptions, setIsMenuOpen]
+        );
 
-        const handleShowDetails = () => {
+        const handleShowDetails = useCallback(() => {
             onDetails();
             setIsMenuOpen(false);
-        };
+        }, [onDetails, setIsMenuOpen]);
 
-        const handleSetTaskEmoji = (emoji: string) => {
-            if (task._id) {
-                onSetEmoji(emoji);
-                dispatch(updateTask({ _id: task._id, emoji: emoji }));
-            }
-        };
+        const handleSetTaskEmoji = useCallback(
+            (emoji: string) => {
+                if (task._id) {
+                    onSetEmoji(emoji);
+                    dispatch(updateTask({ _id: task._id, emoji: emoji }));
+                }
+            },
+            [task._id, onSetEmoji, dispatch, updateTask]
+        );
 
         return (
             <div
@@ -155,7 +146,7 @@ const TaskCardTopBar: React.FC<TaskCardTopBarProps> = React.memo(
                             handleDueDateClick={() => setShowDatePicker(true)}
                         />
                     )}
-                    <div className="relative" ref={menuRef}>
+                    <div className="relative">
                         <FaEllipsisV
                             size={14}
                             className="cursor-pointer"
@@ -180,6 +171,9 @@ const TaskCardTopBar: React.FC<TaskCardTopBarProps> = React.memo(
                             onSetDueDate={onSetDueDate}
                             handleMoveTask={handleMoveTask}
                             setShowMoveOptions={setShowMoveOptions}
+                            menuRef={menuRef}
+                            datePickerRef={datePickerRef}
+                            moveOptionsRef={moveOptionsRef}
                         />
                     </div>
                 </div>
