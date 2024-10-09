@@ -17,8 +17,6 @@ interface UseDragHandlersProps {
     getNewZIndex: () => number;
     pushChildTask: (task: Task, parentId: string) => void;
     debouncedUpdate: (task: Partial<Task>) => void;
-    updateCardSize: () => void;
-    updateTaskInStore: (task: Partial<Task>) => void;
     setIsFocused: (isFocused: boolean) => void;
     isDragging: boolean;
     setIsDragging: (isDragging: boolean) => void;
@@ -35,8 +33,6 @@ export const useDragHandlers = ({
     getNewZIndex,
     pushChildTask,
     debouncedUpdate,
-    updateCardSize,
-    updateTaskInStore,
     setIsFocused,
     isDragging,
     setIsDragging,
@@ -197,23 +193,8 @@ export const useDragHandlers = ({
         ]
     );
 
-    const handleInputChange = useCallback(
-        (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-            const { name, value } = e.target;
-            setLocalTask(
-                (prev: Task): Task => ({
-                    ...prev,
-                    [name]: value,
-                })
-            );
-            updateCardSize();
-        },
-        [updateCardSize, setLocalTask]
-    );
-
     return {
         handleDragStart,
         handleDragStop,
-        handleInputChange,
     };
 };

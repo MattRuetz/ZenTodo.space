@@ -139,35 +139,6 @@ const TaskCard = React.memo(
             [convertTaskToSubtask]
         );
 
-        const updateCardSize = useCallback(() => {
-            if (
-                taskNameRef.current &&
-                taskDescriptionRef.current &&
-                cardRef.current
-            ) {
-                const nameWidth = taskNameRef.current.scrollWidth;
-                const descriptionScrollHeight =
-                    taskDescriptionRef.current.scrollHeight;
-
-                const newWidth = Math.min(Math.max(nameWidth, 240) + 32, 350);
-                const newHeight = Math.min(
-                    Math.max(descriptionScrollHeight + 120, 200),
-                    500
-                );
-                setCardSize((prev) => {
-                    if (prev.width < newWidth || prev.height < newHeight) {
-                        return { width: newWidth, height: newHeight };
-                    }
-                    return prev;
-                });
-
-                taskDescriptionRef.current.style.height = `${Math.min(
-                    descriptionScrollHeight,
-                    newHeight - 120
-                )}px`;
-            }
-        }, [setCardSize]);
-
         const handleProgressChange = useCallback(
             (newProgress: TaskProgress) => {
                 setLocalTask((prevTask) => {
@@ -179,25 +150,35 @@ const TaskCard = React.memo(
             [debouncedUpdate, setLocalTask]
         );
 
-        const { handleDragStart, handleDragStop, handleInputChange } =
-            useDragHandlers({
-                isDragging,
-                setIsDragging,
-                task,
-                localTask,
-                setLocalTask,
-                onDragStart,
-                onDragStop,
-                getNewZIndex,
-                pushChildTask,
-                debouncedUpdate,
-                updateCardSize,
-                updateTaskInStore,
-                setIsFocused,
-                allowDropRef,
-                setAllowDrop,
-                allowDrop,
-            });
+        const { handleDragStart, handleDragStop } = useDragHandlers({
+            isDragging,
+            setIsDragging,
+            task,
+            localTask,
+            setLocalTask,
+            onDragStart,
+            onDragStop,
+            getNewZIndex,
+            pushChildTask,
+            debouncedUpdate,
+            setIsFocused,
+            allowDropRef,
+            setAllowDrop,
+            allowDrop,
+        });
+
+        const handleInputChange = useCallback(
+            (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+                const { name, value } = e.target;
+                setLocalTask(
+                    (prev: Task): Task => ({
+                        ...prev,
+                        [name]: value,
+                    })
+                );
+            },
+            [setLocalTask]
+        );
 
         const handleInputBlur = useCallback(
             (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -208,13 +189,12 @@ const TaskCard = React.memo(
                 setLocalTask((prevTask) => {
                     const newTaskData = { [fieldName]: fieldValue };
                     // Do not use debouncedUpdate here.
-                    // This is because we do not want the update to be inter
+                    // This is because we do not want the update to be interrupted
                     updateTaskInStore(newTaskData);
                     return { ...prevTask, ...newTaskData };
                 });
-                updateCardSize();
             },
-            [setLocalTask, updateTaskInStore, updateCardSize]
+            [setLocalTask, updateTaskInStore]
         );
 
         const handleGlobalMouseMove = useCallback(
