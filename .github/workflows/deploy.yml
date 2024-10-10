@@ -6,7 +6,6 @@ on:
 
 env:
     REGISTRY: ghcr.io
-    IMAGE_NAME: ${{ github.repository_owner | lower }}/zentodo
 
 jobs:
     build-and-push:
@@ -26,18 +25,26 @@ jobs:
                   username: ${{ github.actor }}
                   password: ${{ secrets.GITHUB_TOKEN }}
 
+            - name: Convert repository name to lowercase
+              id: repo-name
+              run: echo "REPO_NAME=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+
             - name: Build and push Docker image
               uses: docker/build-push-action@v3
               with:
                   context: .
                   push: true
-                  tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+                  tags: ${{ env.REGISTRY }}/${{ steps.repo-name.outputs.REPO_NAME }}:latest
 
     deploy:
         needs: build-and-push
         runs-on: ubuntu-latest
 
         steps:
+            - name: Convert repository name to lowercase
+              id: repo-name
+              run: echo "REPO_NAME=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+
             - name: Deploy to VPS
               uses: appleboy/ssh-action@master
               with:
@@ -45,7 +52,7 @@ jobs:
                   username: ${{ secrets.USERNAME }}
                   key: ${{ secrets.SSH_PRIVATE_KEY }}
                   script: |
-                      docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+                      docker pull ${{ env.REGISTRY }}/${{ steps.repo-name.outputs.REPO_NAME }}:latest
                       docker stop zentodo || true
                       docker rm zentodo || true
-                      docker run -d --name zentodo --network app_network -p 3001:3001 ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+                      docker run -d --name zentodo --network app_network -p 3001:3001 ${{ env.REGISTRY }}/${{ steps.repo-name.outputs.REPO_NAME }}:latest
