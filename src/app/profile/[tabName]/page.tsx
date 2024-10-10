@@ -44,10 +44,9 @@ const ProfilePage: React.FC = () => {
         }
     }, [isLoaded, dispatch, initialDataLoaded]);
 
-    if (!isSignedIn) {
+    if (!isSignedIn && isLoaded) {
         redirect('/sign-in');
     }
-
     if (!isLoaded || !initialDataLoaded) {
         return <Preloader />;
     }

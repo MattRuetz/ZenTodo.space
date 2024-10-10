@@ -22,7 +22,7 @@ const SpacePage: React.FC = () => {
     );
     const spaces = useSelector((state: RootState) => state.spaces.spaces);
 
-    if (!isSignedIn) {
+    if (!isSignedIn && isLoaded) {
         redirect('/sign-in');
     }
 
