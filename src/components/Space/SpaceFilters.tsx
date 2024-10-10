@@ -7,7 +7,7 @@ import {
     updateSpaceSelectedDueDateRange,
     updateSpaceSelectedEmojis,
 } from '@/store/spaceSlice';
-import { FaFilter } from 'react-icons/fa6';
+import { FaFilter, FaX } from 'react-icons/fa6';
 import { Tooltip } from 'react-tooltip';
 import { useIsMobileSize } from '@/hooks/useIsMobileSize';
 import { useTheme } from '@/hooks/useTheme';
@@ -314,13 +314,9 @@ const SpaceFilters: React.FC<{ spaceId: string }> = React.memo(
                             >
                                 <button
                                     onClick={clearFilters}
-                                    className="text-xs px-2 py-1 rounded transition-colors duration-200"
-                                    style={{
-                                        backgroundColor: `var(--${currentTheme}-accent-red)`,
-                                        color: `var(--${currentTheme}-text-default)`,
-                                    }}
+                                    className="btn btn-sm btn-outline btn-error text-xs px-2 py-1 rounded transition-colors duration-200"
                                 >
-                                    Clear All Filters
+                                    <FaX /> Clear All Filters
                                 </button>
                             </div>
                         )}

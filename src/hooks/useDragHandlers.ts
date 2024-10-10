@@ -96,7 +96,6 @@ export const useDragHandlers = ({
                 y: data.y,
             };
 
-            console.log(updatedTask);
             dispatch(
                 updateTaskOptimistic({
                     updatedTask,

@@ -32,12 +32,9 @@ const ProfilePage: React.FC = () => {
     // Need to fetch user stats when the user is loaded and the initial data is loaded
     useEffect(() => {
         if (isLoaded && initialDataLoaded) {
-            console.log('Fetching user stats');
             dispatch(fetchUser())
                 .then((action) => {
-                    if (fetchUser.fulfilled.match(action)) {
-                        console.log('User fetch succeeded:', action.payload);
-                    } else if (fetchUser.rejected.match(action)) {
+                    if (fetchUser.rejected.match(action)) {
                         console.error('User fetch failed:', action.error);
                     }
                 })

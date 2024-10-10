@@ -62,7 +62,6 @@ export async function POST(req: Request) {
                 // Add any other fields you want to store
             });
             await newUser.save();
-            console.log('User created:', id);
             break;
         // Add other cases as needed
         default:

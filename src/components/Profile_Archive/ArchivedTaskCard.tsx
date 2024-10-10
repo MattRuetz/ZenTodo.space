@@ -58,7 +58,6 @@ const ArchivedTaskCard: React.FC<ArchivedTaskCardProps> = React.memo(
                         taskOrder: newTaskOrder as string[],
                     }) as unknown as any
                 );
-                console.log('newTaskOrder', newTaskOrder);
 
                 setShowRecoverOptions(false);
                 showAlert('Task recovered successfully', 'success');
