@@ -860,7 +860,7 @@ export const tasksSlice = createSlice({
                         ...localTask,
                         // Overwrite specific fields from server response
                         ...serverTask,
-                        // Preserve local x and y ans zIndex if they differ from server values
+                        // Preserve local task UI variables if they differ from server values
                         width:
                             localTask.width !== serverTask.width
                                 ? localTask.width

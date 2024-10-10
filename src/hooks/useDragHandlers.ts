@@ -48,20 +48,13 @@ export const useDragHandlers = ({
             let dragTimer: NodeJS.Timeout;
 
             const newZIndex = getNewZIndex();
-            const updatedTask: Task = {
-                ...localTask,
+
+            setLocalTask((prevTask: Task) => ({
+                ...prevTask,
                 x: data.x,
                 y: data.y,
                 zIndex: newZIndex,
-            };
-
-            console.log(updatedTask);
-            dispatch(
-                updateTaskOptimistic({
-                    updatedTask,
-                })
-            );
-            console.log('localTask', localTask);
+            }));
 
             dispatch(setGlobalDragging(true));
             dispatch(setDraggingCardId(task._id ?? ''));
