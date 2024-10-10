@@ -9,6 +9,7 @@ import { useTheme } from '@/hooks/useTheme';
 import ArchivedTasks from './ArchivedTasks';
 import BottomSettings from '../SuperSpace/BottomSettings';
 import ProfileSettings from './ProfileSettings';
+import BuyMeACoffee from '../BuyMeACoffee';
 
 interface ProfileArchivePageProps {
     activeTabStart: string;
@@ -26,7 +27,7 @@ const ProfileArchivePage: React.FC<ProfileArchivePageProps> = React.memo(
 
         return (
             <div
-                className="mx-auto p-2 sm:p-4 w-full h-screen flex flex-col overflow-hidden"
+                className="mx-auto p-2 sm:p-4 w-full h-screen flex flex-col overflow-hidden pb-10"
                 style={{
                     backgroundColor: `var(--${theme}-space-background)`,
                 }}

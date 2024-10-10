@@ -28,6 +28,7 @@ import WallpaperSelector from '../Space/WallpaperSelector';
 import { useUser } from '@clerk/nextjs';
 import SpaceBackgroundColorPicker from '../Space/SpaceBackgroundColorPicker';
 import { AnimatePresence, motion } from 'framer-motion';
+import ThemeOptionPreview from '../ThemeOptionPreview';
 interface ControlPanelContentProps {
     isOpen: boolean;
 }
@@ -294,45 +295,14 @@ const ControlPanelContent: React.FC<ControlPanelContentProps> = React.memo(
                                 >
                                     {['buji', 'daigo', 'enzu'].map(
                                         (themeOption) => (
-                                            <div
-                                                key={themeOption}
-                                                onClick={() =>
-                                                    handleThemeChange(
-                                                        themeOption as ThemeName
-                                                    )
+                                            <ThemeOptionPreview
+                                                themeOption={
+                                                    themeOption as ThemeName
                                                 }
-                                                className="p-2 rounded-lg cursor-pointer hover:bg-gray-700 transition-colors h-full flex items-center justify-between"
-                                                style={{
-                                                    backgroundColor: `var(--${themeOption}-background-100)`,
-                                                    color: `var(--${themeOption}-text-default)`,
-                                                }}
-                                            >
-                                                {themeOption
-                                                    .charAt(0)
-                                                    .toUpperCase() +
-                                                    themeOption.slice(1)}{' '}
-                                                Theme
-                                                <div className="flex items-center justify-center gap-1 p-1 rounded-full bg-gray-500 border">
-                                                    <div
-                                                        className="w-2 h-2 rounded-full"
-                                                        style={{
-                                                            backgroundColor: `var(--${themeOption}-background-100)`,
-                                                        }}
-                                                    ></div>
-                                                    <div
-                                                        className="w-2 h-2 rounded-full"
-                                                        style={{
-                                                            backgroundColor: `var(--${themeOption}-background-200)`,
-                                                        }}
-                                                    ></div>
-                                                    <div
-                                                        className="w-2 h-2 rounded-full"
-                                                        style={{
-                                                            backgroundColor: `var(--${themeOption}-background-300)`,
-                                                        }}
-                                                    ></div>
-                                                </div>
-                                            </div>
+                                                handleThemeChange={
+                                                    handleThemeChange
+                                                }
+                                            />
                                         )
                                     )}
                                 </motion.div>

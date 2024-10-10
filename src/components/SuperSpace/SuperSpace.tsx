@@ -23,6 +23,8 @@ import { ComponentSpinner } from '../ComponentSpinner';
 import SpaceCard from './SpaceCard';
 
 import { SpaceData } from '@/types';
+import BuyMeACoffee from '../BuyMeACoffee';
+import BottomSettings from './BottomSettings';
 
 const SuperSpace: React.FC = React.memo(() => {
     const dispatch = useDispatch<AppDispatch>();
@@ -109,7 +111,6 @@ const SuperSpace: React.FC = React.memo(() => {
                 <h4 className="text-xl text-white text-center pt-4 pb-2 font-bold">
                     Spaces: {spaces.length} / 9
                 </h4>
-
                 <AnimatePresence>
                     <motion.div
                         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 p-4 max-w-7xl mx-auto"
@@ -167,6 +168,7 @@ const SuperSpace: React.FC = React.memo(() => {
                     </motion.div>
                 </AnimatePresence>
             </div>
+            <BottomSettings />
         </div>
     );
 });

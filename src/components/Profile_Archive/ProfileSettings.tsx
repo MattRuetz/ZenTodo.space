@@ -102,7 +102,7 @@ const ProfileSettings: React.FC = () => {
     }, [signOut, router]);
 
     return (
-        <div className="flex flex-col items-center justify-center p-8 w-full max-w-4xl mx-auto">
+        <div className="flex flex-col items-center justify-center p-8 w-full max-w-4xl mx-auto overflow-x-hidden overflow-y-auto">
             <div className="w-full">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="relative flex flex-col items-center">

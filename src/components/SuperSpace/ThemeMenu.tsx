@@ -8,6 +8,7 @@ import { FaAngleDown } from 'react-icons/fa6';
 import { useTheme } from '@/hooks/useTheme';
 
 import { ThemeName } from '@/types';
+import ThemeOptionPreview from '../ThemeOptionPreview';
 
 const availableThemes: ThemeName[] = ['buji', 'daigo', 'enzu'];
 
@@ -33,28 +34,18 @@ const ThemeMenu: React.FC<ThemeMenuProps> = ({ isOpen, onClose }) => {
     return (
         <div className="absolute bottom-full right-20 bg-gray-800/50 backdrop-blur text-white p-4 rounded-t-lg border-b border-gray-900">
             <h2 className="text-sm font-bold mb-4">Select Theme</h2>
-            <div className="flex flex-col">
+            <div className="flex flex-col gap-2">
                 {availableThemes.map((theme) => (
-                    <button
+                    <ThemeOptionPreview
                         key={theme}
-                        onClick={() => handleThemeChange(theme)}
-                        className={`p-2 rounded-lg mb-2 transition-colors ${
-                            currentTheme === theme
-                                ? 'bg-blue-500 text-white'
-                                : 'bg-gray-700 text-white'
-                        }`}
-                        style={{
-                            backgroundColor: `var(--${theme}-background-100)`,
-                            color: `var(--${theme}-emphasis-light)`,
-                        }}
-                    >
-                        {theme.charAt(0).toUpperCase() + theme.slice(1)} Theme
-                    </button>
+                        themeOption={theme as ThemeName}
+                        handleThemeChange={handleThemeChange}
+                    />
                 ))}
             </div>
             <button
                 onClick={onClose}
-                className="absolute top-1 left-1 p-1 hover:bg-gray-900 transition-colors text-xs rounded-full"
+                className="absolute top-1 left-1 p-3 hover:bg-gray-900 transition-colors text-xs rounded-full"
             >
                 <FaAngleDown />
             </button>
