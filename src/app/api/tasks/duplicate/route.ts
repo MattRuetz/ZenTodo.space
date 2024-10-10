@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
                 originalTempId: taskData._id,
                 x: taskData.x,
                 y: taskData.y,
-                zIndex: taskData.zIndex + 3,
+                zIndex: taskData.zIndex + 1,
                 _id: newTaskId, // Use the new ObjectId
                 taskName: `${taskData.taskName}`,
                 user: userId,

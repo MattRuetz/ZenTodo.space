@@ -52,6 +52,7 @@ export const useDragHandlers = ({
                 ...localTask,
                 x: data.x,
                 y: data.y,
+                zIndex: newZIndex,
             };
 
             console.log(updatedTask);

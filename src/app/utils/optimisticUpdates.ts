@@ -28,7 +28,7 @@ export const duplicateTaskWithTempIds = (
         ...task,
         x: task.x + 100,
         y: task.y + 100,
-        zIndex: task.zIndex + 3,
+        zIndex: task.zIndex,
         _id: tempId,
         taskName: `(Copy) ${task.taskName}`,
         isTemp: true,
