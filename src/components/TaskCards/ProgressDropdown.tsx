@@ -1,7 +1,7 @@
 // src/components/TaskCards/ProgressDropdown.tsx
-import React, { useRef, useState, useCallback } from 'react';
-import { useDispatch } from 'react-redux';
-import { AppDispatch } from '@/store/store';
+import React, { useRef, useState, useCallback, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '@/store/store';
 import { adjustUserStats } from '@/store/userSlice';
 import { FaCheck, FaChevronDown } from 'react-icons/fa';
 import { FaBoxArchive } from 'react-icons/fa6';
@@ -13,6 +13,7 @@ import { useTheme } from '@/hooks/useTheme';
 
 import { TaskProgress } from '@/types';
 import { ArchiveTaskBtn } from './ArchiveTaskBtn';
+import { createSelector } from '@reduxjs/toolkit';
 
 interface ProgressDropdownProps {
     progress: TaskProgress;
@@ -21,6 +22,12 @@ interface ProgressDropdownProps {
     onArchive: () => void;
     currentProgress: TaskProgress;
 }
+
+const selectTaskFromState = createSelector(
+    (state: RootState) => state.tasks.tasks,
+    (state: RootState, taskId: string) => taskId,
+    (tasks, taskId) => tasks.find((task) => task._id === taskId)
+);
 
 export const ProgressDropdown: React.FC<ProgressDropdownProps> = React.memo(
     ({ progress, onProgressChange, onArchive, taskId, currentProgress }) => {
@@ -31,7 +38,19 @@ export const ProgressDropdown: React.FC<ProgressDropdownProps> = React.memo(
         const dropdownRef = useRef<HTMLDivElement>(null);
         const progressCardRef = useRef<HTMLDivElement>(null);
         const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-        const [isTaskUpdated, setIsTaskUpdated] = useState(false);
+
+        const taskFromState = useSelector((state: RootState) =>
+            selectTaskFromState(state, taskId)
+        );
+        const progressFromState = taskFromState?.progress;
+
+        // useEffect(() => {
+        //     if (taskProgress) {
+        //         setProgress(taskProgress);
+        //     } else {
+        //         console.error('Failed to fetch task progress from state');
+        //     }
+        // }, [taskId, onProgressChange]);
 
         const PROGRESS_OPTIONS: TaskProgress[] = [
             'Not Started',
@@ -48,7 +67,8 @@ export const ProgressDropdown: React.FC<ProgressDropdownProps> = React.memo(
             Complete: 'bg-green-500',
         };
 
-        const handleProgressClick = useCallback(() => {
+        const handleProgressClick = useCallback((e: React.MouseEvent) => {
+            e.preventDefault();
             setIsDropdownOpen((prev) => !prev);
         }, []);
 
@@ -74,7 +94,6 @@ export const ProgressDropdown: React.FC<ProgressDropdownProps> = React.memo(
 
         const handleArchiveClick = useCallback(() => {
             onArchive();
-            setIsTaskUpdated(true);
         }, [onArchive]);
 
         return (
@@ -120,11 +139,20 @@ export const ProgressDropdown: React.FC<ProgressDropdownProps> = React.memo(
                             />
                         </div>
                     </div>
-                    {progress === 'Complete' && isTaskUpdated && (
+                    {progressFromState === 'Complete' ? (
                         <ArchiveTaskBtn
                             taskId={taskId}
                             handleArchiveClick={handleArchiveClick}
                         />
+                    ) : (
+                        progress === 'Complete' && (
+                            <div className="relative pointer-events-none brightness-50">
+                                <ArchiveTaskBtn
+                                    taskId={taskId}
+                                    handleArchiveClick={handleArchiveClick}
+                                />
+                            </div>
+                        )
                     )}
                 </div>
                 <div

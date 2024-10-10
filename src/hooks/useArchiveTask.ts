@@ -52,11 +52,10 @@ export const useArchiveTask = ({
                 const oldTaskOrder = spacesState.find(
                     (s) => s._id === task.space
                 )?.taskOrder;
-                console.log('oldTaskOrder', oldTaskOrder);
+
                 const newTaskOrder = oldTaskOrder?.filter(
                     (id) => id !== task._id
                 );
-                console.log('newTaskOrder', newTaskOrder);
 
                 dispatch(
                     updateSpaceTaskOrderAsync({

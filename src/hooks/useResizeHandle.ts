@@ -1,7 +1,8 @@
-import { AppDispatch } from '@/store/store';
-import { updateTask } from '@/store/tasksSlice';
+import { AppDispatch, RootState } from '@/store/store';
+import { updateTask, updateTaskOptimistic } from '@/store/tasksSlice';
+import { createSelector } from '@reduxjs/toolkit';
 import { useState, useCallback, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 interface UseResizeHandleProps {
     cardRef: React.RefObject<HTMLDivElement>;
@@ -12,6 +13,12 @@ interface UseResizeHandleProps {
     maxHeight: number;
     taskId: string;
 }
+
+const selectTaskFromState = createSelector(
+    (state: RootState) => state.tasks.tasks,
+    (state: RootState, taskId: string) => taskId,
+    (tasks, taskId) => tasks.find((task) => task._id === taskId)
+);
 
 export const useResizeHandle = ({
     cardRef,

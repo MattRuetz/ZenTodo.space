@@ -149,11 +149,11 @@ const TaskCard = React.memo(
             (newProgress: TaskProgress) => {
                 setLocalTask((prevTask) => {
                     const newTaskData = { progress: newProgress };
-                    debouncedUpdate(newTaskData);
+                    updateTaskInStore(newTaskData);
                     return { ...prevTask, ...newTaskData };
                 });
             },
-            [debouncedUpdate, setLocalTask]
+            [updateTaskInStore, setLocalTask]
         );
 
         const { handleDragStart, handleDragStop } = useDragHandlers({
