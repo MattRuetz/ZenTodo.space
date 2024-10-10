@@ -13,3 +13,4 @@ jobs:
                   docker stop zentodo || true
                   docker rm zentodo || true
                   docker run -d --name zentodo --network app_network -p 3001:3001 zentodo
+              shell: cmd
