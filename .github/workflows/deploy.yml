@@ -64,19 +64,27 @@ jobs:
                   username: ${{ secrets.USERNAME }}
                   key: ${{ secrets.SSH_PRIVATE_KEY }}
                   script: |
+                      # Pull the latest image
                       docker pull ${{ env.REGISTRY }}/${{ steps.repo-name.outputs.REPO_NAME }}:latest
+
+                      # Stop and remove the existing container (if it exists)
                       docker stop zentodo || true
                       docker rm zentodo || true
-                      docker run -d --name zentodo --network app_network -p 3001:3001 \
-                        -e MONGODB_URI=${{ secrets.MONGODB_URI }} \
-                        -e NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }} \
-                        -e NEXTAUTH_URL=${{ secrets.NEXTAUTH_URL }} \
-                        -e EDGE_STORE_ACCESS_KEY=${{ secrets.EDGE_STORE_ACCESS_KEY }} \
-                        -e EDGE_STORE_SECRET_KEY=${{ secrets.EDGE_STORE_SECRET_KEY }} \
-                        -e NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }} \
-                        -e CLERK_SECRET_KEY=${{ secrets.CLERK_SECRET_KEY }} \
-                        -e NEXT_PUBLIC_CLERK_SIGN_IN_URL=${{ secrets.NEXT_PUBLIC_CLERK_SIGN_IN_URL }} \
-                        -e NEXT_PUBLIC_CLERK_SIGN_UP_URL=${{ secrets.NEXT_PUBLIC_CLERK_SIGN_UP_URL }} \
-                        -e NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=${{ secrets.NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL }} \
-                        -e NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=${{ secrets.NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL }} \
+
+                      # Run the new container
+                      docker run -d \
+                        --name zentodo \
+                        --network app_network \
+                        -p 3001:3001 \
+                        -e MONGODB_URI="${{ secrets.MONGODB_URI }}" \
+                        -e NEXTAUTH_SECRET="${{ secrets.NEXTAUTH_SECRET }}" \
+                        -e NEXTAUTH_URL="${{ secrets.NEXTAUTH_URL }}" \
+                        -e EDGE_STORE_ACCESS_KEY="${{ secrets.EDGE_STORE_ACCESS_KEY }}" \
+                        -e EDGE_STORE_SECRET_KEY="${{ secrets.EDGE_STORE_SECRET_KEY }}" \
+                        -e NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}" \
+                        -e CLERK_SECRET_KEY="${{ secrets.CLERK_SECRET_KEY }}" \
+                        -e NEXT_PUBLIC_CLERK_SIGN_IN_URL="${{ secrets.NEXT_PUBLIC_CLERK_SIGN_IN_URL }}" \
+                        -e NEXT_PUBLIC_CLERK_SIGN_UP_URL="${{ secrets.NEXT_PUBLIC_CLERK_SIGN_UP_URL }}" \
+                        -e NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL="${{ secrets.NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL }}" \
+                        -e NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL="${{ secrets.NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL }}" \
                         ${{ env.REGISTRY }}/${{ steps.repo-name.outputs.REPO_NAME }}:latest
