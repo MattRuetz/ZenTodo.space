@@ -44,4 +44,4 @@ COPY --from=builder /app/next.config.mjs ./next.config.mjs
 RUN npm ci --only=production
 
 EXPOSE 3001
-CMD ["npm", "start"]
+CMD ["node", ".next/standalone/server.js"]
