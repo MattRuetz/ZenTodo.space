@@ -18,8 +18,16 @@ const nextConfig = {
         ],
     },
     output: 'standalone',
+    experimental: {
+        outputStandalone: true,
+    },
+};
+
+module.exports = {
+    ...nextConfig,
     server: {
         port: 3001,
+        host: '0.0.0.0',
     },
 };
 
