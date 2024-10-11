@@ -39,9 +39,12 @@ COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/next.config.mjs ./next.config.mjs
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
 
 # Install only production dependencies
 RUN npm ci --only=production
 
 EXPOSE 3001
-CMD ["node", ".next/standalone/server.js"]
+ENV PORT 3001
+CMD ["node", "server.js"]
