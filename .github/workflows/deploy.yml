@@ -88,4 +88,5 @@ jobs:
                         -e NEXT_PUBLIC_CLERK_SIGN_UP_URL="${{ secrets.NEXT_PUBLIC_CLERK_SIGN_UP_URL }}" \
                         -e NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL="${{ secrets.NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL }}" \
                         -e NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL="${{ secrets.NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL }}" \
+                        -e NEXT_PUBLIC_CLERK_FRONTEND_API="${{ secrets.NEXT_PUBLIC_CLERK_FRONTEND_API }}" \
                         ${{ env.REGISTRY }}/${{ steps.repo-name.outputs.REPO_NAME }}:latest
