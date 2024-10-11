@@ -16,6 +16,9 @@ const nextConfig = {
             },
         ],
     },
+    experimental: {
+        outputStandalone: true,
+    },
     output: 'standalone',
     server: {
         port: 3001,
