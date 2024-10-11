@@ -18,6 +18,9 @@ const nextConfig = {
         ],
     },
     output: 'standalone',
+    server: {
+        port: 3001,
+    },
 };
 
 export default nextConfig;
