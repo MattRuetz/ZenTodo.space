@@ -1,4 +1,16 @@
-<style>
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+
+const PrivacyPolicy: React.FC = () => {
+    const router = useRouter();
+    const [content, setContent] = useState<string>('');
+
+    useEffect(() => {
+        // Set the content only on the client side
+        setContent(`
+      <style>
     [data-custom-class='body'], [data-custom-class='body'] * {
             background: transparent !important;
           }
@@ -53,3 +65,23 @@
       </style>
         </div>
         
+    `);
+    }, []);
+
+    return (
+        <div className="bg-white py-10 px-5">
+            <button
+                className="bg-black text-white px-4 py-2 rounded-md mb-5 fixed top-5 left-5"
+                onClick={() => router.back()}
+            >
+                Back
+            </button>
+            <div
+                className="max-w-screen-md mx-auto"
+                dangerouslySetInnerHTML={{ __html: content }}
+            />
+        </div>
+    );
+};
+
+export default PrivacyPolicy;
