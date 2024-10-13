@@ -30,10 +30,10 @@ export const DueDateIndicator: React.FC<DueDateIndicatorProps> = React.memo(
             dueDateString ===
             new Date(now.setDate(now.getDate() + 1)).toLocaleDateString();
 
-        const dueDateIsWithin7Days = useMemo(() => {
+        const dueDateIsWithin5Days = useMemo(() => {
             const daysUntilDue =
                 (dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
-            return daysUntilDue > 0 && daysUntilDue <= 7;
+            return daysUntilDue > 0 && daysUntilDue <= 5;
         }, [dueDate, now]);
 
         const dayOfWeek = (date: Date) => {
@@ -51,9 +51,13 @@ export const DueDateIndicator: React.FC<DueDateIndicatorProps> = React.memo(
 
         const getDueDateColor = () => {
             if (dueDateIsPast) return `var(--${currentTheme}-accent-red)`;
-            if (dueDateIsWithin7Days || dueDateIsToday)
+            if (dueDateIsWithin5Days || dueDateIsTomorrow) {
                 return `var(--${currentTheme}-accent-yellow)`;
-            return `var(--${currentTheme}-text-subtle)`;
+            } else if (dueDateIsToday) {
+                return `var(--${currentTheme}-accent-red)`;
+            } else {
+                return `var(--${currentTheme}-text-subtle)`;
+            }
         };
 
         return (
@@ -68,20 +72,25 @@ export const DueDateIndicator: React.FC<DueDateIndicatorProps> = React.memo(
                             className="hover:saturate-150 transition-colors duration-200 text-sm"
                             style={{ color: getDueDateColor() }}
                         >
-                            {new Date(task.dueDate as Date).toLocaleDateString(
-                                'en-US',
-                                {
-                                    month: 'short',
-                                    day: 'numeric',
-                                    year:
-                                        new Date(
-                                            task.dueDate as Date
-                                        ).getFullYear() !==
-                                        new Date().getFullYear()
-                                            ? 'numeric'
-                                            : undefined,
-                                }
-                            )}
+                            {dueDateIsToday
+                                ? 'Today'
+                                : dueDateIsTomorrow
+                                ? 'Tomorrow'
+                                : dueDateIsWithin5Days
+                                ? dayOfWeek(dueDate)
+                                : new Date(
+                                      task.dueDate as Date
+                                  ).toLocaleDateString('en-US', {
+                                      month: 'short',
+                                      day: 'numeric',
+                                      year:
+                                          new Date(
+                                              task.dueDate as Date
+                                          ).getFullYear() !==
+                                          new Date().getFullYear()
+                                              ? 'numeric'
+                                              : undefined,
+                                  })}
                         </p>
                     )}
                     {dueDateIsPast ? (
@@ -91,7 +100,7 @@ export const DueDateIndicator: React.FC<DueDateIndicatorProps> = React.memo(
                                 color: `var(--${currentTheme}-accent-red)`,
                             }}
                         />
-                    ) : dueDateIsWithin7Days ? (
+                    ) : dueDateIsWithin5Days || dueDateIsTomorrow ? (
                         <FaHourglassHalf
                             className="hover:saturate-150 transition-colors duration-200"
                             style={{
@@ -102,7 +111,7 @@ export const DueDateIndicator: React.FC<DueDateIndicatorProps> = React.memo(
                         <FaHourglassEnd
                             className="hover:saturate-150 transition-colors duration-200"
                             style={{
-                                color: `var(--${currentTheme}-accent-yellow)`,
+                                color: `var(--${currentTheme}-accent-red)`,
                             }}
                         />
                     ) : (
@@ -132,7 +141,7 @@ export const DueDateIndicator: React.FC<DueDateIndicatorProps> = React.memo(
                                 </>
                             ) : dueDateIsToday ? (
                                 'Due Today'
-                            ) : dueDateIsWithin7Days ? (
+                            ) : dueDateIsWithin5Days || dueDateIsTomorrow ? (
                                 <>
                                     Due{' '}
                                     {dueDateIsTomorrow

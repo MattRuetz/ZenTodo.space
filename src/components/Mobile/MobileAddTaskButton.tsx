@@ -102,7 +102,7 @@ export const MobileAddTaskButton: React.FC<MobileAddTaskButtonProps> =
                 }}
             >
                 <button
-                    className="btn btn-circle btn-sm flex justify-center items-center shadow-md"
+                    className="btn btn-circle btn-md flex justify-center items-center shadow-md"
                     style={{
                         backgroundColor: `var(--${currentTheme}-accent-blue)`,
                         color: `var(--${currentTheme}-emphasis-dark)`,

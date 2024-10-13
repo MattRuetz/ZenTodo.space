@@ -362,8 +362,8 @@ const Space: React.FC<{ spaceId: string }> = React.memo(({ spaceId }) => {
                                                 }}
                                             >
                                                 <p className="text-center text-lg font-semibold mb-2">
-                                                    Some tasks are hidden by
-                                                    your filters
+                                                    Filters are applied - some
+                                                    tasks may be hidden.
                                                 </p>
                                                 <button
                                                     className="btn btn-sm btn-outline cursor-pointer text-black"

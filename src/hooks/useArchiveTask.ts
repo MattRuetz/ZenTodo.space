@@ -40,7 +40,7 @@ export const useArchiveTask = ({
             }
             if (!checkDescendantsComplete(task._id)) {
                 showAlert(
-                    'Cannot archive task: Some subtasks are not complete.',
+                    'Cannot archive task: Some descendants are not complete.',
                     'error'
                 );
                 return;

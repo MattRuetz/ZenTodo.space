@@ -197,7 +197,7 @@ export const TaskListView: React.FC<TaskListViewProps> = React.memo(
                 return getContrastingColor(space.backgroundColor);
             }
             return `var(--${currentTheme}-text-default)`;
-        }, [space?.backgroundColor]);
+        }, [space?.backgroundColor, currentTheme]);
 
         return (
             <>
