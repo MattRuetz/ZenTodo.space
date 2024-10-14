@@ -63,6 +63,7 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
 
     // Long press handling
     const handleTouchStart = useCallback((e: React.TouchEvent) => {
+        e.preventDefault(); // Prevent default touch behavior
         const touch = e.touches[0];
         touchStartPos.current = { x: touch.clientX, y: touch.clientY };
         longPressTimer.current = setTimeout(() => {
@@ -71,38 +72,39 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
         }, LONG_PRESS_DELAY);
     }, []);
 
-    const handleTouchMove = useCallback(
-        (e: React.TouchEvent) => {
-            if (!touchStartPos.current) return;
+    const handleTouchMove = useCallback((e: React.TouchEvent) => {
+        if (!touchStartPos.current) return;
 
-            const touch = e.touches[0];
-            const deltaX = Math.abs(touch.clientX - touchStartPos.current.x);
-            const deltaY = Math.abs(touch.clientY - touchStartPos.current.y);
+        const touch = e.touches[0];
+        const deltaX = Math.abs(touch.clientX - touchStartPos.current.x);
+        const deltaY = Math.abs(touch.clientY - touchStartPos.current.y);
 
-            if (deltaX > 10 || deltaY > 10) {
-                if (longPressTimer.current) {
-                    clearTimeout(longPressTimer.current);
-                    longPressTimer.current = null;
-                }
-                if (!isDragEnabled) {
-                    setIsDragEnabled(false);
-                    setIsShaking(false);
-                }
+        if (deltaX > 10 || deltaY > 10) {
+            if (longPressTimer.current) {
+                clearTimeout(longPressTimer.current);
+                longPressTimer.current = null;
             }
-        },
-        [isDragEnabled]
-    );
-
-    const handleTouchEnd = useCallback(() => {
-        if (longPressTimer.current) {
-            clearTimeout(longPressTimer.current);
-            longPressTimer.current = null;
-
             setIsDragEnabled(false);
             setIsShaking(false);
         }
-        touchStartPos.current = null;
     }, []);
+
+    const handleTouchEnd = useCallback(
+        (e: React.TouchEvent) => {
+            e.preventDefault(); // Prevent default touch behavior
+            if (longPressTimer.current) {
+                clearTimeout(longPressTimer.current);
+                longPressTimer.current = null;
+            }
+            if (isDragEnabled) {
+                e.stopPropagation(); // Prevent click events if drag was enabled
+            }
+            setIsDragEnabled(false);
+            setIsShaking(false);
+            touchStartPos.current = null;
+        },
+        [isDragEnabled]
+    );
 
     const [{ isDragging }, drag] = useDrag({
         type: 'TASK',
@@ -266,6 +268,7 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
+            onTouchCancel={handleTouchEnd} // Add this line
             className={`relative task-list-item p-2 ${
                 isDragging || isShaking ? 'shake' : ''
             } rounded-lg transition-all duration-200 border-2 px-2 mx-auto max-w-[350px] shadow-md shadow-black/20`}
