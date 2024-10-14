@@ -20,6 +20,7 @@ import { setSubtaskDrawerOpen } from '@/store/uiSlice';
 import { Task, TaskProgress } from '@/types';
 
 import { getGrandparentTask, isGrandparent } from '@/app/utils/hierarchyUtils';
+import { FaGripVertical } from 'react-icons/fa6';
 
 const LONG_PRESS_DELAY = 300; // 1 second delay
 
@@ -47,7 +48,8 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
 
     const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
     const currentTaskNameRef = useRef(task?.taskName || '');
-    const ref = useRef<HTMLLIElement>(null);
+    const dropRef = useRef<HTMLLIElement>(null);
+    const dragHandleRef = useRef<HTMLDivElement>(null);
 
     const tasksState = useSelector(selectAllTasks);
     const spacesState = useSelector((state: RootState) => state.spaces.spaces);
@@ -62,49 +64,47 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
     }, [archiveTask, task, dispatch]);
 
     // Long press handling
-    const handleTouchStart = useCallback((e: React.TouchEvent) => {
-        e.preventDefault(); // Prevent default touch behavior
-        const touch = e.touches[0];
-        touchStartPos.current = { x: touch.clientX, y: touch.clientY };
-        longPressTimer.current = setTimeout(() => {
-            setIsDragEnabled(true);
-            setIsShaking(true);
-        }, LONG_PRESS_DELAY);
-    }, []);
+    // const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    //     const touch = e.touches[0];
+    //     touchStartPos.current = { x: touch.clientX, y: touch.clientY };
+    //     longPressTimer.current = setTimeout(() => {
+    //         setIsDragEnabled(true);
+    //         setIsShaking(true);
+    //     }, LONG_PRESS_DELAY);
+    // }, []);
 
-    const handleTouchMove = useCallback((e: React.TouchEvent) => {
-        if (!touchStartPos.current) return;
+    // const handleTouchMove = useCallback(
+    //     (e: React.TouchEvent) => {
+    //         if (!touchStartPos.current) return;
 
-        const touch = e.touches[0];
-        const deltaX = Math.abs(touch.clientX - touchStartPos.current.x);
-        const deltaY = Math.abs(touch.clientY - touchStartPos.current.y);
+    //         const touch = e.touches[0];
+    //         const deltaX = Math.abs(touch.clientX - touchStartPos.current.x);
+    //         const deltaY = Math.abs(touch.clientY - touchStartPos.current.y);
 
-        if (deltaX > 10 || deltaY > 10) {
-            if (longPressTimer.current) {
-                clearTimeout(longPressTimer.current);
-                longPressTimer.current = null;
-            }
-            setIsDragEnabled(false);
-            setIsShaking(false);
-        }
-    }, []);
+    //         if (deltaX > 10 || deltaY > 10) {
+    //             if (longPressTimer.current) {
+    //                 clearTimeout(longPressTimer.current);
+    //                 longPressTimer.current = null;
+    //             }
+    //             if (!isDragEnabled) {
+    //                 setIsDragEnabled(false);
+    //                 setIsShaking(false);
+    //             }
+    //         }
+    //     },
+    //     [isDragEnabled]
+    // );
 
-    const handleTouchEnd = useCallback(
-        (e: React.TouchEvent) => {
-            e.preventDefault(); // Prevent default touch behavior
-            if (longPressTimer.current) {
-                clearTimeout(longPressTimer.current);
-                longPressTimer.current = null;
-            }
-            if (isDragEnabled) {
-                e.stopPropagation(); // Prevent click events if drag was enabled
-            }
-            setIsDragEnabled(false);
-            setIsShaking(false);
-            touchStartPos.current = null;
-        },
-        [isDragEnabled]
-    );
+    // const handleTouchEnd = useCallback(() => {
+    //     if (longPressTimer.current) {
+    //         clearTimeout(longPressTimer.current);
+    //         longPressTimer.current = null;
+
+    //         setIsDragEnabled(false);
+    //         setIsShaking(false);
+    //     }
+    //     touchStartPos.current = null;
+    // }, []);
 
     const [{ isDragging }, drag] = useDrag({
         type: 'TASK',
@@ -112,7 +112,7 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
         collect: (monitor) => ({
             isDragging: monitor.isDragging(),
         }),
-        canDrag: () => isDragEnabled,
+        canDrag: () => true, // Allow dragging
     });
 
     useEffect(() => {
@@ -258,20 +258,18 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
             canDrop: monitor.canDrop(),
         }),
     });
-
-    drag(drop(ref));
-
+    drop(dropRef);
+    drag(dragHandleRef); // Attach drag to the handle
     return (
         <li
             key={task.clientId || task._id} // Use clientId if available, otherwise fall back to _id
-            ref={ref}
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-            onTouchCancel={handleTouchEnd} // Add this line
-            className={`relative task-list-item p-2 ${
+            ref={dropRef}
+            // onTouchStart={handleTouchStart}
+            // onTouchMove={handleTouchMove}
+            // onTouchEnd={handleTouchEnd}
+            className={`task-list-item ${
                 isDragging || isShaking ? 'shake' : ''
-            } rounded-lg transition-all duration-200 border-2 px-2 mx-auto max-w-[350px] shadow-md shadow-black/20`}
+            } rounded-lg transition-all duration-200 border-2 mx-auto max-w-[350px] shadow-md shadow-black/20 py-2`}
             style={{
                 cursor: 'move',
                 backgroundColor:
@@ -290,133 +288,143 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
                         : 'none',
             }}
         >
-            <div className="w-10/12 max-w-[300px] mx-auto">
-                <TaskListItemTopBar
-                    task={task}
-                    handleSetDueDate={handleSetDueDate}
-                    isMenuOpen={isTaskMenuOpen}
-                    setIsMenuOpen={setIsTaskMenuOpen}
-                    setIsEmojiPickerOpen={setIsEmojiPickerOpen}
-                    setCurrentEmojiTask={setCurrentEmojiTask}
-                />
+            <div className="flex justify-start items-center h-full">
                 <div
-                    className={`${
-                        isEditing === 'taskName'
-                            ? 'border-slate-400'
-                            : 'border-transparent'
-                    } font-semibold rounded p-1 px-2 mb-2 transition-colors duration-200 border-2`}
-                    style={{
-                        backgroundColor: `var(--${currentTheme}-background-200)`,
-                        borderColor:
+                    ref={dragHandleRef}
+                    className="drag-handle flex justify-center items-center w-[40px] h-[100px]"
+                >
+                    <FaGripVertical className="text-xs cursor-pointer" />
+                </div>
+                <div className="w-11/12 left-1/12 pr-[30px]">
+                    <TaskListItemTopBar
+                        task={task}
+                        handleSetDueDate={handleSetDueDate}
+                        isMenuOpen={isTaskMenuOpen}
+                        setIsMenuOpen={setIsTaskMenuOpen}
+                        setIsEmojiPickerOpen={setIsEmojiPickerOpen}
+                        setCurrentEmojiTask={setCurrentEmojiTask}
+                    />
+                    <div
+                        className={`${
                             isEditing === 'taskName'
-                                ? `var(--${currentTheme}-accent-grey)`
-                                : localTask.taskName === '' ||
-                                  localTask.taskName === 'New Subtask'
-                                ? `var(--${currentTheme}-accent-red)`
-                                : 'transparent',
-                        color: `var(--${currentTheme}-text-default)`,
-                    }}
-                >
-                    {isEditing === 'taskName' ? (
-                        <input
-                            ref={inputRef as React.RefObject<HTMLInputElement>}
-                            type="text"
-                            name="taskName"
-                            value={localTask.taskName}
-                            onChange={handleInputChange}
-                            onKeyDown={(event) => {
-                                if (event.key === 'Enter') {
-                                    event.currentTarget.blur();
+                                ? 'border-slate-400'
+                                : 'border-transparent'
+                        } font-semibold rounded p-1 px-2 mb-2 transition-colors duration-200 border-2`}
+                        style={{
+                            backgroundColor: `var(--${currentTheme}-background-200)`,
+                            borderColor:
+                                isEditing === 'taskName'
+                                    ? `var(--${currentTheme}-accent-grey)`
+                                    : localTask.taskName === '' ||
+                                      localTask.taskName === 'New Subtask'
+                                    ? `var(--${currentTheme}-accent-red)`
+                                    : 'transparent',
+                            color: `var(--${currentTheme}-text-default)`,
+                        }}
+                    >
+                        {isEditing === 'taskName' ? (
+                            <input
+                                ref={
+                                    inputRef as React.RefObject<HTMLInputElement>
                                 }
-                            }}
-                            onBlur={handleBlur}
-                            className="w-full resize-none border-none outline-none bg-transparent"
-                            maxLength={30}
-                            onFocus={(event) => event.target.select()}
-                            autoFocus
-                        />
-                    ) : (
-                        <h1
-                            className="cursor-pointer"
-                            onClick={() => startEditing('taskName')}
-                        >
-                            {localTask.taskName || (
-                                <span
-                                    className="text-xs"
-                                    style={{
-                                        color: `var(--${currentTheme}-text-subtle)`,
-                                    }}
-                                >
-                                    + Add task name
-                                </span>
-                            )}
-                        </h1>
-                    )}
-                </div>
-                <div
-                    className={`${
-                        isEditing === 'taskDescription'
-                            ? 'border-slate-400'
-                            : 'border-transparent'
-                    } font-normal rounded p-1 px-2 mb-2 transition-all duration-200 border-2`}
-                    style={{
-                        backgroundColor: `var(--${currentTheme}-background-200)`,
-                        borderColor:
+                                type="text"
+                                name="taskName"
+                                value={localTask.taskName}
+                                onChange={handleInputChange}
+                                onKeyDown={(event) => {
+                                    if (event.key === 'Enter') {
+                                        event.currentTarget.blur();
+                                    }
+                                }}
+                                onBlur={handleBlur}
+                                className="w-full resize-none border-none outline-none bg-transparent"
+                                maxLength={30}
+                                onFocus={(event) => event.target.select()}
+                                autoFocus
+                            />
+                        ) : (
+                            <h1
+                                className="cursor-pointer"
+                                onClick={() => startEditing('taskName')}
+                            >
+                                {localTask.taskName || (
+                                    <span
+                                        className="text-xs"
+                                        style={{
+                                            color: `var(--${currentTheme}-text-subtle)`,
+                                        }}
+                                    >
+                                        + Add task name
+                                    </span>
+                                )}
+                            </h1>
+                        )}
+                    </div>
+                    <div
+                        className={`${
                             isEditing === 'taskDescription'
-                                ? `var(--${currentTheme}-accent-grey)`
-                                : 'transparent',
-                    }}
-                >
-                    {isEditing === 'taskDescription' ? (
-                        <textarea
-                            ref={
-                                inputRef as React.RefObject<HTMLTextAreaElement>
-                            }
-                            name="taskDescription"
-                            value={localTask.taskDescription}
-                            onChange={handleInputChange}
-                            onBlur={handleBlur}
-                            className="w-full resize-none flex-grow outline-none text-sm bg-transparent"
-                            style={{
-                                width: '100%',
-                                boxSizing: 'border-box',
-                                minHeight: '100px',
-                                maxHeight: '500px',
-                                overflowY: 'auto',
-                                color: `var(--${currentTheme}-text-default)`,
-                            }}
-                            maxLength={500}
-                            autoFocus
-                        />
-                    ) : (
-                        <p
-                            className="text-sm cursor-pointer max-h-[200px] overflow-y-auto"
-                            style={{
-                                color: `var(--${currentTheme}-text-default)`,
-                                whiteSpace: 'pre-wrap',
-                            }}
-                            onClick={() => startEditing('taskDescription')}
-                        >
-                            {localTask.taskDescription || (
-                                <span
-                                    className="text-xs"
-                                    style={{
-                                        color: `var(--${currentTheme}-text-subtle)`,
-                                        opacity: 0.5,
-                                    }}
-                                >
-                                    + Add description
-                                </span>
-                            )}
-                        </p>
-                    )}
+                                ? 'border-slate-400'
+                                : 'border-transparent'
+                        } font-normal rounded p-1 px-2 mb-2 transition-all duration-200 border-2`}
+                        style={{
+                            backgroundColor: `var(--${currentTheme}-background-200)`,
+                            borderColor:
+                                isEditing === 'taskDescription'
+                                    ? `var(--${currentTheme}-accent-grey)`
+                                    : 'transparent',
+                        }}
+                    >
+                        {isEditing === 'taskDescription' ? (
+                            <textarea
+                                ref={
+                                    inputRef as React.RefObject<HTMLTextAreaElement>
+                                }
+                                name="taskDescription"
+                                value={localTask.taskDescription}
+                                onChange={handleInputChange}
+                                onBlur={handleBlur}
+                                className="w-full resize-none flex-grow outline-none text-sm bg-transparent"
+                                style={{
+                                    width: '100%',
+                                    boxSizing: 'border-box',
+                                    minHeight: '100px',
+                                    maxHeight: '500px',
+                                    overflowY: 'auto',
+                                    color: `var(--${currentTheme}-text-default)`,
+                                }}
+                                maxLength={500}
+                                autoFocus
+                            />
+                        ) : (
+                            <p
+                                className="text-sm cursor-pointer max-h-[200px] overflow-y-auto"
+                                style={{
+                                    color: `var(--${currentTheme}-text-default)`,
+                                    whiteSpace: 'pre-wrap',
+                                }}
+                                onClick={() => startEditing('taskDescription')}
+                            >
+                                {localTask.taskDescription || (
+                                    <span
+                                        className="text-xs"
+                                        style={{
+                                            color: `var(--${currentTheme}-text-subtle)`,
+                                            opacity: 0.5,
+                                        }}
+                                    >
+                                        + Add description
+                                    </span>
+                                )}
+                            </p>
+                        )}
+                    </div>
+                    <SubtaskBottomBar
+                        subtask={task}
+                        handleProgressChange={handleProgressChange}
+                        handleSetDueDate={handleSetDueDate}
+                        handleArchive={handleArchive}
+                    />
                 </div>
-                <SubtaskBottomBar
-                    subtask={task}
-                    handleProgressChange={handleProgressChange}
-                    handleSetDueDate={handleSetDueDate}
-                    handleArchive={handleArchive}
-                />
             </div>
         </li>
     );
