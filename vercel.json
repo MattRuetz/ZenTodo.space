@@ -1,0 +1,9 @@
+{
+    "version": 2,
+    "crons": [
+        {
+            "path": "/api/tasks/deleteOldArchivedTasks",
+            "schedule": "0 0 * * *"
+        }
+    ]
+}
