@@ -5,6 +5,7 @@ import Task from '@/models/Task';
 
 export async function deleteOldArchivedTasks(req: NextRequest) {
     try {
+        console.log('Deleting old archived tasks');
         await dbConnect();
 
         const thirtyDaysAgo = new Date();
@@ -17,6 +18,8 @@ export async function deleteOldArchivedTasks(req: NextRequest) {
             isArchived: true,
             archivedAt: { $lt: oneMinuteAgo },
         });
+
+        console.log('Deletion result:', result);
 
         return NextResponse.json(
             { deletedCount: result.deletedCount },
