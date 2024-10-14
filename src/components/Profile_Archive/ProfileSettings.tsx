@@ -3,7 +3,7 @@ import Image from 'next/image';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store/store';
 import { updateUserData } from '@/store/userSlice';
-import { useUser, useAuth } from '@clerk/nextjs';
+import { useUser, useAuth, SignOutButton } from '@clerk/nextjs';
 import { FaEnvelope, FaPencil, FaSpinner } from 'react-icons/fa6';
 import {
     FaAward,
@@ -93,13 +93,10 @@ const ProfileSettings: React.FC = () => {
     const handleSignOut = useCallback(async () => {
         try {
             await signOut();
-            setTimeout(() => {
-                router.push('/sign-in');
-            }, 5000);
         } catch (error) {
             console.error('Error signing out:', error);
         }
-    }, [signOut, router]);
+    }, [signOut]);
 
     return (
         <div className="flex flex-col items-center justify-center p-8 w-full max-w-4xl mx-auto overflow-x-hidden overflow-y-auto">

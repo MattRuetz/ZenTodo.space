@@ -3,13 +3,14 @@
 import React from 'react';
 import { useParams } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
-import { redirect } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store/store';
 import Preloader from '@/components/Preloader/Preloader';
 import dynamic from 'next/dynamic';
 import { setCurrentSpace } from '@/store/spaceSlice';
 import { useDispatch } from 'react-redux';
+import { SpaceData } from '@/types';
 
 // Dynamic import allows for lazy loading of the Space component
 const Space = dynamic(() => import('@/components/Space/Space'), {
@@ -20,13 +21,14 @@ const SpacePage: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
     const { spaceId } = useParams();
     const { isLoaded, isSignedIn } = useUser();
+    const router = useRouter();
     const initialDataLoaded = useSelector(
         (state: RootState) => state.loading.initialDataLoaded
     );
     const spaces = useSelector((state: RootState) => state.spaces.spaces);
 
     if (!isSignedIn && isLoaded) {
-        redirect('/sign-in');
+        router.push('/sign-in');
     }
 
     if (!isLoaded || !initialDataLoaded) {
@@ -41,10 +43,10 @@ const SpacePage: React.FC = () => {
     const spaceExists = spaceToLoad !== undefined;
 
     if (!spaceExists) {
-        redirect('/');
+        router.push('/');
     }
 
-    dispatch(setCurrentSpace(spaceToLoad));
+    dispatch(setCurrentSpace(spaceToLoad as SpaceData));
 
     return (
         <div className="w-full h-screen">

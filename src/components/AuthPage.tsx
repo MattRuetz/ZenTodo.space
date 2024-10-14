@@ -43,13 +43,13 @@ const AuthPage: React.FC<AuthPageProps> = ({ action }) => {
                             {quote}
                         </p>
                     </div>
-                    <div className="flex-grow bg-gradient-to-b from-slate-900 to-slate-700 p-6 rounded-t-3xl shadow-md">
+                    <div className="flex justify-center bg-gradient-to-b from-slate-900 to-slate-700 p-6 rounded-t-3xl shadow-md mx-2">
                         {renderAuthComponent()}
                     </div>
                 </div>
             ) : (
                 <div className="h-screen flex items-center justify-start bg-gradient-to-br from-slate-100 to-slate-200">
-                    <div className="bg-gradient-to-b from-slate-900 to-slate-700 p-3 shadow-md w-4/12 h-full">
+                    <div className="bg-gradient-to-b from-slate-900 to-slate-700 p-3 shadow-md w-4/12 min-w-[450px] h-full">
                         <div className="flex flex-col items-center justify-center h-full">
                             {renderAuthComponent()}
                         </div>

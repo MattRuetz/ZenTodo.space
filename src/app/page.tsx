@@ -4,22 +4,22 @@ import Preloader from '@/components/Preloader/Preloader';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
 import dynamic from 'next/dynamic';
-import { redirect } from 'next/navigation';
 import { useEffect } from 'react';
-
+import { useRouter } from 'next/navigation';
 const SuperSpace = dynamic(() => import('@/components/SuperSpace/SuperSpace'), {
     loading: () => <Preloader />,
 });
 
 export default function Home() {
     const { isLoaded, isSignedIn } = useUser();
+    const router = useRouter();
     const initialDataLoaded = useSelector(
         (state: RootState) => state.loading.initialDataLoaded
     );
 
     useEffect(() => {
         if (isLoaded && !isSignedIn) {
-            redirect('/sign-in');
+            router.push('/sign-in');
         }
     }, [isLoaded, isSignedIn]);
 

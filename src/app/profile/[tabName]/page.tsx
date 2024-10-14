@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
-import { redirect } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
 import Preloader from '@/components/Preloader/Preloader';
@@ -11,7 +10,7 @@ import dynamic from 'next/dynamic';
 import { fetchUser } from '@/store/userSlice';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/store/store';
-
+import { useRouter } from 'next/navigation';
 // Dynamic import allows for lazy loading of the Space component
 const ProfileArchivePage = dynamic(
     () => import('@/components/Profile_Archive/ProfileArchivePage'),
@@ -24,6 +23,7 @@ const ProfilePage: React.FC = () => {
     const { tabName } = useParams();
     const dispatch = useDispatch<AppDispatch>();
     const { isLoaded, isSignedIn } = useUser();
+    const router = useRouter();
 
     const initialDataLoaded = useSelector(
         (state: RootState) => state.loading.initialDataLoaded
@@ -45,7 +45,7 @@ const ProfilePage: React.FC = () => {
     }, [isLoaded, dispatch, initialDataLoaded]);
 
     if (!isSignedIn && isLoaded) {
-        redirect('/sign-in');
+        router.push('/sign-in');
     }
     if (!isLoaded || !initialDataLoaded) {
         return <Preloader />;
