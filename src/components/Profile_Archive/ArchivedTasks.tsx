@@ -109,8 +109,8 @@ const ArchivedTasks: React.FC = () => {
                     />
                 )}
             </div>
-            <p className="flex items-center gap-2 text-yellow-300 text-sm">
-                <FaExclamationTriangle className="mr-2" />
+            <p className="flex items-center gap-2 text-sm text-gray-500">
+                <FaExclamationTriangle className="text-yellow-300" />
                 Tasks in archive will be deleted after 30 days
             </p>
             <div className="mb-6 space-y-4 h-full pt-4">

@@ -358,10 +358,9 @@ const Space: React.FC<{ spaceId: string }> = React.memo(({ spaceId }) => {
                                                 className="flex flex-col items-center justify-center p-4 rounded-lg shadow-md pointer-events-auto bg-red-50 border-2"
                                                 style={{
                                                     borderColor: `var(--${currentTheme}-accent-red)`,
-                                                    color: `var(--${currentTheme}-text-default)`,
                                                 }}
                                             >
-                                                <p className="text-center text-lg font-semibold mb-2">
+                                                <p className="text-center text-lg font-semibold mb-2 text-black">
                                                     Filters are applied - some
                                                     tasks may be hidden.
                                                 </p>
