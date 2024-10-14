@@ -7,14 +7,14 @@ export async function GET(req: NextRequest) {
     try {
         await dbConnect();
 
-        const thirtyDaysAgo = new Date();
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        const oneMinuteAgo = new Date();
+        oneMinuteAgo.setMinutes(oneMinuteAgo.getMinutes() - 1);
 
-        console.log('Deleting tasks archived before:', thirtyDaysAgo);
+        console.log('Deleting tasks archived before:', oneMinuteAgo);
 
         const result = await Task.deleteMany({
             isArchived: true,
-            archivedAt: { $lt: thirtyDaysAgo },
+            archivedAt: { $lt: oneMinuteAgo },
         });
 
         console.log('Deletion result:', result);
