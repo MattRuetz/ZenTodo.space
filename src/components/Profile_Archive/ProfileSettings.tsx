@@ -111,7 +111,6 @@ const ProfileSettings: React.FC = () => {
                                 className="rounded-full shadow-md"
                                 width={192}
                                 height={192}
-                                unoptimized={true}
                                 style={{
                                     backgroundColor: `var(--${currentTheme}-background-300)`,
                                 }}

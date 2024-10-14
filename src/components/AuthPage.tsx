@@ -32,13 +32,12 @@ const AuthPage: React.FC<AuthPageProps> = ({ action }) => {
                 <div className="min-h-screen flex flex-col bg-black">
                     <div className="p-6 flex flex-col items-center justify-center w-11/12 mx-auto">
                         <Image
-                            src="/images/ZenTodo_Log_white.webp"
+                            src="/images/ZenTodo_Log_white.png"
                             alt="ZenTodo Logo"
                             width={300}
                             height={83}
                             className="mb-4"
                             priority={true}
-                            unoptimized={true}
                         />
                         <p className="text-sm text-neutral-content italic text-center mb-6">
                             {quote}
@@ -57,14 +56,12 @@ const AuthPage: React.FC<AuthPageProps> = ({ action }) => {
                     </div>
                     <div className="p-3 w-8/12 h-full flex flex-col items-center justify-center">
                         <Image
-                            src="/images/ZenTodo_Log_slate900.webp"
-                            // src="/images/Untitled.png"
+                            src="/images/ZenTodo_Log_slate900.png"
                             alt="ZenTodo Logo"
                             width={600}
                             height={200}
                             className="mb-10"
                             priority={true}
-                            unoptimized={true}
                         />
                         <p className="mt-2 text-md text-neutral-content italic max-w-md text-center">
                             {quote}
