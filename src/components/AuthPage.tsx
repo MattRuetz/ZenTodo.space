@@ -32,7 +32,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ action }) => {
                 <div className="min-h-screen flex flex-col bg-black">
                     <div className="p-6 flex flex-col items-center justify-center w-11/12 mx-auto">
                         <Image
-                            src="/images/ZenTodo_Log_white.webp"
+                            src="public/images/ZenTodo_Log_white.webp"
                             alt="ZenTodo Logo"
                             width={300}
                             height={83}
