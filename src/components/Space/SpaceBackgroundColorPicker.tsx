@@ -7,6 +7,7 @@ import { FaPencil, FaRotateLeft } from 'react-icons/fa6';
 import debounce from 'lodash.debounce';
 import { useTheme } from '@/hooks/useTheme';
 import { SpaceData } from '@/types';
+import { HexColorPicker } from 'react-colorful';
 
 interface SpaceBackgroundColorPickerProps {
     space: SpaceData;
@@ -52,14 +53,14 @@ const SpaceBackgroundColorPicker: React.FC<SpaceBackgroundColorPickerProps> =
         return (
             <div className="w-full flex flex-col items-center justify-center">
                 <div
-                    className="relative flex items-center gap-2 w-full h-[50px] border-2 border-transparent hover:border-white transition-all duration-300 rounded-lg"
+                    className="relative flex items-center gap-2 w-full border-2 border-transparent hover:border-white transition-all duration-300 rounded-lg"
                     style={{
                         backgroundColor: `var(--${theme}-background-100)`,
                         color: `var(--${theme}-text-default)`,
                     }}
                 >
                     <div className="w-full h-full flex items-center justify-center">
-                        <label
+                        {/* <label
                             htmlFor="colorPicker"
                             className="p-2 cursor-pointer text-sm font-medium w-full text-center flex items-center justify-center h-full"
                         >
@@ -71,8 +72,8 @@ const SpaceBackgroundColorPicker: React.FC<SpaceBackgroundColorPickerProps> =
                                 }}
                             ></div>
                             <span className="md:inline">Background Color</span>
-                        </label>
-                        <input
+                        </label> */}
+                        {/* <input
                             id="colorPicker"
                             type="color"
                             value={selectedColor}
@@ -83,10 +84,17 @@ const SpaceBackgroundColorPicker: React.FC<SpaceBackgroundColorPickerProps> =
                                 visibility: 'hidden',
                                 width: '0',
                             }}
+                        /> */}
+                        <HexColorPicker
+                            color={selectedColor}
+                            className="w-full h-full cursor-pointer relative"
+                            onChange={(selectedColor: string) =>
+                                handleColorChange(selectedColor)
+                            }
                         />
                     </div>
 
-                    <div
+                    {/* <div
                         className="w-full h-full absolute top-0 left-0 rounded-lg text-white bg-black/50 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-300 cursor-pointer"
                         onClick={(e) => {
                             e.stopPropagation();
@@ -94,7 +102,7 @@ const SpaceBackgroundColorPicker: React.FC<SpaceBackgroundColorPickerProps> =
                         }}
                     >
                         <FaPencil className="w-6 h-6" />
-                    </div>
+                    </div> */}
                 </div>
                 {space.backgroundColor !== '' && (
                     <button
