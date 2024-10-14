@@ -7,6 +7,8 @@ export async function GET(req: NextRequest) {
     try {
         await dbConnect();
 
+        console.log('Deleting old archived tasks');
+
         const oneMinuteAgo = new Date();
         oneMinuteAgo.setMinutes(oneMinuteAgo.getMinutes() - 1);
 
