@@ -203,7 +203,7 @@ export const TaskListView: React.FC<TaskListViewProps> = React.memo(
             <>
                 <div
                     {...handlers}
-                    className="task-list-view h-full flex flex-col px-2"
+                    className="task-list-view h-full flex flex-col"
                     style={{
                         backgroundColor: space?.backgroundColor
                             ? `${space.backgroundColor}`
@@ -243,7 +243,7 @@ export const TaskListView: React.FC<TaskListViewProps> = React.memo(
                         </div>
                     ) : (
                         <div
-                            className="h-full overflow-x-hidden overflow-y-auto scrollbar-thin scrollbar-thumb-rounded-full"
+                            className="h-full overflow-x-hidden overflow-y-auto scrollbar-thin scrollbar-thumb-rounded-full px-2"
                             ref={listRef}
                             style={{
                                 scrollbarColor: `var(--${currentTheme}-text-subtle) var(--${currentTheme}-background-200)`,
