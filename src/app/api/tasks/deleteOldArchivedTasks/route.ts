@@ -10,14 +10,14 @@ export async function GET(req: NextRequest) {
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-        const twentySecondsAgo = new Date();
-        twentySecondsAgo.setSeconds(twentySecondsAgo.getSeconds() - 20);
-        console.log('twentySecondsAgo', twentySecondsAgo);
+        console.log('Deleting tasks archived before:', thirtyDaysAgo);
 
         const result = await Task.deleteMany({
             isArchived: true,
-            archivedAt: { $gte: twentySecondsAgo },
+            archivedAt: { $lt: thirtyDaysAgo },
         });
+
+        console.log('Deletion result:', result);
 
         return NextResponse.json(
             { deletedCount: result.deletedCount },
