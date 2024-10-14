@@ -6,7 +6,7 @@ import { updateSpace } from '@/store/spaceSlice';
 import { FaClock, FaTag } from 'react-icons/fa';
 import { FaPalette, FaTrash } from 'react-icons/fa6';
 import { useDrag, useDrop } from 'react-dnd';
-import { isMobile } from 'react-device-detect';
+import { useIsMobileSize } from '@/hooks/useIsMobileSize';
 import { useRouter } from 'next/navigation';
 
 import { getComplementaryColor, getContrastingColor } from '@/app/utils/utils';
@@ -40,6 +40,7 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
 }) => {
     const dispatch = useDispatch<AppDispatch>();
     const router = useRouter();
+    const isMobile = useIsMobileSize();
 
     const [isEditing, setIsEditing] = useState(false);
     const [name, setName] = useState(space.name);
@@ -233,13 +234,6 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
             emojiInputRef.current.click();
         }
     };
-
-    // const handleEmojiChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    //     const newEmoji = e.target.value;
-    //     if (newEmoji) {
-    //         handleSetSpaceEmoji(newEmoji);
-    //     }
-    // };
 
     return (
         <div
@@ -480,6 +474,7 @@ const SpaceCard: React.FC<SpaceCardProps> = ({
                     objectToDelete={space}
                     spaceOrTask="space"
                     cancelDelete={cancelDelete}
+                    isModal={isMobile}
                 />
             )}
         </div>

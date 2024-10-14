@@ -35,11 +35,9 @@ const Breadcrumb: React.FC<BreadcrumbProps> = React.memo(
                 style={{
                     color: `var(--${currentTheme}-text-default)`,
                 }}
+                onClick={onBack}
             >
-                <button
-                    onClick={onBack}
-                    className="back-button flex items-center text-xs"
-                >
+                <button className="back-button flex items-center text-xs">
                     <FaArrowLeft className="mr-2" />
                     {grandparentTask && (
                         <>

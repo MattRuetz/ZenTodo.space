@@ -45,12 +45,14 @@ const FixedTopBar: React.FC<FixedTopBarProps> = React.memo(
         );
 
         const hasRootLevelTasksWithEmojis = useMemo(() => {
-            return tasksAtLevel.some(
+            const hasEmoji = tasksAtLevel.some(
                 (task) =>
-                    task.parentTask === undefined &&
+                    (task.parentTask === null ||
+                        task.parentTask === undefined) &&
                     task.emoji &&
                     task.space === currentSpace?._id
             );
+            return hasEmoji;
         }, [tasksAtLevel, currentSpace?._id]);
 
         const topBarBackgroundColor = useMemo(() => {

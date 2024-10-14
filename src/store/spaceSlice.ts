@@ -25,22 +25,6 @@ export const fetchSpaces = createAsyncThunk('spaces/fetchSpaces', async () => {
     return response.json();
 });
 
-// export const fetchSpaceById = createAsyncThunk(
-//     'spaces/fetchSpaceById',
-//     async (spaceId: string, { rejectWithValue }) => {
-//         try {
-//             const response = await fetch(`/api/spaces/${spaceId}`);
-//             if (!response.ok) {
-//                 throw new Error('Failed to fetch space');
-//             }
-//             const space = await response.json();
-//             return space;
-//         } catch (error) {
-//             return rejectWithValue((error as Error).message);
-//         }
-//     }
-// );
-
 export const createSpace = createAsyncThunk(
     'spaces/createSpace',
     async (spaceData: Omit<SpaceData, '_id'>, { rejectWithValue }) => {
@@ -261,11 +245,6 @@ const spaceSlice = createSlice({
         setCurrentSpace: (state, action: PayloadAction<SpaceData>) => {
             state.currentSpace = action.payload;
         },
-        setInitialSpace: (state) => {
-            if (state.spaces.length > 0 && !state.currentSpace) {
-                state.currentSpace = state.spaces[0];
-            }
-        },
         setWallpaper: (state, action: PayloadAction<string>) => {
             if (state.currentSpace) {
                 state.currentSpace.wallpaper = action.payload;
@@ -346,21 +325,6 @@ const spaceSlice = createSlice({
                 state.error =
                     action.error.message || 'An unknown error occurred';
             })
-            // .addCase(fetchSpaceById.fulfilled, (state, action) => {
-            //     const updatedSpace = action.payload;
-            //     const spaceIndex = state.spaces.findIndex(
-            //         (space) => space._id === updatedSpace._id
-            //     );
-            //     if (spaceIndex !== -1) {
-            //         state.spaces[spaceIndex] = updatedSpace;
-            //     }
-            //     if (
-            //         state.currentSpace &&
-            //         state.currentSpace._id === updatedSpace._id
-            //     ) {
-            //         state.currentSpace = updatedSpace;
-            //     }
-            // })
             .addCase(createSpace.fulfilled, (state, action) => {
                 state.spaces.push(action.payload);
             })
@@ -530,7 +494,6 @@ const spaceSlice = createSlice({
 
 export const {
     setCurrentSpace,
-    setInitialSpace,
     reorderSpacesOptimistic,
     updateSpaceTaskOrderOptimistic,
     updateTaskOrderAfterReplace,

@@ -189,6 +189,7 @@ export const TaskListItemTopBar: React.FC<TaskListItemTopBarProps> = React.memo(
                         objectToDelete={taskToDelete}
                         cancelDelete={cancelDelete}
                         spaceOrTask={'task'}
+                        isModal={true}
                     />
                 )}
                 {showMoveOptions && (

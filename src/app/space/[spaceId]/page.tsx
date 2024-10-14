@@ -5,9 +5,11 @@ import { useParams } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
 import { redirect } from 'next/navigation';
 import { useSelector } from 'react-redux';
-import { RootState } from '@/store/store';
+import { AppDispatch, RootState } from '@/store/store';
 import Preloader from '@/components/Preloader/Preloader';
 import dynamic from 'next/dynamic';
+import { setCurrentSpace } from '@/store/spaceSlice';
+import { useDispatch } from 'react-redux';
 
 // Dynamic import allows for lazy loading of the Space component
 const Space = dynamic(() => import('@/components/Space/Space'), {
@@ -15,6 +17,7 @@ const Space = dynamic(() => import('@/components/Space/Space'), {
 });
 
 const SpacePage: React.FC = () => {
+    const dispatch = useDispatch<AppDispatch>();
     const { spaceId } = useParams();
     const { isLoaded, isSignedIn } = useUser();
     const initialDataLoaded = useSelector(
@@ -34,11 +37,14 @@ const SpacePage: React.FC = () => {
         return <div>Space ID is required</div>;
     }
 
-    const spaceExists = spaces.some((space) => space._id === spaceId);
+    const spaceToLoad = spaces.find((space) => space._id === spaceId);
+    const spaceExists = spaceToLoad !== undefined;
 
     if (!spaceExists) {
         redirect('/');
     }
+
+    dispatch(setCurrentSpace(spaceToLoad));
 
     return (
         <div className="w-full h-screen">
