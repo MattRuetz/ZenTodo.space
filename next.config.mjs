@@ -16,14 +16,11 @@ const nextConfig = {
             },
         ],
     },
-    experimental: {
-        outputStandalone: true,
-    },
-    output: 'standalone',
-    server: {
-        port: 3001,
-        host: '0.0.0.0',
-    },
+    // output: 'standalone',
+    // server: {
+    //     port: 3001,
+    //     host: '0.0.0.0',
+    // },
 };
 
 export default nextConfig;

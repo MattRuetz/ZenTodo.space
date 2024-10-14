@@ -1,11 +1,10 @@
 // src/app/components/ControlPanel.tsx
 'use client';
-import React, { useState, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import { useUser } from '@clerk/nextjs';
 import ControlPanelToggle from './ControlPanelToggle';
 import ControlPanelContent from './ControlPanelContent';
 import { useIsMobileSize } from '@/hooks/useIsMobileSize';
-import { isMobile, isTablet } from 'react-device-detect';
 import { AppDispatch, RootState } from '@/store/store';
 import { useSelector } from 'react-redux';
 import { setControlPanelOpen } from '@/store/uiSlice';
@@ -20,7 +19,6 @@ const ControlPanel: React.FC = React.memo(() => {
     );
     const { isSignedIn } = useUser();
     const isMobileSize = useIsMobileSize();
-    const isMobileDevice = isMobile || isTablet;
 
     // Memoized function to set control panel open state
     const setIsOpen = useCallback(
@@ -36,7 +34,7 @@ const ControlPanel: React.FC = React.memo(() => {
     return (
         <div style={{ zIndex: 10000 }}>
             <ControlPanelContent isOpen={isControlPanelOpen} />
-            {!isMobileDevice && !isMobileSize && (
+            {!isMobileSize && (
                 <ControlPanelToggle
                     isOpen={isControlPanelOpen}
                     setIsOpen={setIsOpen}

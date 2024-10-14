@@ -52,25 +52,19 @@ export async function PUT(req: NextRequest) {
                 : null;
 
             const mongoSession = await mongoose.startSession();
-            mongoSession.startTransaction();
-
-            try {
+            await mongoSession.withTransaction(async (session) => {
                 const [parentTask, subtask, oldParentTask] = await Promise.all([
                     parentTaskId
-                        ? Task.findById(parentTaskId).session(mongoSession)
+                        ? Task.findById(parentTaskId).session(session)
                         : null,
-                    Task.findById(subtaskId).session(mongoSession),
+                    Task.findById(subtaskId).session(session),
                     oldParentTaskId
-                        ? Task.findById(oldParentTaskId).session(mongoSession)
+                        ? Task.findById(oldParentTaskId).session(session)
                         : null,
                 ]);
 
                 if (!subtask) {
-                    await mongoSession.abortTransaction();
-                    return NextResponse.json(
-                        { error: 'Subtask not found' },
-                        { status: 404 }
-                    );
+                    throw new Error('Subtask not found');
                 }
 
                 // Remove subtask from previous parent if it exists
@@ -78,7 +72,7 @@ export async function PUT(req: NextRequest) {
                     oldParentTask.subtasks = oldParentTask.subtasks.filter(
                         (id: ObjectId) => id.toString() !== subtaskId.toString()
                     );
-                    await oldParentTask.save({ session: mongoSession });
+                    await oldParentTask.save({ session });
                 }
 
                 // Update NEW parent task if it exists
@@ -86,7 +80,7 @@ export async function PUT(req: NextRequest) {
                     if (!parentTask.subtasks.includes(subtaskId)) {
                         parentTask.subtasks.push(subtaskId);
                     }
-                    await parentTask.save({ session: mongoSession });
+                    await parentTask.save({ session });
                 }
 
                 // Update subtask
@@ -102,12 +96,12 @@ export async function PUT(req: NextRequest) {
                     subtask.y = y;
                 }
 
-                await subtask.save({ session: mongoSession });
+                await subtask.save({ session });
 
                 // Update all descendants of the subtask
                 const descendants = await Task.find({
                     ancestors: subtaskId,
-                }).session(mongoSession);
+                }).session(session);
 
                 for (const descendant of descendants) {
                     const updatedAncestors = parentTaskId
@@ -123,24 +117,22 @@ export async function PUT(req: NextRequest) {
                     await Task.findByIdAndUpdate(
                         descendant._id,
                         { $set: { ancestors: updatedAncestors } },
-                        { session: mongoSession }
+                        { session }
                     );
                 }
 
-                await mongoSession.commitTransaction();
-
-                return NextResponse.json({
+                return {
                     updatedOldParentTask: oldParentTask?.toObject(),
                     updatedNewParentTask: parentTask?.toObject(),
                     updatedSubtask: subtask.toObject(),
                     descendantsUpdated: descendants.length,
-                });
-            } catch (error) {
-                await mongoSession.abortTransaction();
-                throw error;
-            } finally {
-                mongoSession.endSession();
-            }
+                };
+            });
+
+            const result = await mongoSession.commitTransaction();
+            mongoSession.endSession();
+
+            return NextResponse.json(result);
         } catch (error) {
             if (
                 error instanceof mongoose.mongo.MongoServerError &&
