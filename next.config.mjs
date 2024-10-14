@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     images: {
+        domains: ['zentodo.space'], // Add your domain here
         remotePatterns: [
             {
                 protocol: 'https',
