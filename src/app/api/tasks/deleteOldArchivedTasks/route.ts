@@ -1,18 +1,21 @@
-// src/app/api/tasks/deleteOldArchivedTasks.ts
+// src/app/api/tasks/deleteOldArchivedTasks/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Task from '@/models/Task';
 
-export async function deleteOldArchivedTasks(req: NextRequest) {
+export async function GET(req: NextRequest) {
     try {
         await dbConnect();
 
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
+        const twentySecondsAgo = new Date();
+        twentySecondsAgo.setSeconds(twentySecondsAgo.getSeconds() - 20);
+
         const result = await Task.deleteMany({
             isArchived: true,
-            archivedAt: { $lt: thirtyDaysAgo },
+            archivedAt: { $lt: twentySecondsAgo },
         });
 
         return NextResponse.json(
