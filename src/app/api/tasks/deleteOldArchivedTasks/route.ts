@@ -12,10 +12,11 @@ export async function GET(req: NextRequest) {
 
         const twentySecondsAgo = new Date();
         twentySecondsAgo.setSeconds(twentySecondsAgo.getSeconds() - 20);
+        console.log('twentySecondsAgo', twentySecondsAgo);
 
         const result = await Task.deleteMany({
             isArchived: true,
-            archivedAt: { $lt: twentySecondsAgo },
+            archivedAt: { $gte: twentySecondsAgo },
         });
 
         return NextResponse.json(
