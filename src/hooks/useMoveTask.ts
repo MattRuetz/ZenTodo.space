@@ -38,8 +38,9 @@ export const useMoveTask = () => {
             const currentIndex = tasks.indexOf(taskId);
 
             if (currentIndex === -1) {
-                console.error('Task not found in current level');
-                showAlert('Task not found in current level', 'error');
+                console.error(
+                    'Task not found in current level. Wait for the database to catch up and try again.'
+                );
                 return;
             }
 

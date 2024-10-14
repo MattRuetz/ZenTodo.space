@@ -233,7 +233,7 @@ export const TaskListItemTopBar: React.FC<TaskListItemTopBarProps> = React.memo(
                     }}
                     className="emoji-tag cursor-pointer p-1 transition-colors duration-200 rounded-lg"
                 >
-                    <div className="emoji-tag-icon w-4 h-4 flex items-center justify-center hover:scale-110 hover:rotate-12 transition-transform duration-200">
+                    <div className="emoji-tag-icon w-6 h-6 text-xl flex items-center justify-center hover:scale-110 hover:rotate-12 transition-transform duration-200">
                         {task.emoji || <FaTag />}
                     </div>
                 </div>

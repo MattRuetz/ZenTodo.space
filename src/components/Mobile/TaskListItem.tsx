@@ -260,6 +260,7 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
     });
     drop(dropRef);
     drag(dragHandleRef); // Attach drag to the handle
+
     return (
         <li
             key={task.clientId || task._id} // Use clientId if available, otherwise fall back to _id
@@ -269,7 +270,7 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
             // onTouchEnd={handleTouchEnd}
             className={`task-list-item ${
                 isDragging || isShaking ? 'shake' : ''
-            } rounded-lg transition-all duration-200 border-2 mx-auto max-w-[350px] shadow-md shadow-black/20 py-2`}
+            } rounded-lg transition-all duration-200 border-2 mx-auto max-w-[380px] shadow-md shadow-black/20 py-2`}
             style={{
                 cursor: 'move',
                 backgroundColor:

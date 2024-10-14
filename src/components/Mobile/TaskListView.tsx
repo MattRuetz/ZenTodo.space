@@ -203,7 +203,7 @@ export const TaskListView: React.FC<TaskListViewProps> = React.memo(
             <>
                 <div
                     {...handlers}
-                    className="task-list-view h-full flex flex-col"
+                    className="task-list-view h-full flex flex-col px-2"
                     style={{
                         backgroundColor: space?.backgroundColor
                             ? `${space.backgroundColor}`
