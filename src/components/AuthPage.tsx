@@ -29,7 +29,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ action }) => {
     return (
         <>
             {isMobileSize ? (
-                <div className="flex flex-col bg-black h-screen">
+                <div className="flex flex-col bg-black h-full">
                     <div className="p-6 flex flex-col items-center justify-center w-11/12 mx-auto">
                         <Image
                             src="/images/ZenToDo_Log_white.webp"
