@@ -29,7 +29,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ action }) => {
     return (
         <>
             {isMobileSize ? (
-                <div className="min-h-screen flex flex-col bg-black">
+                <div className="flex flex-col bg-black h-screen">
                     <div className="p-6 flex flex-col items-center justify-center w-11/12 mx-auto">
                         <Image
                             src="/images/ZenToDo_Log_white.webp"
@@ -43,7 +43,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ action }) => {
                             {quote}
                         </p>
                     </div>
-                    <div className="flex justify-center bg-gradient-to-b from-slate-900 to-slate-700 p-6 rounded-t-3xl shadow-md mx-2">
+                    <div className="flex justify-center bg-gradient-to-b from-slate-900 to-slate-700 p-6 rounded-t-3xl shadow-md mx-2 h-full">
                         {renderAuthComponent()}
                     </div>
                 </div>
