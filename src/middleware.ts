@@ -2,7 +2,10 @@ import { clerkMiddleware } from '@clerk/nextjs/server';
 
 export default clerkMiddleware();
 
-export const publicRoutes = ['/api/webhooks/clerk'];
+export const publicRoutes = [
+    '/api/webhooks/clerk',
+    '/api/tasks/deleteOldArchivedTasks',
+];
 
 export const config = {
     matcher: [
