@@ -3,7 +3,7 @@
     "crons": [
         {
             "path": "/api/tasks/deleteOldArchivedTasks",
-            "schedule": "10 20 * * *"
+            "schedule": "20 20 * * *"
         }
     ]
 }
