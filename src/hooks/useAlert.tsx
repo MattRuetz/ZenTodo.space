@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useState, useRef } from 'react';
+import React, { useCallback, useContext, useRef } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useIsMobileSize } from '@/hooks/useIsMobileSize';
