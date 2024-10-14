@@ -2,7 +2,13 @@
 import React, { useMemo, useState, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { createSelector } from '@reduxjs/toolkit';
-import { FaArchive, FaSearch, FaTrash } from 'react-icons/fa';
+import {
+    FaArchive,
+    FaExclamationTriangle,
+    FaSearch,
+    FaTasks,
+    FaTrash,
+} from 'react-icons/fa';
 
 import { useTheme } from '@/hooks/useTheme';
 
@@ -76,10 +82,14 @@ const ArchivedTasks: React.FC = () => {
             style={{ color: `var(--${currentTheme}-text-default)` }}
         >
             <div className="flex items-center justify-between">
-                <h2 className="text-xl sm:text-2xl font-bold mb-6 bg-transparent flex items-center gap-2">
+                <h2 className="text-xl sm:text-2xl font-bold bg-transparent flex items-center gap-2">
                     <FaArchive className="mr-2" />
                     Archived Tasks
+                    <span className="text-xs text-gray-500">
+                        {archivedTasks.length} tasks
+                    </span>
                 </h2>
+
                 {archivedTasks.length > 0 && (
                     <button
                         className="btn btn-sm btn-outline"
@@ -99,7 +109,11 @@ const ArchivedTasks: React.FC = () => {
                     />
                 )}
             </div>
-            <div className="mb-6 space-y-4 h-full">
+            <p className="flex items-center gap-2 text-yellow-300 text-sm">
+                <FaExclamationTriangle className="mr-2" />
+                Tasks in archive will be deleted after 30 days
+            </p>
+            <div className="mb-6 space-y-4 h-full pt-4">
                 <div className="flex flex-col sm:flex-row gap-4">
                     <div className="relative flex-grow">
                         <input
