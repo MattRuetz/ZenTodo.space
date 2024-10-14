@@ -3,7 +3,7 @@ import Image from 'next/image';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store/store';
 import { updateUserData } from '@/store/userSlice';
-import { useUser, useAuth, SignOutButton } from '@clerk/nextjs';
+import { useUser, useAuth } from '@clerk/nextjs';
 import { FaEnvelope, FaPencil, FaSpinner } from 'react-icons/fa6';
 import {
     FaAward,
