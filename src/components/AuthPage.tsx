@@ -38,6 +38,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ action }) => {
                             height={83}
                             className="mb-4"
                             priority={true}
+                            unoptimized={true}
                         />
                         <p className="text-sm text-neutral-content italic text-center mb-6">
                             {quote}
@@ -62,6 +63,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ action }) => {
                             height={200}
                             className="mb-10"
                             priority={true}
+                            unoptimized={true}
                         />
                         <p className="mt-2 text-md text-neutral-content italic max-w-md text-center">
                             {quote}

@@ -32,7 +32,7 @@ const ProfileSettings: React.FC = () => {
     const router = useRouter();
 
     const [profilePicture, setProfilePicture] = useState<string>(
-        clerkUser?.imageUrl || '/images/profile_picture_default.webp'
+        clerkUser?.imageUrl || '/images/profile_picture_default.png'
     );
     const [name, setName] = useState<string>(clerkUser?.fullName || '');
     const [isUploadingPhoto, setIsUploadingPhoto] = useState<boolean>(false);
