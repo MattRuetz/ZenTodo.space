@@ -13,7 +13,6 @@ export async function PUT(req: NextRequest) {
     let requestBody: any;
 
     try {
-        // Read the request body once
         requestBody = await req.json();
     } catch (error) {
         console.error('Error parsing request body:', error);
@@ -51,88 +50,75 @@ export async function PUT(req: NextRequest) {
                 ? new ObjectId(oldParentTaskIdString)
                 : null;
 
-            const mongoSession = await mongoose.startSession();
-            await mongoSession.withTransaction(async (session) => {
-                const [parentTask, subtask, oldParentTask] = await Promise.all([
-                    parentTaskId
-                        ? Task.findById(parentTaskId).session(session)
-                        : null,
-                    Task.findById(subtaskId).session(session),
-                    oldParentTaskId
-                        ? Task.findById(oldParentTaskId).session(session)
-                        : null,
-                ]);
+            // Fetch all necessary documents
+            const [subtask, parentTask, oldParentTask] = await Promise.all([
+                Task.findById(subtaskId),
+                parentTaskId ? Task.findById(parentTaskId) : null,
+                oldParentTaskId ? Task.findById(oldParentTaskId) : null,
+            ]);
 
-                if (!subtask) {
-                    throw new Error('Subtask not found');
+            if (!subtask) {
+                throw new Error('Subtask not found');
+            }
+
+            // Prepare updates
+            const updates = [];
+
+            // Update old parent task
+            if (oldParentTask) {
+                oldParentTask.subtasks = oldParentTask.subtasks.filter(
+                    (id: ObjectId) => id.toString() !== subtaskId.toString()
+                );
+                updates.push(oldParentTask.save());
+            }
+
+            // Update new parent task
+            if (parentTask) {
+                if (!parentTask.subtasks.includes(subtaskId)) {
+                    parentTask.subtasks.push(subtaskId);
                 }
+                updates.push(parentTask.save());
+            }
 
-                // Remove subtask from previous parent if it exists
-                if (oldParentTask) {
-                    oldParentTask.subtasks = oldParentTask.subtasks.filter(
-                        (id: ObjectId) => id.toString() !== subtaskId.toString()
-                    );
-                    await oldParentTask.save({ session });
-                }
+            // Update subtask
+            subtask.parentTask = parentTaskId;
+            subtask.ancestors = parentTaskId
+                ? [...(parentTask?.ancestors || []), parentTaskId]
+                : [];
 
-                // Update NEW parent task if it exists
-                if (parentTask) {
-                    if (!parentTask.subtasks.includes(subtaskId)) {
-                        parentTask.subtasks.push(subtaskId);
-                    }
-                    await parentTask.save({ session });
-                }
+            if (!parentTaskId && x !== undefined && y !== undefined) {
+                subtask.zIndex = zIndex;
+                subtask.x = x;
+                subtask.y = y;
+            }
+            updates.push(subtask.save());
 
-                // Update subtask
-                subtask.parentTask = parentTaskId;
-                subtask.ancestors = parentTaskId
-                    ? [...(parentTask?.ancestors || []), parentTaskId]
-                    : [];
-
-                // If converting to top-level task, update x and y and zIndex
-                if (!parentTaskId && x !== undefined && y !== undefined) {
-                    subtask.zIndex = zIndex;
-                    subtask.x = x;
-                    subtask.y = y;
-                }
-
-                await subtask.save({ session });
-
-                // Update all descendants of the subtask
-                const descendants = await Task.find({
-                    ancestors: subtaskId,
-                }).session(session);
-
-                for (const descendant of descendants) {
-                    const updatedAncestors = parentTaskId
-                        ? [
-                              ...subtask.ancestors,
-                              ...descendant.ancestors.slice(
-                                  descendant.ancestors.indexOf(subtaskId)
-                              ),
-                          ]
-                        : descendant.ancestors.slice(
+            // Update descendants
+            const descendants = await Task.find({ ancestors: subtaskId });
+            for (const descendant of descendants) {
+                const updatedAncestors = parentTaskId
+                    ? [
+                          ...subtask.ancestors,
+                          ...descendant.ancestors.slice(
                               descendant.ancestors.indexOf(subtaskId)
-                          );
-                    await Task.findByIdAndUpdate(
-                        descendant._id,
-                        { $set: { ancestors: updatedAncestors } },
-                        { session }
-                    );
-                }
+                          ),
+                      ]
+                    : descendant.ancestors.slice(
+                          descendant.ancestors.indexOf(subtaskId)
+                      );
+                descendant.ancestors = updatedAncestors;
+                updates.push(descendant.save());
+            }
 
-                return {
-                    updatedOldParentTask: oldParentTask?.toObject(),
-                    updatedNewParentTask: parentTask?.toObject(),
-                    updatedSubtask: subtask.toObject(),
-                    descendantsUpdated: descendants.length,
-                };
+            // Execute all updates
+            await Promise.all(updates);
+
+            return NextResponse.json({
+                updatedOldParentTask: oldParentTask?.toObject(),
+                updatedNewParentTask: parentTask?.toObject(),
+                updatedSubtask: subtask.toObject(),
+                descendantsUpdated: descendants.length,
             });
-
-            const result = await mongoSession.commitTransaction();
-            mongoSession.endSession();
-
-            return NextResponse.json(result);
         } catch (error) {
             if (
                 error instanceof mongoose.mongo.MongoServerError &&
