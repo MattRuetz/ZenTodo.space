@@ -2,7 +2,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { FaEllipsisV } from 'react-icons/fa';
 import { FaTag } from 'react-icons/fa6';
-import 'react-datepicker/dist/react-datepicker.css';
 import { Task } from '@/types';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store/store';

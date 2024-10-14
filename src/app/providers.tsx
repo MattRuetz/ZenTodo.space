@@ -9,7 +9,6 @@ import { TouchBackend } from 'react-dnd-touch-backend';
 import { ToastContainer } from 'react-toastify';
 import { isMobile } from 'react-device-detect';
 import { useIsMobileSize } from '@/hooks/useIsMobileSize';
-import 'react-toastify/dist/ReactToastify.css';
 import { EdgeStoreProvider } from '@/lib/edgestore';
 import CustomDragLayer from '@/layers/customDragLayer';
 import { MobileAlertProvider } from '@/hooks/useAlert';
