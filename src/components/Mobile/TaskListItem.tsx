@@ -290,13 +290,7 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
             }}
         >
             <div className="flex justify-start items-center h-full">
-                <div
-                    ref={dragHandleRef}
-                    className="drag-handle flex justify-center items-center w-[40px] h-[100px]"
-                >
-                    <FaGripVertical className="text-xs cursor-pointer" />
-                </div>
-                <div className="w-11/12 left-1/12 pr-[30px]">
+                <div className="w-11/12 left-1/12 pl-[30px]">
                     <TaskListItemTopBar
                         task={task}
                         handleSetDueDate={handleSetDueDate}
@@ -424,6 +418,15 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
                         handleProgressChange={handleProgressChange}
                         handleSetDueDate={handleSetDueDate}
                         handleArchive={handleArchive}
+                    />
+                </div>
+                <div
+                    ref={dragHandleRef}
+                    className="drag-handle flex justify-center items-center w-[40px] h-[100px]"
+                >
+                    <FaGripVertical
+                        className="text-lg cursor-pointer opacity-30"
+                        style={{ color: `var(--${currentTheme}-text-default)` }}
                     />
                 </div>
             </div>
