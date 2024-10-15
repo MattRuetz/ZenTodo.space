@@ -132,7 +132,7 @@ export const TaskListView: React.FC<TaskListViewProps> = React.memo(
         const sortedTasksAtLevel = useMemo(() => {
             let sorted = [...currentTasks];
 
-            if (space?.selectedEmojis.length) {
+            if (space?.selectedEmojis.length && !currentParent) {
                 sorted = sorted.filter((task) =>
                     space.selectedEmojis.includes(task.emoji || '')
                 );

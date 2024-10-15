@@ -8,6 +8,9 @@ import { useTheme } from '@/hooks/useTheme';
 import { useAddTask } from '@/hooks/useAddTask';
 import { useAddNewSubtask } from '@/hooks/useAddNewSubtask';
 import { Task, TaskProgress } from '@/types';
+import { updateSpace, updateSpaceSelectedEmojis } from '@/store/spaceSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '@/store/store';
 
 interface MobileAddTaskButtonProps {
     currentParent: Task | null;
@@ -18,10 +21,10 @@ interface MobileAddTaskButtonProps {
 export const MobileAddTaskButton: React.FC<MobileAddTaskButtonProps> =
     React.memo(({ currentParent, spaceId, onAddTask }) => {
         const currentTheme = useTheme();
+        const dispatch = useDispatch<AppDispatch>();
         const [justAddedTask, setJustAddedTask] = useState(false);
         const { addTask } = useAddTask();
         const { addNewSubtask } = useAddNewSubtask();
-
         useEffect(() => {
             if (justAddedTask) {
                 const timer = setTimeout(() => {
@@ -78,12 +81,22 @@ export const MobileAddTaskButton: React.FC<MobileAddTaskButtonProps> =
             return addTask(newTask);
         }, [spaceId, addTask]);
 
+        const clearEmojiFilter = useCallback(() => {
+            dispatch(
+                updateSpaceSelectedEmojis({
+                    spaceId: spaceId,
+                    selectedEmojis: [],
+                })
+            );
+        }, [currentParent, dispatch]);
+
         const handleAddTask = useCallback(() => {
             if (justAddedTask) return;
 
             const taskPromise = currentParent ? createSubtask() : createTask();
             taskPromise?.then(() => {
                 setJustAddedTask(true);
+                clearEmojiFilter();
                 onAddTask();
             });
         }, [
@@ -92,6 +105,7 @@ export const MobileAddTaskButton: React.FC<MobileAddTaskButtonProps> =
             createSubtask,
             createTask,
             onAddTask,
+            clearEmojiFilter,
         ]);
 
         return (
