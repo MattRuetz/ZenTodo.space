@@ -108,7 +108,7 @@ const ProfileSettings: React.FC = () => {
                                 src={profilePicture}
                                 alt="Profile Picture"
                                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                className="rounded-full shadow-md"
+                                className="rounded-full shadow-md w-full h-full object-cover"
                                 width={192}
                                 height={192}
                                 style={{
