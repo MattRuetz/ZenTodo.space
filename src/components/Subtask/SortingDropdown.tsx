@@ -112,8 +112,6 @@ const SortingDropdown: React.FC<SortingDropdownProps> = React.memo(
                                     {option === 'created' && <FaCalendarAlt />}
                                     {option === 'lastEdited' && <FaEdit />}
                                     <span>
-                                        {sortOption === option &&
-                                            (isReversed ? '(Reverse)' : '')}
                                         {sortOptionString[option as SortOption]}
                                     </span>
                                 </li>

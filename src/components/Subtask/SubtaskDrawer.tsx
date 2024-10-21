@@ -106,11 +106,15 @@ const SubtaskDrawer = React.memo(
                         );
                         break;
                     case 'dueDate':
-                        sorted.sort(
-                            (a, b) =>
-                                (a.dueDate as Date).getTime() -
-                                (b.dueDate as Date).getTime()
-                        );
+                        sorted.sort((a, b) => {
+                            const dateA = a.dueDate
+                                ? new Date(a.dueDate).getTime()
+                                : 0;
+                            const dateB = b.dueDate
+                                ? new Date(b.dueDate).getTime()
+                                : 0;
+                            return dateA - dateB;
+                        });
                         break;
                     case 'progress':
                         sorted.sort((a, b) =>
@@ -118,18 +122,26 @@ const SubtaskDrawer = React.memo(
                         );
                         break;
                     case 'created':
-                        sorted.sort(
-                            (a, b) =>
-                                (b.createdAt as Date).getTime() -
-                                (a.createdAt as Date).getTime()
-                        );
+                        sorted.sort((a, b) => {
+                            const dateA = a.createdAt
+                                ? new Date(a.createdAt).getTime()
+                                : 0;
+                            const dateB = b.createdAt
+                                ? new Date(b.createdAt).getTime()
+                                : 0;
+                            return dateB - dateA;
+                        });
                         break;
                     case 'lastEdited':
-                        sorted.sort(
-                            (a, b) =>
-                                (b.updatedAt as Date).getTime() -
-                                (a.updatedAt as Date).getTime()
-                        );
+                        sorted.sort((a, b) => {
+                            const dateA = a.updatedAt
+                                ? new Date(a.updatedAt).getTime()
+                                : 0;
+                            const dateB = b.updatedAt
+                                ? new Date(b.updatedAt).getTime()
+                                : 0;
+                            return dateB - dateA;
+                        });
                         break;
                     default:
                         break;

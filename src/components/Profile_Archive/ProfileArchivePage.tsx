@@ -57,7 +57,7 @@ const ProfileArchivePage: React.FC<ProfileArchivePageProps> = React.memo(
                 </div>
 
                 <div
-                    className="container max-w-screen-lg mx-auto rounded-lg overflow-hidden shadow-xl flex-grow flex flex-col mb-12 h-full"
+                    className="container max-w-screen-lg mx-auto rounded-lg overflow-hidden shadow-xl flex flex-col mb-12 "
                     style={{
                         backgroundColor: `var(--${theme}-background-100)`,
                         border: `2px solid var(--${theme}-card-border-color)`,
@@ -100,7 +100,7 @@ const ProfileArchivePage: React.FC<ProfileArchivePageProps> = React.memo(
                             </div>
                         ))}
                     </div>
-                    <div className="w-full flex-grow overflow-hidden h-full">
+                    <div className="w-full overflow-hidden">
                         <AnimatePresence mode="wait">
                             <motion.div
                                 key={activeTab}
@@ -108,7 +108,7 @@ const ProfileArchivePage: React.FC<ProfileArchivePageProps> = React.memo(
                                 animate={{ opacity: 1, x: 0 }}
                                 exit={{ opacity: 0, x: -50 }}
                                 transition={{ duration: 0.2 }}
-                                className="h-full overflow-y-auto"
+                                className="overflow-y-auto h-full"
                             >
                                 {activeTab === 'profile' ? (
                                     <ProfileSettings />

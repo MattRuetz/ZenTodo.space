@@ -1,6 +1,6 @@
 // src/components/Subtask/SubtaskDropZone.tsx
 
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
 import { useDrop } from 'react-dnd';
@@ -8,7 +8,7 @@ import { useDrop } from 'react-dnd';
 import { useAddNewSubtask } from '@/hooks/useAddNewSubtask';
 import { useMoveSubtask } from '@/hooks/useMoveSubtask';
 import { useTheme } from '@/hooks/useTheme';
-
+import { useAlert } from '@/hooks/useAlert';
 import { Task, TaskProgress } from '@/types';
 
 interface SubtaskDropZoneProps {
@@ -20,8 +20,12 @@ interface SubtaskDropZoneProps {
 const SubtaskDropZone: React.FC<SubtaskDropZoneProps> = React.memo(
     ({ position, parentTask, isDragging }) => {
         const currentTheme = useTheme();
+        const { showAlert } = useAlert();
         const { addNewSubtask } = useAddNewSubtask();
         const { moveSubtaskTemporary } = useMoveSubtask();
+        const currentSortOption = useSelector(
+            (state: RootState) => state.ui.sortOption
+        );
         const sortOption = useSelector(
             (state: RootState) => state.ui.sortOption
         );
@@ -58,6 +62,15 @@ const SubtaskDropZone: React.FC<SubtaskDropZoneProps> = React.memo(
             }),
             [handleHover]
         );
+
+        useEffect(() => {
+            if (isOver && currentSortOption !== 'custom') {
+                showAlert(
+                    'Change sorting to Custom to reorder subtasks',
+                    'error'
+                );
+            }
+        }, [isOver, showAlert, currentSortOption]);
 
         drop(dropRef);
 

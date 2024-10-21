@@ -85,22 +85,29 @@ const ArchivedTasks: React.FC = () => {
                 <h2 className="text-xl sm:text-2xl font-bold bg-transparent flex items-center gap-2">
                     <FaArchive className="mr-2" />
                     Archived Tasks
-                    <span className="text-xs text-gray-500">
-                        {archivedTasks.length} tasks
-                    </span>
                 </h2>
 
                 {archivedTasks.length > 0 && (
-                    <button
-                        className="btn btn-sm btn-outline"
-                        onClick={handleClearArchiveClick}
-                        style={{
-                            color: `var(--${currentTheme}-text-default)`,
-                        }}
-                    >
-                        <FaTrash className="mr-2" />
-                        Delete All
-                    </button>
+                    <div className="flex flex-col items-end gap-2">
+                        <span
+                            className="text-xs"
+                            style={{
+                                color: `var(--${currentTheme}-text-subtle)`,
+                            }}
+                        >
+                            {archivedTasks.length} tasks
+                        </span>
+                        <button
+                            className="btn btn-sm btn-outline"
+                            onClick={handleClearArchiveClick}
+                            style={{
+                                color: `var(--${currentTheme}-text-default)`,
+                            }}
+                        >
+                            <FaTrash className="mr-2" />
+                            Delete All
+                        </button>
+                    </div>
                 )}
                 {showConfirmClear && (
                     <ConfirmClearArchive
