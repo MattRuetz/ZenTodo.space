@@ -15,7 +15,7 @@ export const metadata = {
         siteName: 'ZenTodo',
         images: [
             {
-                url: 'https://www.zentodo.space/images/ZenToDo_Log_slate700.png', // Replace with the actual path to your OG image
+                url: 'https://www.zentodo.space/images/ZenToDo_Acronym_slate900.png', // Replace with the actual path to your OG image
                 width: 1200,
                 height: 630,
             },
