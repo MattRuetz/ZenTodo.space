@@ -8,13 +8,13 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata = {
     title: 'ZenTodo',
     description: 'Productivity made fun and simple.', // Replace with your app's description
+    author: 'Matt Ruetz',
     openGraph: {
         title: 'ZenTodo',
         description:
             'A responsive productivity app that removes the mental load of orginizing your tasks. Simple, fun, and robust organization of everyday tasks and long term goals.',
         url: 'https://www.zentodo.space',
         siteName: 'ZenTodo',
-        author: 'Matt Ruetz',
         images: [
             {
                 url: 'https://www.zentodo.space/images/ZTD_social_preview.png',
