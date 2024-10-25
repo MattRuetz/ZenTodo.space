@@ -7,7 +7,7 @@ const inter = Inter({ subsets: ['latin'] });
 
 export const metadata = {
     title: 'ZenTodo',
-    description: 'Productivity made fun and simple.', // Replace with your app's description
+    description: 'Productivity made fun and simple.',
     openGraph: {
         title: 'ZenTodo',
         description: 'Productivity made fun and simple.',
@@ -15,7 +15,7 @@ export const metadata = {
         siteName: 'ZenTodo',
         images: [
             {
-                url: 'https://www.zentodo.space/images/ZenToDo_Acronym_slate900.png', // Replace with the actual path to your OG image
+                url: 'https://www.zentodo.space/images/ZTD_social_preview.png',
                 width: 1200,
                 height: 630,
             },
