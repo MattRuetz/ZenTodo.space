@@ -168,7 +168,6 @@ const SuperSpace: React.FC = React.memo(() => {
                     </motion.div>
                 </AnimatePresence>
             </div>
-            <BottomSettings />
         </div>
     );
 });
